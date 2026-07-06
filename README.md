@@ -7,9 +7,12 @@ jobs, serving, storage, and governance** — built entirely on Databricks **syst
 
 > 📖 **Guided tour:** [`docs/index.html`](docs/index.html) is a browsable, editorial explainer for the
 > library — for each query it lays out *why it matters*, *what it does* in plain terms, *how to read every output
-> column*, an *illustrative sample result*, and the *caveats*. **View it rendered** via GitHub Pages
-> (repo → Settings → Pages → deploy from branch `master` / folder `/docs`) or, with no setup, the
-> [htmlpreview link](https://htmlpreview.github.io/?https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/docs/index.html).
+> column*, an *illustrative sample result*, and the *caveats*. **View it rendered:** open `docs/index.html` in any
+> browser — works offline, no setup. For a shareable URL, enable GitHub Pages (repo → Settings → Pages → deploy
+> from branch `master`, folder `/docs`); Pages on a *private* repo needs a paid plan, so — since this folder is
+> publish-safe (SQL + docs, no account data) — making the repo public also works, after which the
+> [htmlpreview link](https://htmlpreview.github.io/?https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/docs/index.html)
+> renders it with zero setup.
 > **Status:** Phase 1 — the **top 10** highest-impact queries are documented; the remaining 85 follow in phases.
 
 95 queries across **7 domains**:
