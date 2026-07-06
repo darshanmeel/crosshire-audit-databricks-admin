@@ -5,6 +5,12 @@ jobs, serving, storage, and governance** — built entirely on Databricks **syst
 (`system.*`). There is **no application to install and no dashboard here** — every file is a plain
 `SELECT` you paste into a Databricks SQL editor / warehouse and run.
 
+> 📖 **Guided tour (new):** [`docs/index.html`](docs/index.html) is a browsable, editorial explainer for the
+> library — for each query it lays out *why it matters*, *what it does* step by step, *how to read every output
+> column*, an *illustrative sample result*, and the *caveats*. Open it locally or via GitHub Pages (Settings →
+> Pages → `/docs`). **Status:** format preview covering the first query (`cost_dollarized_by_sku_day`); the rest
+> of the top 10 — then all 95 — follow in phases.
+
 95 queries across **7 domains**:
 
 | Domain | Queries | What it answers |

@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The CrossHire Databricks Audit Query Library — Explained</title>
+<meta name="description" content="A guided, editorial tour of the CrossHire Databricks system-tables audit query library: what each SQL query does, why an admin cares, how to read the result, and illustrative sample output." />
+<meta name="color-scheme" content="light dark" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   CrossHire — Databricks Audit Query Library
+   Static docs theme. Ported from the CrossHire "learn"/"blog"
+   parchment editorial design system (learn-tokens.css, learn.css,
+   blogs.css). Warm cream daylight palette + gold accent, with the
+   "coffee" espresso dark variant behind [data-theme="coffee"].
+   ============================================================ */
+
+/* ---------- Tokens: parchment (light, default) ---------- */
+:root {
+  --paper:        #f1e9d8;
+  --paper-2:      #ede5d0;
+  --paper-3:      #e6dbc6;
+  --card-bg:      #f7f0df;
+  --card-2:       #ede4cc;
+  --line-1:       #d8c89f;
+  --line-2:       #b89e63;
+  --ink-1:        #2b2113;
+  --ink-2:        #5a4a30;
+  --ink-3:        #8a7553;
+  --muted-1:      #9a8565;
+  --muted-2:      #b5a07a;
+  --primary:      #a37231;
+  --primary-lift: #8a5e23;
+  --primary-deep: #6f4c14;
+  --primary-soft: rgba(163, 114, 49, 0.10);
+  --primary-glow: rgba(163, 114, 49, 0.20);
+  --ok-1:         #3a7040;
+  --warn-1:       #b83838;
+  --warn:         #c47a16;
+  --info-1:       #2c6080;
+
+  --memo-wash:    rgba(58, 112, 64, 0.12);
+  --memo-ink:     #264d2a;
+  --tipp-wash:    rgba(44, 96, 128, 0.12);
+  --tipp-ink:     #1d4b68;
+  --warn-wash:    rgba(196, 122, 22, 0.12);
+  --danger:       var(--warn-1);
+  --danger-wash:  rgba(184, 56, 56, 0.12);
+
+  /* Domain accent palette (five domains documented in phase 1) */
+  --dom-cost:        #a37231;   /* gold      */
+  --dom-jobs:        #6b4d9e;   /* purple    */
+  --dom-compute:     #2f6a82;   /* teal-blue */
+  --dom-performance: #9a4e34;   /* brick     */
+  --dom-governance:  #3a7040;   /* green     */
+
+  --font-display: "Cormorant Garamond", "EB Garamond", Georgia, serif;
+  --font-serif:   "EB Garamond", "Cormorant Garamond", Georgia, serif;
+  --font-sans:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius:    14px;
+  --radius-sm: 8px;
+  --radius-lg: 22px;
+
+  --shadow-card: 0 1px 0 rgba(255, 220, 160, 0.5) inset, 0 10px 32px -18px rgba(80, 60, 20, 0.14);
+  --shadow-pop:  0 20px 50px -18px rgba(80, 60, 20, 0.22), 0 1px 0 rgba(255, 220, 160, 0.5) inset;
+}
+
+/* ---------- Tokens: coffee (dark) ---------- */
+:root[data-theme="coffee"] {
+  --paper:        #0e0a06;
+  --paper-2:      #15100a;
+  --paper-3:      #1a1308;
+  --card-bg:      #1a1308;
+  --card-2:       #221a0e;
+  --line-1:       #2c2418;
+  --line-2:       #3a2e1e;
+  --ink-1:        #ebddc4;
+  --ink-2:        #d6c8ae;
+  --ink-3:        #8a7b62;
+  --muted-1:      #8a7b62;
+  --muted-2:      #5e5240;
+  --primary:      #d4a574;
+  --primary-lift: #e8c58c;
+  --primary-deep: #a37231;
+  --primary-soft: rgba(212, 165, 116, 0.12);
+  --primary-glow: rgba(212, 165, 116, 0.20);
+  --ok-1:         #9bc2a0;
+  --warn-1:       #e29b8a;
+  --warn:         #e5b973;
+  --info-1:       #7aabcf;
+  --memo-wash:    rgba(155, 194, 160, 0.12);
+  --memo-ink:     #c8e0ca;
+  --tipp-wash:    rgba(122, 171, 207, 0.12);
+  --tipp-ink:     #aacde0;
+  --warn-wash:    rgba(229, 185, 115, 0.12);
+  --danger:       var(--warn-1);
+  --danger-wash:  rgba(226, 155, 138, 0.12);
+
+  --dom-cost:        #d4a574;
+  --dom-jobs:        #a880d0;
+  --dom-compute:     #5aa8cc;
+  --dom-performance: #d0856a;
+  --dom-governance:  #9bc2a0;
+
+  --shadow-card: 0 1px 0 rgba(212, 165, 116, 0.10) inset, 0 10px 32px -18px rgba(0, 0, 0, 0.40);
+  --shadow-pop:  0 20px 50px -18px rgba(0, 0, 0, 0.50), 0 1px 0 rgba(212, 165, 116, 0.10) inset;
+}
+
+/* ---------- Reset + base ---------- */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  color-scheme: light;
+  background:
+    radial-gradient(1000px 500px at 90% -10%, rgba(163, 114, 49, 0.07), transparent 60%),
+    radial-gradient(700px 400px at -10% 30%, rgba(163, 114, 49, 0.04), transparent 65%),
+    var(--paper);
+  color: var(--ink-1);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.62;
+  font-feature-settings: "kern" 1, "liga" 1;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+:root[data-theme="coffee"] body { color-scheme: dark; }
+
+h1, h2, h3, h4 { margin: 0; color: var(--ink-1); }
+a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { color: var(--primary-lift); }
+::selection { background: var(--primary-glow); color: var(--ink-1); }
+code, pre, .mono { font-family: var(--font-mono); }
+
+/* ---------- Topbar ---------- */
+.ch-topbar {
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: saturate(140%) blur(12px);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  border-bottom: 1px solid var(--line-1);
+}
+.ch-topbar-inner {
+  max-width: 1240px; margin: 0 auto;
+  display: flex; align-items: center; gap: 18px;
+  padding: 13px 32px; font-family: var(--font-sans);
+}
+.ch-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-serif); font-size: 18px; font-weight: 600;
+  letter-spacing: -0.01em; color: var(--ink-1); text-decoration: none;
+}
+.ch-brand .dot { width: 9px; height: 9px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 14px var(--primary-glow); }
+.ch-brand small { color: var(--muted-1); font-family: var(--font-sans); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; }
+.ch-topnav { margin-left: auto; display: flex; gap: 4px; align-items: center; }
+.ch-topnav a {
+  color: var(--muted-1); text-decoration: none; font-size: 13px;
+  padding: 8px 13px; border-radius: 8px; transition: color .15s, background .15s;
+}
+.ch-topnav a:hover { color: var(--ink-1); background: var(--primary-soft); }
+
+/* ---------- Hero / masthead ---------- */
+.ch-hero {
+  border-bottom: 1px solid var(--line-1);
+  background:
+    radial-gradient(900px 320px at 82% -20%, rgba(163, 114, 49, 0.10), transparent 65%),
+    linear-gradient(180deg, var(--paper-2) 0%, var(--paper) 100%);
+  position: relative;
+}
+.ch-hero::after { content: ""; position: absolute; inset: auto 0 0 0; height: 1px; background: linear-gradient(90deg, transparent, var(--primary-glow), transparent); }
+.ch-hero-inner { max-width: 1240px; margin: 0 auto; padding: 64px 32px 44px; }
+.ch-eyebrow {
+  font-family: var(--font-mono); color: var(--primary-lift);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; margin-bottom: 22px;
+}
+.ch-hero h1 {
+  font-family: var(--font-display); font-weight: 500;
+  font-size: clamp(40px, 6vw, 74px); line-height: 1.0; letter-spacing: -0.028em;
+  max-width: 20ch;
+}
+.ch-hero h1 em { font-style: italic; color: var(--primary-lift); font-weight: 500; }
+.ch-hero .dek {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: clamp(18px, 2.2vw, 22px); line-height: 1.5; color: var(--ink-2);
+  max-width: 60ch; margin: 22px 0 0;
+}
+.ch-hero-meta {
+  font-family: var(--font-sans); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted-1); margin-top: 28px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+}
+.ch-hero-meta b { color: var(--ink-1); font-weight: 700; font-variant-numeric: tabular-nums; }
+.ch-hero-meta .meta-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted-2); }
+
+/* ---------- Callout (phase banner / disclaimer) ---------- */
+.ch-banner {
+  max-width: 1240px; margin: 28px auto 0; padding: 0 32px;
+}
+.ch-banner-inner {
+  background: var(--card-bg); border: 1px solid var(--line-1); border-left: 3px solid var(--primary);
+  border-radius: 0 var(--radius) var(--radius) 0; padding: 18px 22px;
+  font-family: var(--font-sans); font-size: 14px; line-height: 1.55; color: var(--ink-2);
+}
+.ch-banner-inner strong { color: var(--ink-1); font-weight: 600; }
+.ch-banner-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--primary-lift); font-weight: 600; display: block; margin-bottom: 8px; }
+
+/* ---------- Layout: sticky TOC + main ---------- */
+.ch-layout {
+  max-width: 1240px; margin: 40px auto 0; padding: 0 32px 40px;
+  display: grid; grid-template-columns: 1fr; gap: 40px;
+}
+@media (min-width: 1000px) {
+  .ch-layout { grid-template-columns: 262px 1fr; gap: 48px; align-items: start; }
+}
+
+/* TOC */
+.ch-toc { font-family: var(--font-sans); }
+@media (min-width: 1000px) {
+  .ch-toc { position: sticky; top: 74px; max-height: calc(100vh - 96px); overflow-y: auto; scrollbar-width: thin; }
+}
+.ch-toc-title { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-1); margin: 0 0 12px; }
+.ch-toc-group { margin-bottom: 18px; }
+.ch-toc-group-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--dom, var(--muted-1)); display: flex; align-items: center; gap: 8px; margin: 0 0 6px; padding-left: 2px;
+}
+.ch-toc-group-label::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--dom, var(--muted-1)); }
+.ch-toc a {
+  display: flex; gap: 10px; align-items: baseline; text-decoration: none;
+  padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;
+  color: var(--muted-1); font-size: 13px; line-height: 1.3; transition: color .15s, background .15s, border-color .15s;
+}
+.ch-toc a .n { font-family: var(--font-mono); font-size: 11px; color: var(--muted-2); min-width: 18px; }
+.ch-toc a:hover { color: var(--ink-1); background: var(--primary-soft); }
+.ch-toc a.active { color: var(--primary-lift); background: var(--primary-soft); border-left-color: var(--primary); font-weight: 600; }
+.ch-toc a.active .n { color: var(--primary); }
+.ch-toc-collapse { border: 1px solid var(--line-1); border-radius: var(--radius); background: var(--card-bg); padding: 14px 16px; }
+@media (min-width: 1000px) { .ch-toc-collapse { border: 0; background: transparent; padding: 0; } .ch-toc-collapse > summary { display: none; } }
+.ch-toc-collapse > summary { font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--ink-1); cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+.ch-toc-collapse > summary::-webkit-details-marker { display: none; }
+
+/* ---------- Main column ---------- */
+.ch-main { min-width: 0; }
+
+/* Intro / how-to-read */
+.ch-intro { margin-bottom: 8px; }
+.ch-intro h2 { font-family: var(--font-display); font-weight: 500; font-size: 2rem; letter-spacing: -0.01em; }
+.ch-intro p { color: var(--ink-2); max-width: 68ch; }
+.ch-legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 8px; }
+.ch-legend .chip { font-family: var(--font-sans); font-size: 12px; }
+
+/* ---------- Query section ---------- */
+.ch-query {
+  scroll-margin-top: 84px;
+  padding: 48px 0;
+  border-top: 1px solid var(--line-1);
+}
+.ch-query:first-of-type { border-top: 0; }
+.ch-query-head { display: flex; align-items: flex-start; gap: 16px; }
+.ch-num {
+  font-family: var(--font-display); font-weight: 500; font-size: 2.6rem; line-height: 0.9;
+  color: var(--dom, var(--primary-lift)); min-width: 1.6em;
+}
+.ch-query-headwrap { flex: 1; min-width: 0; }
+.ch-query-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 8px; }
+.ch-dom-chip {
+  font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--dom, var(--primary-lift)); background: color-mix(in srgb, var(--dom, var(--primary)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dom, var(--primary)) 34%, transparent);
+  padding: 3px 10px; border-radius: 999px;
+}
+.ch-qid { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); }
+.ch-tier {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted-1); border: 1px dashed var(--line-2); border-radius: 5px; padding: 2px 7px;
+}
+.ch-query h2.ch-headline {
+  font-family: var(--font-display); font-weight: 500; font-size: clamp(28px, 3.4vw, 40px);
+  line-height: 1.06; letter-spacing: -0.02em; margin: 2px 0 0;
+}
+.ch-oneliner { font-family: var(--font-serif); font-style: italic; font-size: 19px; color: var(--ink-2); margin: 12px 0 0; max-width: 62ch; }
+
+/* System tables chips */
+.ch-tables { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-2);
+  background: var(--paper-3); border: 1px solid var(--line-1); border-radius: 999px; padding: 5px 12px;
+}
+.chip .chip-role { font-family: var(--font-sans); font-size: 11px; color: var(--muted-1); }
+
+/* Section sub-heads inside a query */
+.ch-sub {
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted-1); margin: 30px 0 12px; display: flex; align-items: center; gap: 10px;
+}
+.ch-sub::after { content: ""; flex: 1; height: 1px; background: var(--line-1); }
+
+/* SQL card */
+.ch-sql {
+  position: relative; background: var(--card-2); border: 1px solid var(--line-1);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-card);
+}
+.ch-sql-bar {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  border-bottom: 1px solid var(--line-1); font-family: var(--font-mono); font-size: 11px; color: var(--muted-1);
+  background: color-mix(in srgb, var(--paper-3) 60%, transparent);
+}
+.ch-sql-bar .path { color: var(--ink-3); }
+.ch-sql-bar .spacer { flex: 1; }
+.ch-sql-bar a, .ch-copy {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--primary-lift); background: transparent; border: 1px solid var(--line-2);
+  border-radius: 6px; padding: 5px 10px; cursor: pointer; text-decoration: none; transition: border-color .15s, background .15s;
+}
+.ch-sql-bar a:hover, .ch-copy:hover { border-color: var(--primary-deep); background: var(--primary-soft); }
+.ch-sql pre { margin: 0; padding: 18px 20px; overflow-x: auto; font-size: 12.5px; line-height: 1.6; color: var(--ink-1); }
+.ch-sql code { font-family: var(--font-mono); white-space: pre; }
+/* lightweight SQL token tinting via spans injected by JS-free approach: keep plain, readable */
+
+/* Prose blocks */
+.ch-prose { font-size: 17px; line-height: 1.62; color: var(--ink-1); max-width: 70ch; }
+.ch-prose p { margin: 0 0 0.7em; }
+.ch-prose strong { color: var(--ink-1); font-weight: 600; }
+.ch-prose code { background: var(--paper-2); color: var(--primary-lift); padding: 1px 6px; border-radius: 5px; font-size: 0.85em; }
+
+/* What-it-does steps */
+.ch-steps { list-style: none; margin: 0; padding: 0; counter-reset: step; display: flex; flex-direction: column; gap: 10px; max-width: 74ch; }
+.ch-steps li {
+  counter-increment: step; position: relative; padding: 12px 16px 12px 52px;
+  background: var(--card-bg); border: 1px solid var(--line-1); border-radius: var(--radius-sm);
+  font-family: var(--font-sans); font-size: 14.5px; line-height: 1.55; color: var(--ink-2);
+}
+.ch-steps li::before {
+  content: counter(step); position: absolute; left: 14px; top: 11px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--paper);
+  background: var(--dom, var(--primary)); width: 24px; height: 24px; border-radius: 6px;
+  display: grid; place-items: center;
+}
+.ch-steps li code { font-family: var(--font-mono); font-size: 0.86em; background: var(--paper-2); color: var(--primary-lift); padding: 1px 5px; border-radius: 4px; }
+
+/* Tables (how-to-read + sample output) */
+.ch-table-wrap { overflow-x: auto; border: 1px solid var(--line-1); border-radius: var(--radius); }
+table.ch-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 13.5px; }
+table.ch-table th {
+  text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted-1); background: var(--paper-3); padding: 10px 14px; border-bottom: 1px solid var(--line-1); white-space: nowrap;
+}
+table.ch-table td { padding: 11px 14px; border-bottom: 1px solid var(--line-1); color: var(--ink-2); vertical-align: top; }
+table.ch-table tr:last-child td { border-bottom: 0; }
+table.ch-table tbody tr:hover { background: var(--card-2); }
+table.ch-table td.col { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-1); white-space: nowrap; }
+
+/* Sample output table = data grid look, mono numbers */
+.ch-sample { position: relative; }
+.ch-sample table.ch-table td { font-variant-numeric: tabular-nums; }
+.ch-sample table.ch-table td.num { font-family: var(--font-mono); font-size: 12.5px; text-align: right; color: var(--ink-1); white-space: nowrap; }
+.ch-sample table.ch-table td.mono { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-1); }
+.ch-sample-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-sans); font-size: 11px; color: var(--muted-1); margin-top: 8px; font-style: italic;
+}
+.ch-sample-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+
+/* Aside / info-box (caveats, action) */
+.ch-aside {
+  border-radius: 0 var(--radius) var(--radius) 0; padding: 18px 22px; margin: 12px 0 0;
+  border: 1px solid var(--line-1); border-left: 3px solid var(--warn);
+  background: var(--warn-wash); font-family: var(--font-sans);
+}
+.ch-aside .ch-aside-tag { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warn); font-weight: 700; margin-bottom: 10px; }
+.ch-aside ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; line-height: 1.6; }
+.ch-aside li { margin: 6px 0; }
+.ch-aside li strong { color: var(--ink-1); font-weight: 600; }
+
+.ch-action {
+  display: flex; gap: 14px; align-items: flex-start; margin: 12px 0 0;
+  border-radius: 0 var(--radius) var(--radius) 0; padding: 18px 22px;
+  border: 1px solid var(--line-1); border-left: 3px solid var(--ok-1); background: var(--memo-wash);
+  font-family: var(--font-sans); font-size: 14.5px; line-height: 1.55; color: var(--memo-ink);
+}
+.ch-action .ch-action-ico { font-family: var(--font-serif); color: var(--ok-1); font-size: 20px; line-height: 1.2; }
+.ch-action .ch-aside-tag { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ok-1); font-weight: 700; margin-bottom: 6px; }
+
+/* ---------- Footer ---------- */
+.ch-footer {
+  border-top: 1px solid var(--line-1); background: var(--paper-2); margin-top: 40px;
+}
+.ch-footer-inner {
+  max-width: 1240px; margin: 0 auto; padding: 40px 32px;
+  font-family: var(--font-sans); font-size: 13px; color: var(--muted-1); line-height: 1.6;
+}
+.ch-footer-inner strong { color: var(--ink-2); font-weight: 600; }
+.ch-footer-links { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 18px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+.ch-footer-links a { color: var(--muted-1); text-decoration: none; }
+.ch-footer-links a:hover { color: var(--primary-lift); }
+
+/* ---------- Theme pill ---------- */
+.theme-pill {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line-2);
+  background: var(--card-bg); color: var(--muted-1); cursor: pointer; min-height: 44px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.12); transition: border-color .15s, color .15s, background .25s;
+}
+.theme-pill:hover { border-color: var(--primary); color: var(--primary); }
+@media (max-width: 640px) { .theme-pill { bottom: 16px; right: 16px; font-size: 9px; padding: 8px 12px; } }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 760px) {
+  .ch-topbar-inner { padding: 12px 20px; }
+  .ch-hero-inner { padding: 44px 20px 32px; }
+  .ch-banner { padding: 0 20px; }
+  .ch-layout { padding: 0 20px 40px; }
+  .ch-num { font-size: 2rem; }
+  .ch-query { padding: 36px 0; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="ch-topbar">
+  <div class="ch-topbar-inner">
+    <a class="ch-brand" href="#top"><span class="dot"></span>CrossHire <small>Databricks Audit</small></a>
+    <nav class="ch-topnav">
+      <a href="#library">The library</a>
+      <a href="#q-cost_dollarized_by_sku_day">Cost</a>
+      <a href="../README.md">README &#8599;</a>
+    </nav>
+  </div>
+</header>
+
+<a id="top"></a>
+<section class="ch-hero">
+  <div class="ch-hero-inner">
+    <div class="ch-eyebrow">CrossHire &middot; Databricks system-tables audit</div>
+    <h1>The query library, <em>explained</em></h1>
+    <p class="dek">Ninety-five copy-paste SQL queries that audit a Databricks account's cost, performance, compute, jobs, serving, storage and governance — built entirely on <code>system.*</code> tables, with no app to install and no dashboard to wire up. This is the guided tour: what each query does, why an admin cares, and how to read the result.</p>
+    <div class="ch-hero-meta">
+      <span><b>95</b>&nbsp;queries</span><span class="meta-dot"></span>
+      <span><b>7</b>&nbsp;domains</span><span class="meta-dot"></span>
+      <span><b>1</b>&nbsp;of&nbsp;10 explained &middot; preview</span><span class="meta-dot"></span>
+      <span>Built on <b>system.*</b></span>
+    </div>
+  </div>
+</section>
+
+<div class="ch-banner">
+  <div class="ch-banner-inner">
+    <span class="ch-banner-tag">Preview &middot; 1 of 10 &middot; format check</span>
+    This page is a <strong>format preview</strong>: it documents the single most important query in full so the layout, depth and tone can be reviewed before the remaining 9 of the top-10 (and eventually all 95) are added. Every query is <strong>best-effort</strong>: Databricks system tables are not uniformly available, so a query may return nothing or raise <code>TABLE_OR_VIEW_NOT_FOUND</code> / <code>insufficient_privileges</code> on your account — that is expected, not a bug. Sample-output tables are <strong>illustrative synthetic rows</strong>, never real account data.
+  </div>
+</div>
+
+<div class="ch-layout">
+  <aside class="ch-toc">
+    <details class="ch-toc-collapse" open>
+      <summary>Contents <span>&#9662;</span></summary>
+      <div class="ch-toc-title">Preview</div>
+
+      <div class="ch-toc-group" style="--dom: var(--dom-cost)">
+        <div class="ch-toc-group-label">Cost &amp; Billing</div>
+        <a href="#q-cost_dollarized_by_sku_day"><span class="n">01</span><span>cost_dollarized_by_sku_day</span></a>
+      </div>
+    </details>
+  </aside>
+
+  <main class="ch-main">
+    <section class="ch-intro" id="library">
+      <h2>How to read this tour</h2>
+      <div class="ch-prose">
+        <p>Each entry below takes one <code>.sql</code> file from the library and unpacks it the same way: the <strong>system tables</strong> it reads, <strong>why it matters</strong> to an account admin, <strong>what it does</strong> step by step, <strong>how to read</strong> every output column, an <strong>illustrative sample</strong> of the result, and the <strong>caveats</strong> that decide whether the number can be trusted. Copy the SQL, paste it into a Databricks SQL editor, set your look-back window on the <code>:period_days</code> parameter, and run.</p>
+        <p>Two conventions carry through the whole library. Every dollar figure is <strong>est &middot; at list</strong> — priced from <code>system.billing.list_prices</code>, pre-discount and DBU-only — unless a query explicitly joins <code>account_prices</code>. And <code>usage_quantity</code> is <strong>DBUs, bytes, hours or tokens — never dollars</strong>; only a price join turns it into money.</p>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-cost_dollarized_by_sku_day" style="--dom: var(--dom-cost)">
+      <div class="ch-query-head">
+        <div class="ch-num">01</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Cost &amp; Billing</span>
+            <span class="ch-qid">cost_dollarized_by_sku_day</span>
+          </div>
+          <h2 class="ch-headline">Dollarizing DBUs at List Price</h2>
+          <p class="ch-oneliner">Net DBU (and other-unit) consumption multiplied by the point-in-time list rate to produce a pre-discount list-dollar figure (net_list_cost) per usage_date x cloud x SKU x product x usage_type x unit x currency.</p>
+          <div class="ch-tables"><span class="chip">system.billing.usage</span><span class="chip">system.billing.list_prices</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/cost/cost_dollarized_by_sku_day.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/cost/cost_dollarized_by_sku_day.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:cost_dollarized_by_sku_day */
+-- NEEDS CONFIRMATION: list_rate path pricing.effective_list.default is UNVERIFIED.
+-- Until confirmed, dollarize in-engine off pricing_list_prices_raw (raw JSON) instead.
+SELECT u.usage_date, u.cloud, u.sku_name, u.billing_origin_product, u.usage_type, u.usage_unit,
+       lp.currency_code,
+       SUM(u.usage_quantity)               AS net_usage_quantity,
+       SUM(u.usage_quantity * lp.list_rate) AS net_list_cost
+FROM system.billing.usage u
+LEFT JOIN (
+  SELECT sku_name, cloud, currency_code, usage_unit, price_start_time, price_end_time,
+         CAST(pricing.effective_list.default AS DOUBLE) AS list_rate   -- &lt;-- UNVERIFIED path
+  FROM system.billing.list_prices
+) lp
+  ON u.sku_name = lp.sku_name
+ AND u.cloud    = lp.cloud
+ AND u.usage_end_time &gt;= lp.price_start_time
+ AND (lp.price_end_time IS NULL OR u.usage_end_time &lt; lp.price_end_time)
+WHERE u.usage_date &gt;= dateadd(day, -:period_days, current_date())
+  AND u.usage_date &lt; current_date()
+GROUP BY u.usage_date, u.cloud, u.sku_name, u.billing_origin_product, u.usage_type, u.usage_unit, lp.currency_code</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>This is the query that turns raw DBU consumption into money, so it drives every headline cost chart, dollar-denominated anomaly series, and chargeback rollup an admin builds. The stakes are twofold: get the number and get the caveat right. net_list_cost is list (pre-discount) price only, DBU-only, and excludes cloud infra/egress, so it overstates what the account actually pays; worse, the list_rate path (pricing.effective_list.default cast to DOUBLE) is unverified on-workspace, so a silently-wrong cast could mis-scale every dollar figure downstream. Used carefully it prioritizes which SKUs and product lines to attack; used blindly it produces a confidently wrong bill.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ol class="ch-steps">
+        <li>Scan system.billing.usage (u) as the consumption fact source.</li>
+        <li>Build a price subquery over system.billing.list_prices selecting sku_name, cloud, currency_code, usage_unit, the price window bounds, and list_rate = CAST(pricing.effective_list.default AS DOUBLE) (this cast path is UNVERIFIED).</li>
+        <li>LEFT JOIN usage to the price subquery on u.sku_name = lp.sku_name AND u.cloud = lp.cloud, with a point-in-time window predicate: u.usage_end_time &gt;= lp.price_start_time AND (lp.price_end_time IS NULL OR u.usage_end_time &lt; lp.price_end_time). LEFT JOIN keeps usage rows even when no price window matches (list_rate/currency NULL).</li>
+        <li>Filter to the trailing window: usage_date &gt;= dateadd(day, -:period_days, current_date()) AND usage_date &lt; current_date(), which excludes today.</li>
+        <li>GROUP BY usage_date, cloud, sku_name, billing_origin_product, usage_type, usage_unit, and lp.currency_code.</li>
+        <li>Aggregate SUM(usage_quantity) AS net_usage_quantity (net across all record_types, in usage_unit) and SUM(usage_quantity * list_rate) AS net_list_cost (list-price dollars).</li>
+        <li>No masking, no window/QUALIFY, no ORDER BY and no LIMIT are applied; every grouped row is returned.</li>
+      </ol>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">usage_date</td><td>The billed usage day (DATE). One row per day per SKU/product/usage_type/unit/currency combination within the trailing window; today is excluded.</td></tr>
+          <tr><td class="col">cloud</td><td>Cloud provider for the usage (e.g. AWS/AZURE/GCP). Also a join key to the price window, so pricing is cloud-correct.</td></tr>
+          <tr><td class="col">sku_name</td><td>The Databricks billing SKU. The primary price-join key; each SKU carries its own list rate.</td></tr>
+          <tr><td class="col">billing_origin_product</td><td>Product line that generated the usage (JOBS/SQL/DLT/MODEL_SERVING/DEFAULT_STORAGE/...). No closed enum; blank means unattributed, not zero.</td></tr>
+          <tr><td class="col">usage_type</td><td>Nature of the metered consumption (COMPUTE_TIME/STORAGE_SPACE/TOKEN/GPU_TIME/...). Kept as a group dimension so unit families are not blended.</td></tr>
+          <tr><td class="col">usage_unit</td><td>Unit of net_usage_quantity (DBU, STORAGE_SPACE bytes, hours, TOKEN, ...). Grouped so different unit families are never summed together.</td></tr>
+          <tr><td class="col">currency_code</td><td>Currency of net_list_cost, sourced from the list_prices side of the join. NULL when no price window matched (unpriced row).</td></tr>
+          <tr><td class="col">net_usage_quantity</td><td>SUM(usage_quantity) across all record_types for the group: net metered consumption in usage_unit (DBUs/bytes/hours/tokens). This is NOT dollars.</td></tr>
+          <tr><td class="col">net_list_cost</td><td>SUM(usage_quantity * list_rate): net consumption valued at the point-in-time LIST rate. Dollars, but pre-discount, DBU-only, and UNVERIFIED (list_rate path unconfirmed). NULL where no price matched.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>usage_date</th><th>cloud</th><th>sku_name</th><th>billing_origin_product</th><th>usage_unit</th><th>net_usage_quantity</th><th>net_list_cost</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">2026-07-01</td><td class="mono">AWS</td><td class="mono">ENTERPRISE_ALL_PURPOSE_COMPUTE</td><td class="mono">JOBS</td><td class="mono">DBU</td><td class="num">1234.5000</td><td class="num">678.9750</td></tr>
+          <tr><td class="mono">2026-07-01</td><td class="mono">AWS</td><td class="mono">ENTERPRISE_SQL_COMPUTE</td><td class="mono">SQL</td><td class="mono">DBU</td><td class="num">4200.0000</td><td class="num">2940.0000</td></tr>
+          <tr><td class="mono">2026-07-01</td><td class="mono">AZURE</td><td class="mono">ENTERPRISE_JOBS_SERVERLESS_COMPUTE</td><td class="mono">JOBS</td><td class="mono">DBU</td><td class="num">800.0000</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.billing.usage</td><td>The billed-consumption fact table (aliased u); provides usage_date, cloud, sku_name, billing_origin_product, usage_type, usage_unit, usage_end_time, and usage_quantity that is SUMmed across all record_types into net_usage_quantity and dollarized. Also carries the date-window filter.</td></tr>
+          <tr><td class="col">system.billing.list_prices</td><td>The public list (pre-discount) price history (aliased lp in a subquery); supplies currency_code and list_rate (CAST of pricing.effective_list.default to DOUBLE), joined by sku_name + cloud within the [price_start_time, price_end_time) window to price each usage row. Path is unverified.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>LIST price only: net_list_cost is pre-discount, DBU-only, and excludes cloud infra/egress; the engine applies the negotiated discount_factor downstream. It is never a billed headline number.</li>
+        <li>UNVERIFIED price path: list_rate casts pricing.effective_list.default to DOUBLE, but docs type effective_list only as an object (and pricing.default as STRING). Until confirmed on-workspace, dollarize in-engine off pricing_list_prices_raw (raw JSON) instead of trusting net_list_cost.</li>
+        <li>DBUs are not dollars: net_usage_quantity is DBUs/bytes/hours/tokens in usage_unit, NOT money. Only net_list_cost is a dollar figure, and only a LIST/unverified one.</li>
+        <li>Point-in-time price predicate: the join uses (price_end_time IS NULL OR usage_end_time &lt; price_end_time). price_end_time NULL means currently-active; dropping the NULL branch silently zeroes recent usage.</li>
+        <li>Net across corrections: SUM(usage_quantity) spans all record_type values (ORIGINAL/RETRACTION/RESTATEMENT) which already net out; the query does NOT filter to ORIGINAL and you must not re-net downstream.</li>
+        <li>LEFT JOIN on price: rows with no matching price window get list_rate NULL, so net_list_cost is NULL for those (usage still counted in net_usage_quantity). NULL net_list_cost means 'unpriced', not $0.</li>
+        <li>Join keys are sku_name + cloud + time window only; currency_code comes from the price side. usage_unit is selected in the subquery but NOT used in the ON clause, so multi-cloud/multi-currency accounts rely on cloud alone to avoid fan-out or mis-pricing (README recommends keying on cloud + currency_code + usage_unit + sku_name).</li>
+        <li>Date window: trailing :period_days ending yesterday (usage_date &gt;= current_date - :period_days AND &lt; current_date). Today is excluded because billing is incomplete; treat the most recent day as provisional due to populate lag (ingestion_date is the freshness signal).</li>
+        <li>Availability: both tables are GA but Unity-Catalog-only, require system.billing enabled and SELECT granted. A feature the account doesn't use yields a valid empty result, not $0; a disabled/non-permissioned table raises TABLE_OR_VIEW_NOT_FOUND. Empty != zero != error.</li>
+        <li>billing_origin_product has no published closed enum; a blank value is 'unattributed', not zero. Do not hardcode literals as a verified set.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Use net_list_cost as the pre-discount, list-price dollar view for headline cost and anomaly charts, but do not report it as billed spend: cross-check the list_rate against pricing_list_prices_raw (dollarize in-engine off the raw JSON) before trusting any figure, and remember it excludes cloud infra/egress and the account's negotiated discount.
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="ch-footer">
+  <div class="ch-footer-inner">
+    <strong>CrossHire — Databricks System-Tables Query Library.</strong>
+    A copy-paste SQL library for auditing a Databricks account on <code>system.*</code> tables — only SQL and documentation, no account data.
+    Treat every query as best-effort: run what your account supports, skip what it doesn't. Identities in raw query output are sensitive; handle accordingly.
+    <div class="ch-footer-links">
+      <a href="../README.md">Repository README</a>
+      <a href="../queries/cost/README.md">Cost domain docs</a>
+      <a href="#top">Back to top &#8593;</a>
+    </div>
+  </div>
+</footer>
+
+<button id="themePill" class="theme-pill" type="button" aria-label="Toggle colour theme">&#9680; Coffee</button>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---- Theme toggle (parchment <-> coffee), persisted ---- */
+  var root = document.documentElement;
+  var KEY = "ch-theme";
+  try {
+    var saved = localStorage.getItem(KEY);
+    if (saved === "coffee") root.setAttribute("data-theme", "coffee");
+  } catch (e) {}
+
+  function label() {
+    return root.getAttribute("data-theme") === "coffee" ? "☀ Parchment" : "◐ Coffee";
+  }
+  var pill = document.getElementById("themePill");
+  if (pill) {
+    pill.textContent = label();
+    pill.addEventListener("click", function () {
+      var coffee = root.getAttribute("data-theme") === "coffee";
+      if (coffee) root.removeAttribute("data-theme");
+      else root.setAttribute("data-theme", "coffee");
+      try { localStorage.setItem(KEY, coffee ? "parchment" : "coffee"); } catch (e) {}
+      pill.textContent = label();
+    });
+  }
+
+  /* ---- Copy SQL buttons ---- */
+  document.querySelectorAll(".ch-copy").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var wrap = btn.closest(".ch-sql");
+      var code = wrap && wrap.querySelector("code");
+      if (!code) return;
+      var text = code.innerText;
+      var done = function () {
+        var prev = btn.textContent;
+        btn.textContent = "Copied ✓";
+        setTimeout(function () { btn.textContent = prev; }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, done);
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(ta); done();
+      }
+    });
+  });
+
+  /* ---- Sticky TOC active highlighting ---- */
+  var links = Array.prototype.slice.call(document.querySelectorAll(".ch-toc a[href^='#']"));
+  var byId = {};
+  links.forEach(function (a) { byId[a.getAttribute("href").slice(1)] = a; });
+  var sections = links
+    .map(function (a) { return document.getElementById(a.getAttribute("href").slice(1)); })
+    .filter(Boolean);
+
+  function setActive(id) {
+    links.forEach(function (a) { a.classList.remove("active"); });
+    if (byId[id]) {
+      byId[id].classList.add("active");
+      byId[id].scrollIntoView({ block: "nearest" });
+    }
+  }
+
+  if ("IntersectionObserver" in window && sections.length) {
+    var visible = {};
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { visible[en.target.id] = en.isIntersecting ? en.intersectionRatio : 0; });
+      var best = null, bestRatio = 0;
+      Object.keys(visible).forEach(function (id) { if (visible[id] > bestRatio) { bestRatio = visible[id]; best = id; } });
+      if (best) setActive(best);
+    }, { rootMargin: "-80px 0px -55% 0px", threshold: [0, 0.25, 0.5, 1] });
+    sections.forEach(function (s) { io.observe(s); });
+  }
+
+  /* Reflect the clicked TOC entry immediately */
+  links.forEach(function (a) {
+    a.addEventListener("click", function () { setActive(a.getAttribute("href").slice(1)); });
+  });
+})();
+
+</script>
+</body>
+</html>
