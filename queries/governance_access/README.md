@@ -1,5 +1,7 @@
 # Governance, Access & Security
 
+> 📖 **Guided HTML tour:** [`docs/index.html`](../../docs/index.html) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`access_runas_escalation`](../../docs/index.html#q-access_runas_escalation). *(Phase 1 = top 10; more in phases.)*
+
 This domain answers "who can touch what, who did touch what, and where is sensitive data leaking out of its guardrails." The queries read Unity Catalog's audit log, data/table/column lineage, network-policy denials, the privilege/tag/mask/row-filter metadata in `information_schema`, and auto-detected data classification — to inventory the current access posture and surface hygiene gaps (dead tables, untagged PII propagation, classified-but-unmasked columns, run-as escalation, login concentration, network exfiltration attempts).
 
 Almost everything here lives in Unity Catalog system schemas, so the hard dependency is UC + a metastore with system-table sharing enabled, and the collecting principal must have `SELECT` on `system.*`. Because `information_schema` is privilege-aware and most of these tables are Preview and/or feature-gated, an empty or `TABLE_OR_VIEW_NOT_FOUND` result is expected and is not the same as "clean."

@@ -447,6 +447,10 @@ table.ch-table td.col { font-family: var(--font-mono); font-size: 12.5px; color:
     <nav class="ch-topnav">
       <a href="#library">The library</a>
       <a href="#q-cost_dollarized_by_sku_day">Cost</a>
+      <a href="#q-lakeflow_jobs_on_all_purpose">Jobs</a>
+      <a href="#q-compute_warehouse_idle_gaps">Compute</a>
+      <a href="#q-query_costly_statements">Performance</a>
+      <a href="#q-access_runas_escalation">Governance</a>
       <a href="../README.md">README &#8599;</a>
     </nav>
   </div>
@@ -461,7 +465,7 @@ table.ch-table td.col { font-family: var(--font-mono); font-size: 12.5px; color:
     <div class="ch-hero-meta">
       <span><b>95</b>&nbsp;queries</span><span class="meta-dot"></span>
       <span><b>7</b>&nbsp;domains</span><span class="meta-dot"></span>
-      <span><b>1</b>&nbsp;of&nbsp;10 explained &middot; preview</span><span class="meta-dot"></span>
+      <span><b>10</b>&nbsp;explained &middot; Phase 1</span><span class="meta-dot"></span>
       <span>Built on <b>system.*</b></span>
     </div>
   </div>
@@ -469,8 +473,8 @@ table.ch-table td.col { font-family: var(--font-mono); font-size: 12.5px; color:
 
 <div class="ch-banner">
   <div class="ch-banner-inner">
-    <span class="ch-banner-tag">Preview &middot; 1 of 10 &middot; format check</span>
-    This page is a <strong>format preview</strong>: it documents the single most important query in full so the layout, depth and tone can be reviewed before the remaining 9 of the top-10 (and eventually all 95) are added. Every query is <strong>best-effort</strong>: Databricks system tables are not uniformly available, so a query may return nothing or raise <code>TABLE_OR_VIEW_NOT_FOUND</code> / <code>insufficient_privileges</code> on your account — that is expected, not a bug. Sample-output tables are <strong>illustrative synthetic rows</strong>, never real account data.
+    <span class="ch-banner-tag">Phase 1 &middot; top 10 &middot; more to come</span>
+    This tour documents the <strong>ten highest-impact queries</strong> &mdash; the first audit an admin should run, spanning cost, jobs, compute, performance and governance. The remaining 85 queries follow in later phases. Every query is <strong>best-effort</strong>: Databricks system tables are not uniformly available, so a query may return nothing or raise <code>TABLE_OR_VIEW_NOT_FOUND</code> / <code>insufficient_privileges</code> on your account — that is expected, not a bug. Sample-output tables are <strong>illustrative synthetic rows</strong>, never real account data.
   </div>
 </div>
 
@@ -478,11 +482,32 @@ table.ch-table td.col { font-family: var(--font-mono); font-size: 12.5px; color:
   <aside class="ch-toc">
     <details class="ch-toc-collapse" open>
       <summary>Contents <span>&#9662;</span></summary>
-      <div class="ch-toc-title">Preview</div>
+      <div class="ch-toc-title">The first ten queries</div>
 
       <div class="ch-toc-group" style="--dom: var(--dom-cost)">
         <div class="ch-toc-group-label">Cost &amp; Billing</div>
         <a href="#q-cost_dollarized_by_sku_day"><span class="n">01</span><span>cost_dollarized_by_sku_day</span></a>
+        <a href="#q-cost_by_job"><span class="n">02</span><span>cost_by_job</span></a>
+        <a href="#q-cost_actual_vs_list_by_sku"><span class="n">03</span><span>cost_actual_vs_list_by_sku</span></a>
+        <a href="#q-cost_chargeback_by_tag"><span class="n">04</span><span>cost_chargeback_by_tag</span></a>
+        <a href="#q-cost_premium_serverless_photon"><span class="n">05</span><span>cost_premium_serverless_photon</span></a>
+      </div>
+      <div class="ch-toc-group" style="--dom: var(--dom-jobs)">
+        <div class="ch-toc-group-label">Jobs &amp; Pipelines</div>
+        <a href="#q-lakeflow_jobs_on_all_purpose"><span class="n">06</span><span>lakeflow_jobs_on_all_purpose</span></a>
+        <a href="#q-lakeflow_failed_jobs_wasted_dbus"><span class="n">07</span><span>lakeflow_failed_jobs_wasted_dbus</span></a>
+      </div>
+      <div class="ch-toc-group" style="--dom: var(--dom-compute)">
+        <div class="ch-toc-group-label">Compute</div>
+        <a href="#q-compute_warehouse_idle_gaps"><span class="n">08</span><span>compute_warehouse_idle_gaps</span></a>
+      </div>
+      <div class="ch-toc-group" style="--dom: var(--dom-performance)">
+        <div class="ch-toc-group-label">Query Performance</div>
+        <a href="#q-query_costly_statements"><span class="n">09</span><span>query_costly_statements</span></a>
+      </div>
+      <div class="ch-toc-group" style="--dom: var(--dom-governance)">
+        <div class="ch-toc-group-label">Governance &amp; Access</div>
+        <a href="#q-access_runas_escalation"><span class="n">10</span><span>access_runas_escalation</span></a>
       </div>
     </details>
   </aside>
@@ -615,6 +640,1164 @@ GROUP BY u.usage_date, u.cloud, u.sku_name, u.billing_origin_product, u.usage_ty
         <div>
           <div class="ch-aside-tag">What you do next</div>
           Use net_list_cost as the pre-discount, list-price dollar view for headline cost and anomaly charts, but do not report it as billed spend: cross-check the list_rate against pricing_list_prices_raw (dollarize in-engine off the raw JSON) before trusting any figure, and remember it excludes cloud infra/egress and the account's negotiated discount.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-cost_by_job" style="--dom: var(--dom-cost)">
+      <div class="ch-query-head">
+        <div class="ch-num">02</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Cost &amp; Billing</span>
+            <span class="ch-qid">cost_by_job</span>
+          </div>
+          <h2 class="ch-headline">Per-Job DBU Cost Ranking</h2>
+          <p class="ch-oneliner">Net DBU consumption and distinct run count per job per day, split by workspace, cloud, product line, and classic-vs-serverless placement.</p>
+          <div class="ch-tables"><span class="chip">system.billing.usage</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/cost/cost_by_job.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/cost/cost_by_job.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:cost_by_job */
+SELECT usage_date, cloud, workspace_id, billing_origin_product,
+       usage_metadata.job_id          AS job_id,
+       product_features.is_serverless AS is_serverless,
+       SUM(usage_quantity) AS net_usage_quantity,
+       COUNT(DISTINCT usage_metadata.job_run_id) AS distinct_runs
+FROM system.billing.usage
+WHERE usage_date &gt;= dateadd(day, -:period_days, current_date())
+  AND usage_date &lt; current_date()
+  AND usage_unit = 'DBU'
+  AND usage_metadata.job_id IS NOT NULL
+GROUP BY usage_date, cloud, workspace_id, billing_origin_product,
+         usage_metadata.job_id, product_features.is_serverless</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Jobs compute is usually the largest single product line on a Databricks bill, and this query pinpoints exactly which job_id drives the DBUs so an admin can target the worst offenders instead of the whole account. The is_serverless split lets you dollarize the jobs-on-all-purpose / classic-vs-serverless placement premium -- the same workload can cost materially more depending on where it runs. Pairing net_usage_quantity with distinct_runs surfaces failed-run and over-scheduled waste (many runs burning DBUs with little to show), which is often pure recoverable spend once the DBUs are priced.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Adds up the DBUs each <strong>job</strong> burned, day by day, over the look-back window.</li>
+        <li>Counts only jobs-compute usage — interactive notebook and SQL-editor lines are left out — so this is scheduled-job spend, nothing else.</li>
+        <li>Splits every job's usage by workspace and by <strong>classic-vs-serverless</strong> placement, and counts how many runs produced it.</li>
+        <li>Hands you the raw per-job totals to sort — the biggest spenders, and jobs racking up DBUs over many runs, rise to the top.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">usage_date</td><td>The calendar day (DATE) the job consumption was metered. One row per job per day per placement, so the same job_id appears on multiple dates -- sum across dates for a period total.</td></tr>
+          <tr><td class="col">cloud</td><td>The cloud provider for the usage (AWS/AZURE/GCP). Part of the grain and a required key when later joining price tables.</td></tr>
+          <tr><td class="col">workspace_id</td><td>The workspace that ran the job. NULL for account-level SKUs; resolve to dev/uat/prod via cost_workspace_names downstream, otherwise it reads as an opaque numeric id.</td></tr>
+          <tr><td class="col">billing_origin_product</td><td>The product line billed (typically JOBS for jobs-compute, but can be DLT or others). No published closed enum; a blank value is unattributed, not zero.</td></tr>
+          <tr><td class="col">job_id</td><td>The Databricks job identifier (from usage_metadata.job_id). This is a stable id but carries no name/owner -- join to system.lakeflow.jobs (latest by change_time) for name and run_as.</td></tr>
+          <tr><td class="col">is_serverless</td><td>product_features.is_serverless: TRUE for jobs-serverless, FALSE for classic jobs-compute. This is the placement-premium signal that separates serverless from classic runs of the same job.</td></tr>
+          <tr><td class="col">net_usage_quantity</td><td>Net DBUs consumed by that job on that day/placement, SUM(usage_quantity) across all record_types (already correction-netted). DBUs, NOT dollars -- multiply by a per-DBU rate to dollarize.</td></tr>
+          <tr><td class="col">distinct_runs</td><td>COUNT(DISTINCT usage_metadata.job_run_id) -- how many separate job runs generated the DBUs that day. High DBUs over few runs = heavy runs; high runs = frequent scheduling; pair with failed-run analysis to size retry/failure waste.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>usage_date</th><th>workspace_id</th><th>job_id</th><th>is_serverless</th><th>net_usage_quantity</th><th>distinct_runs</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">2026-07-04</td><td class="num">1234567890123456</td><td class="num">849302</td><td class="mono">false</td><td class="num">412.75</td><td class="num">24</td></tr>
+          <tr><td class="mono">2026-07-04</td><td class="num">1234567890123456</td><td class="num">849302</td><td class="mono">true</td><td class="num">58.10</td><td class="num">3</td></tr>
+          <tr><td class="mono">2026-07-04</td><td class="num">9876543210987654</td><td class="num">771044</td><td class="mono">false</td><td class="num">1180.00</td><td class="num">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.billing.usage</td><td>The sole table read. Provides the billed-consumption fact rows; the query filters to usage_unit='DBU' and usage_metadata.job_id IS NOT NULL, then SUMs usage_quantity (net DBUs) and counts DISTINCT usage_metadata.job_run_id, grouped by usage_date, cloud, workspace_id, billing_origin_product, usage_metadata.job_id, and product_features.is_serverless.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>usage_metadata.job_id populates for jobs-compute only (classic AND serverless); it is NULL for interactive / SQL-editor lines, which are excluded by the WHERE job_id IS NOT NULL filter -- this is job spend only, not the whole bill.</li>
+        <li>net_usage_quantity is DBUs, NOT dollars. Multiply by a per-DBU list/negotiated rate (join system.billing.list_prices on cloud+currency_code+usage_unit+sku_name, with the (price_end_time IS NULL OR usage &lt; price_end_time) window predicate) to get money -- and those price casts are unverified.</li>
+        <li>SUM(usage_quantity) is a NET figure across all record_type values (ORIGINAL/RETRACTION/RESTATEMENT); the query does not filter to ORIGINAL, so corrections already net out -- do not re-net downstream.</li>
+        <li>Date window is a trailing :period_days ending yesterday: usage_date &gt;= dateadd(day,-:period_days,current_date()) AND usage_date &lt; current_date(). Today is excluded and the most recent day is provisional due to billing populate lag (ingestion_date, not usage_date, is the freshness signal).</li>
+        <li>No names here. Billing carries no job name or owner -- join job_id -&gt; system.lakeflow.jobs (SCD2, take latest by change_time) downstream for name + run_as. workspace_id stays a numeric id unless resolved via cost_workspace_names.</li>
+        <li>workspace_id is NULL for account-level SKUs (kept as 'not workspace-attributable'), and billing_origin_product has no published closed enum -- a blank value is 'unattributed', not zero.</li>
+        <li>Empty != zero != error. An account with no jobs simply yields no rows; a disabled/non-permissioned system table raises TABLE_OR_VIEW_NOT_FOUND -- both mean 'not assessed', never $0.</li>
+        <li>Requires Unity Catalog with system.billing enabled and SELECT granted. No masking is applied in this query (no PII columns are selected). Only usage_unit = 'DBU' rows are counted.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Rank jobs by net_usage_quantity within a workspace/day, then resolve the top job_ids to names and run_as via system.lakeflow.jobs (SCD2, latest by change_time), dollarize the DBUs through list_prices, and target the biggest classic-jobs-compute lines and high-run-count offenders for right-sizing, scheduling, or moving off all-purpose compute.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-cost_actual_vs_list_by_sku" style="--dom: var(--dom-cost)">
+      <div class="ch-query-head">
+        <div class="ch-num">03</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Cost &amp; Billing</span>
+            <span class="ch-qid">cost_actual_vs_list_by_sku</span>
+          </div>
+          <h2 class="ch-headline">Negotiated vs List Discount Realization</h2>
+          <p class="ch-oneliner">Per-SKU net DBUs alongside their negotiated-rate dollars and list-rate dollars, so an admin can quantify how much the account's negotiated discount actually saves on each SKU.</p>
+          <div class="ch-tables"><span class="chip">system.billing.usage</span><span class="chip">system.billing.account_prices</span><span class="chip">system.billing.list_prices</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/cost/cost_actual_vs_list_by_sku.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/cost/cost_actual_vs_list_by_sku.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:cost_actual_vs_list_by_sku */
+SELECT u.cloud, u.sku_name, u.usage_unit, u.billing_origin_product, u.currency_code,
+       SUM(u.usage_quantity)                       AS net_usage_quantity,
+       SUM(u.usage_quantity * ap.negotiated_rate)  AS net_negotiated_cost,
+       SUM(u.usage_quantity * lp.list_rate)        AS net_list_cost
+FROM system.billing.usage u
+LEFT JOIN (
+  SELECT sku_name, cloud, currency_code, usage_unit, price_start_time, price_end_time,
+         CAST(pricing.default AS DOUBLE) AS negotiated_rate   -- account_prices: pricing.default ONLY (no effective_list)
+  FROM system.billing.account_prices
+) ap
+  ON  u.sku_name      = ap.sku_name
+  AND u.cloud         = ap.cloud
+  AND u.currency_code = ap.currency_code
+  AND u.usage_unit    = ap.usage_unit
+  AND u.usage_date    &gt;= DATE(ap.price_start_time)
+  AND (ap.price_end_time IS NULL OR u.usage_date &lt; DATE(ap.price_end_time))   -- active rows carry NULL end_time
+LEFT JOIN (
+  SELECT sku_name, cloud, currency_code, usage_unit, price_start_time, price_end_time,
+         CAST(pricing.effective_list.default AS DOUBLE) AS list_rate   -- list_prices: effective_list.default
+  FROM system.billing.list_prices
+) lp
+  ON  u.sku_name      = lp.sku_name
+  AND u.cloud         = lp.cloud
+  AND u.currency_code = lp.currency_code
+  AND u.usage_unit    = lp.usage_unit
+  AND u.usage_date    &gt;= DATE(lp.price_start_time)
+  AND (lp.price_end_time IS NULL OR u.usage_date &lt; DATE(lp.price_end_time))   -- same active-row predicate
+WHERE u.usage_date &gt;= dateadd(day, -:period_days, current_date())
+  AND u.usage_date &lt; current_date()
+  AND upper(u.usage_unit) = 'DBU'   -- price only DBU rows against a per-DBU rate; never blend bytes/hours/tokens
+GROUP BY u.cloud, u.sku_name, u.usage_unit, u.billing_origin_product, u.currency_code</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>This is the proof that the account's negotiated Databricks contract is actually being realized: for every DBU-billed SKU it lines up what the account pays at its negotiated rate against public list, so the per-SKU gap (net_list_cost − net_negotiated_cost) is the dollar saving the discount delivers and feeds the discount-realization % and savings headline on the Pricing and Allocation tab. A SKU where the two are equal — or where net_negotiated_cost is null while DBUs are large — flags a SKU the negotiated agreement is not covering, which is real leakage against the contract. Because both dollar bases rely on unverified STRING-to-DOUBLE casts, every figure is labelled negotiated/list-unverified and must not be promoted to a billed headline until the casts are confirmed on-workspace.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>For each SKU, totals your DBUs and prices them <strong>two ways</strong> — at your account's negotiated rate and at public list.</li>
+        <li>The gap between the two is the dollar saving your contract actually delivers on that SKU.</li>
+        <li>A SKU with usage but no negotiated price shows up as a <strong>coverage gap</strong> (blank), not as zero — so leakage against the contract stays visible.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">cloud</td><td>Cloud provider the SKU ran on (aws/azure/gcp); part of the grain and a price-join key, so the same sku_name can appear once per cloud.</td></tr>
+          <tr><td class="col">sku_name</td><td>The billed SKU. The unit of comparison for negotiated-vs-list; a SKU with net_usage_quantity but null costs has no matching active price row (coverage gap).</td></tr>
+          <tr><td class="col">usage_unit</td><td>Always 'DBU' here (the WHERE clause filters upper(usage_unit)='DBU') — confirms the rate applied is a per-DBU rate, not bytes/hours/tokens.</td></tr>
+          <tr><td class="col">billing_origin_product</td><td>Product line that generated the usage (JOBS/SQL/DLT/MODEL_SERVING/…); part of the GROUP BY so a SKU split across products yields multiple rows. Blank = unattributed, not zero.</td></tr>
+          <tr><td class="col">currency_code</td><td>Currency of the price rows joined; also a join key. Never sum costs across differing currency_code values.</td></tr>
+          <tr><td class="col">net_usage_quantity</td><td>SUM(usage_quantity) in DBUs across all record_types over the window — the net metered consumption. DBUs, NOT dollars.</td></tr>
+          <tr><td class="col">net_negotiated_cost</td><td>SUM(usage_quantity × account_prices negotiated_rate) — dollars the account pays at its contracted rate. NEGOTIATED-UNVERIFIED; NULL if no negotiated price row matched.</td></tr>
+          <tr><td class="col">net_list_cost</td><td>SUM(usage_quantity × list_prices effective_list rate) — dollars at public pre-discount list. LIST-UNVERIFIED; NULL if no list price row matched. net_list_cost − net_negotiated_cost is the realized saving.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>cloud</th><th>sku_name</th><th>usage_unit</th><th>net_usage_quantity</th><th>net_negotiated_cost</th><th>net_list_cost</th><th>currency_code</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">aws</td><td class="mono">ENTERPRISE_ALL_PURPOSE_COMPUTE</td><td class="mono">DBU</td><td class="num">12500</td><td class="num">5500.00</td><td class="num">6875.00</td><td class="mono">USD</td></tr>
+          <tr><td class="mono">aws</td><td class="mono">ENTERPRISE_SQL_COMPUTE</td><td class="mono">DBU</td><td class="num">3000</td><td class="num">528.00</td><td class="num">660.00</td><td class="mono">USD</td></tr>
+          <tr><td class="mono">azure</td><td class="mono">PREMIUM_JOBS_SERVERLESS_COMPUTE</td><td class="mono">DBU</td><td class="num">800</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="mono">USD</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.billing.usage</td><td>Driving fact table: net metered consumption. SUM(usage_quantity) over the trailing :period_days window (excluding today) across all record_types, filtered to upper(usage_unit)='DBU', grouped by cloud/sku_name/usage_unit/billing_origin_product/currency_code.</td></tr>
+          <tr><td class="col">system.billing.account_prices</td><td>Negotiated (actual) rate source. Sub-selected to negotiated_rate = CAST(pricing.default AS DOUBLE) — pricing.default ONLY, no effective_list — and LEFT-joined point-in-time to each usage row on cloud+currency_code+usage_unit+sku_name within the active price window.</td></tr>
+          <tr><td class="col">system.billing.list_prices</td><td>Public list (pre-discount) rate source. Sub-selected to list_rate = CAST(pricing.effective_list.default AS DOUBLE) and LEFT-joined on the same four keys and the same active-price-window predicate to produce net_list_cost.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Both dollar columns are NEGOTIATED/LIST-UNVERIFIED: account_prices.pricing.default and list_prices.pricing.effective_list.default are documented as object/STRING and the CAST(... AS DOUBLE) is not confirmed on this workspace — carry every figure as unverified, never promote to a billed usd_monthly headline.</li>
+        <li>usage_quantity / net_usage_quantity is DBUs, NOT dollars — only net_negotiated_cost and net_list_cost are dollars (and those are unverified).</li>
+        <li>TWO price bases: negotiated comes ONLY from account_prices.pricing.default; list comes ONLY from list_prices.pricing.effective_list.default. account_prices has NO effective_list — do not read it there.</li>
+        <li>Price-window predicate MUST be (price_end_time IS NULL OR usage_date &lt; DATE(price_end_time)); active rows carry NULL end_time. Dropping the NULL branch silently zeroes recent usage.</li>
+        <li>Join keys are cloud + currency_code + usage_unit + sku_name, NOT sku_name alone — multi-cloud/multi-currency accounts have several price rows per sku_name and mis-join on sku_name alone.</li>
+        <li>Both price tables are LEFT-joined: a SKU with no matching active price row keeps net_usage_quantity but returns NULL cost — that is a priced-coverage gap, read it as 'not priced', never as $0.</li>
+        <li>Filtered to upper(usage_unit)='DBU' so bytes/hours/tokens are never priced against a per-DBU rate; non-DBU spend is excluded entirely from this result.</li>
+        <li>net_usage_quantity SUMs usage_quantity across ALL record_types (ORIGINAL/RETRACTION/RESTATEMENT) so corrections already net out — never re-net or filter to ORIGINAL.</li>
+        <li>Trailing :period_days window: usage_date &gt;= dateadd(day, -:period_days, current_date()) AND &lt; current_date() — excludes today (incomplete billing); treat the most recent day as provisional (ingestion lag).</li>
+        <li>currency_code is assumed present on usage rows; if absent, multi-currency disambiguation is lost — disclosed, not silently merged.</li>
+        <li>Requires Unity Catalog with system.billing enabled and SELECT granted; a disabled/unpermissioned table raises TABLE_OR_VIEW_NOT_FOUND (not assessed), and a feature the account doesn't use is a valid empty result — empty != error != $0.</li>
+        <li>No masking and no workspace-name resolution here — this rollup is SKU/cloud/product/currency grained, not identity- or workspace-grained.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Rank SKUs by the net_list_cost − net_negotiated_cost gap to see where the negotiated contract actually saves money; feed the per-SKU discount-realization % into the Pricing and Allocation tab, and chase any SKU with net_usage_quantity but null costs as a priced-coverage gap (missing active price row), never as $0. Confirm the STRING-to-DOUBLE casts on this workspace before promoting any dollar figure.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-cost_chargeback_by_tag" style="--dom: var(--dom-cost)">
+      <div class="ch-query-head">
+        <div class="ch-num">04</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Cost &amp; Billing</span>
+            <span class="ch-qid">cost_chargeback_by_tag</span>
+          </div>
+          <h2 class="ch-headline">Chargeback Coverage by Tag</h2>
+          <p class="ch-oneliner">Net DBU consumption and record count broken down by every custom_tags key/value pair per usage_date, cloud, workspace, and product line — with untagged usage retained as NULL-key rows so the "% untagged" denominator is real.</p>
+          <div class="ch-tables"><span class="chip">system.billing.usage</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/cost/cost_chargeback_by_tag.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/cost/cost_chargeback_by_tag.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:cost_chargeback_by_tag */
+SELECT usage_date, cloud, workspace_id, billing_origin_product, tag_key, tag_value,
+       SUM(usage_quantity) AS net_usage_quantity,
+       COUNT(*) AS record_count
+FROM system.billing.usage
+     LATERAL VIEW OUTER explode(custom_tags) t AS tag_key, tag_value
+WHERE usage_date &gt;= dateadd(day, -:period_days, current_date())
+  AND usage_date &lt; current_date()
+GROUP BY usage_date, cloud, workspace_id, billing_origin_product, tag_key, tag_value</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Chargeback and showback only work if spend is attributable to a team, project, or cost center via tags — and this query is how an admin proves whether that attribution actually exists. The NULL-key rows produced by the OUTER explode quantify the DBUs that carry no tag at all (the % untagged spend that no one can be billed for), while counting distinct tag_values per tag_key exposes the trap where a single umbrella tag covers ~100% of DBUs yet resolves to one cost center, giving zero real team-level chargeback. On an account spending six or seven figures, untagged or falsely-"100%-tagged" DBUs are money that lands in a shared bucket and gets cross-subsidized instead of billed back to the workload that caused it.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Breaks your DBU usage down by every cost-allocation <strong>tag</strong> (key and value) attached to it.</li>
+        <li>Deliberately keeps untagged usage as its own bucket, so you get an honest <strong>'% of spend nobody can be billed for'</strong> number.</li>
+        <li>Cuts the tag rollup per workspace and product line — enough to spot tag drift, and to catch an umbrella tag that 'covers everything' yet names a single cost centre.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">usage_date</td><td>The calendar day (DATE) the consumption was metered. Today is always excluded; treat the most recent day as provisional due to billing populate lag.</td></tr>
+          <tr><td class="col">cloud</td><td>Cloud provider for the row (e.g. AWS/AZURE/GCP). Part of the grain and a required join key elsewhere — never collapse tags across clouds without keeping this.</td></tr>
+          <tr><td class="col">workspace_id</td><td>Numeric workspace the usage belongs to; lets chargeback be cut per workspace. NULL for account-level SKUs (not workspace-attributable). Resolve to dev/uat/prod names downstream via cost_workspace_names.</td></tr>
+          <tr><td class="col">billing_origin_product</td><td>Product line that generated the usage (JOBS/SQL/DLT/MODEL_SERVING/…). No published closed enum, so treat literals as unverified; a blank value is 'unattributed', not zero.</td></tr>
+          <tr><td class="col">tag_key</td><td>One key from the custom_tags map (customer-defined — never hardcode key names). NULL means the source usage row carried no tags at all: this is the untagged bucket that drives the % untagged metric.</td></tr>
+          <tr><td class="col">tag_value</td><td>The value for that tag_key on the row. NULL alongside a NULL tag_key marks untagged usage. Count DISTINCT tag_value per tag_key downstream to detect an umbrella key that covers everything but resolves to a single cost center.</td></tr>
+          <tr><td class="col">net_usage_quantity</td><td>SUM(usage_quantity) for the group — net DBUs/units (in usage_unit, NOT dollars) across all record_types. Multiply by a price rate downstream to dollarize. Note different usage_units are summed together here, so scope by product/SKU if you need a single unit.</td></tr>
+          <tr><td class="col">record_count</td><td>COUNT(*) of exploded usage rows in the group — a volume/skew sanity check (how many metered slices carry this tag), not a monetary figure.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>usage_date</th><th>cloud</th><th>workspace_id</th><th>billing_origin_product</th><th>tag_key</th><th>tag_value</th><th>net_usage_quantity</th><th>record_count</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">2026-07-04</td><td class="mono">AWS</td><td class="num">1234567890123456</td><td class="mono">JOBS</td><td class="mono">cost_center</td><td class="mono">data-platform</td><td class="num">842.50</td><td class="num">37</td></tr>
+          <tr><td class="mono">2026-07-04</td><td class="mono">AWS</td><td class="num">1234567890123456</td><td class="mono">SQL</td><td class="mono">team</td><td class="mono">analytics</td><td class="num">318.75</td><td class="num">22</td></tr>
+          <tr><td class="mono">2026-07-04</td><td class="mono">AWS</td><td class="num">1234567890123456</td><td class="mono">DLT</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="num">156.20</td><td class="num">9</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.billing.usage</td><td>The sole source table. Provides the billed-consumption rows whose custom_tags MAP is exploded (OUTER) into one row per tag key/value; usage_quantity (DBUs) is summed per tag and per (usage_date, cloud, workspace_id, billing_origin_product) cut. OUTER explode keeps rows with empty/NULL custom_tags so untagged spend still appears.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>DBUs, not dollars: net_usage_quantity is DBUs/bytes/hours/tokens in usage_unit — no price join here. Multiply by a rate (list_prices/account_prices) downstream to get money, and never sum across different usage_unit families.</li>
+        <li>OUTER explode is deliberate: untagged rows appear with tag_key/tag_value = NULL so they anchor the '% untagged' denominator — pair with cost_totals_by_sku_day for the account total; don't drop the NULL rows.</li>
+        <li>Do NOT report a bare '100% tagged'. On this account one umbrella key can cover ~100% of DBUs yet give NO team-level chargeback (single cost center) — count distinct tag_value per tag_key to expose that.</li>
+        <li>Tags are dynamic: custom_tags keys are customer-defined and vary per customer — never hardcode key names. Tags originate from compute-resource tags AND serverless usage policies.</li>
+        <li>Net across corrections: net_usage_quantity SUMs usage_quantity over all record_types (ORIGINAL/RETRACTION/RESTATEMENT already net out) — never filter to ORIGINAL and never re-net downstream.</li>
+        <li>Date window: trailing :period_days days, excludes today (incomplete billing); the most recent day is provisional due to populate lag (ingestion_date, not usage_date, is the freshness signal).</li>
+        <li>workspace_id is NULL for account-level SKUs (not workspace-attributable) and is a raw numeric id — names resolve only via cost_workspace_names downstream. Cut chargeback per workspace but keep cloud in the key.</li>
+        <li>billing_origin_product has no published closed enum (unverified literals); a blank value is 'unattributed', not zero.</li>
+        <li>Empty != zero != error: a valid empty result is not $0, and a Preview/disabled or unpermissioned system table raises TABLE_OR_VIEW_NOT_FOUND — both are expected, treat as 'not assessed', not a fabricated 0. Requires Unity Catalog + system.billing enabled + SELECT granted.</li>
+        <li>No masking is applied in this query — tag values are surfaced as-is (they are not PII-bearing here); the domain's email/name masking applies to the identity query, not this one.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Rank tag_keys by SUM(net_usage_quantity) and count distinct tag_value per tag_key: a key that covers ~100% of DBUs but has only one distinct value is an umbrella/single-cost-center tag giving no team-level chargeback — flag it and require a team/cost-center dimension. Compute % untagged DBUs by comparing the NULL-tag_key rows against the account total from cost_totals_by_sku_day, then chase down the owners of the largest untagged slices to enforce a tagging policy.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-cost_premium_serverless_photon" style="--dom: var(--dom-cost)">
+      <div class="ch-query-head">
+        <div class="ch-num">05</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Cost &amp; Billing</span>
+            <span class="ch-qid">cost_premium_serverless_photon</span>
+          </div>
+          <h2 class="ch-headline">Serverless, Photon &amp; Tier Premiums</h2>
+          <p class="ch-oneliner">Net DBU consumption per usage_date x cloud x SKU x product line, split out by the serverless, Photon, jobs/SQL/DLT tier, and serverless performance-target choices so each premium lever can be sized.</p>
+          <div class="ch-tables"><span class="chip">system.billing.usage</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/cost/cost_premium_serverless_photon.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/cost/cost_premium_serverless_photon.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:cost_premium_serverless_photon */
+SELECT usage_date, cloud, sku_name, billing_origin_product,
+       product_features.is_serverless      AS is_serverless,
+       product_features.is_photon          AS is_photon,
+       product_features.jobs_tier          AS jobs_tier,
+       product_features.sql_tier           AS sql_tier,
+       product_features.dlt_tier           AS dlt_tier,
+       product_features.performance_target AS performance_target,
+       SUM(usage_quantity) AS net_usage_quantity
+FROM system.billing.usage
+WHERE usage_date &gt;= dateadd(day, -:period_days, current_date())
+  AND usage_date &lt; current_date()
+GROUP BY usage_date, cloud, sku_name, billing_origin_product,
+         product_features.is_serverless, product_features.is_photon, product_features.jobs_tier,
+         product_features.sql_tier, product_features.dlt_tier, product_features.performance_target</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Serverless, Photon, DLT tiers, and performance-optimized serverless all carry a per-DBU premium over their classic/baseline equivalents in exchange for speed or convenience. This query isolates exactly how many DBUs are flowing through each premium option so an admin can size the delta and, after dollarizing via list_prices, decide whether the premium is buying real value or is just an unexamined default. A single always-Photon SQL warehouse or a performance-optimized serverless job left on the fast tier can quietly inflate the bill by a large multiple versus the standard tier.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Totals your DBUs and splits them by the <strong>premium levers</strong>: serverless-vs-classic, Photon on/off, and the jobs / SQL / DLT tier and serverless performance target.</li>
+        <li>Shows how much usage flows through each premium option, so you can price the delta against the cheaper baseline.</li>
+        <li>Each lever is its own column, so a single always-Photon warehouse or a perf-optimized serverless job stands out at a glance.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">usage_date</td><td>The billing day (DATE) the consumption was metered; the most recent day in-window is provisional due to populate lag.</td></tr>
+          <tr><td class="col">cloud</td><td>Cloud provider for the usage (e.g. AWS/AZURE/GCP); part of the grain and a required key when later joining price tables.</td></tr>
+          <tr><td class="col">sku_name</td><td>The billed SKU string; premium vs baseline often shows in the SKU name itself (e.g. a '(PHOTON)' suffix), so use it to pair a premium row with its cheaper counterpart.</td></tr>
+          <tr><td class="col">billing_origin_product</td><td>Product line that generated the usage (JOBS/SQL/DLT/MODEL_SERVING/...); no closed enum, and blank means unattributed rather than zero.</td></tr>
+          <tr><td class="col">is_serverless</td><td>Whether the usage ran on serverless compute (true) vs classic (false); NULL where the serverless/classic distinction is unavailable. The core serverless-vs-classic premium split.</td></tr>
+          <tr><td class="col">is_photon</td><td>Whether Photon acceleration was active (true) vs not (false); NULL where unknown. Cross-checkable against sku_name LIKE '%(PHOTON)%' as a heuristic.</td></tr>
+          <tr><td class="col">jobs_tier</td><td>The Jobs compute tier for JOBS usage; NULL where not applicable.</td></tr>
+          <tr><td class="col">sql_tier</td><td>The DBSQL warehouse tier (e.g. classic/pro/serverless) for SQL usage; NULL where not applicable.</td></tr>
+          <tr><td class="col">dlt_tier</td><td>The DLT/Lakeflow pipeline tier (e.g. core/pro/advanced) for DLT usage; NULL where not applicable — the DLT-tier optimization lever.</td></tr>
+          <tr><td class="col">performance_target</td><td>The serverless performance target (e.g. performance-optimized vs standard); NULL for all non-serverless workloads. Sizes the perf-optimized-serverless premium.</td></tr>
+          <tr><td class="col">net_usage_quantity</td><td>Net summed usage_quantity (in the row's usage_unit, typically DBUs) across all record_types for this combination — a DBU quantity, NOT dollars; multiply by a list rate to dollarize.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>usage_date</th><th>cloud</th><th>sku_name</th><th>billing_origin_product</th><th>is_serverless</th><th>is_photon</th><th>net_usage_quantity</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">2026-07-04</td><td class="mono">AWS</td><td class="mono">ENTERPRISE_SQL_COMPUTE_SERVERLESS_(PHOTON)</td><td class="mono">SQL</td><td class="mono">true</td><td class="mono">true</td><td class="num">1842.75</td></tr>
+          <tr><td class="mono">2026-07-04</td><td class="mono">AWS</td><td class="mono">ENTERPRISE_SQL_PRO_COMPUTE</td><td class="mono">SQL</td><td class="mono">false</td><td class="mono">false</td><td class="num">612.40</td></tr>
+          <tr><td class="mono">2026-07-04</td><td class="mono">AZURE</td><td class="mono">PREMIUM_JOBS_SERVERLESS_COMPUTE</td><td class="mono">JOBS</td><td class="mono">true</td><td class="mono">false</td><td class="num">308.10</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.billing.usage</td><td>The sole source. Provides usage_date, cloud, sku_name, billing_origin_product, the metered usage_quantity (summed to net_usage_quantity), and the product_features STRUCT whose subfields (is_serverless, is_photon, jobs_tier, sql_tier, dlt_tier, performance_target) are exploded into the group-by to isolate each cost lever.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>DBUs, not dollars: net_usage_quantity is summed usage_quantity (DBUs/units in usage_unit), never money — multiply by a list_prices rate to get the premium in dollars, and that list-rate cast is itself unverified.</li>
+        <li>product_features is sparse: is_serverless / is_photon / jobs_tier / sql_tier / dlt_tier / performance_target are NULL wherever that choice doesn't apply (e.g. performance_target is NULL for all non-serverless workloads). A NULL is 'not applicable', not 'false'.</li>
+        <li>Net across corrections: SUM(usage_quantity) spans all record_type values (ORIGINAL/RETRACTION/RESTATEMENT) — the query does not filter to ORIGINAL, so figures are already net. Do not re-net downstream.</li>
+        <li>is_photon is a struct flag; it can be cross-checked against sku_name LIKE '%(PHOTON)%', but that is a string-pattern heuristic, not authoritative.</li>
+        <li>Date window excludes today: rows span usage_date &gt;= current_date - :period_days up to but not including current_date; treat the most recent day as provisional due to billing populate lag (ingestion_date, not usage_date, is the freshness signal).</li>
+        <li>Empty != zero != error: a feature the account doesn't use yields no rows (valid empty), while a disabled/non-permissioned system table raises TABLE_OR_VIEW_NOT_FOUND — neither means $0.</li>
+        <li>Availability: requires Unity Catalog with system.billing enabled and SELECT granted; usage_quantity mixes usage_unit families (DBU vs STORAGE_SPACE vs TOKEN) — do not sum across units when interpreting.</li>
+        <li>billing_origin_product has no published closed enum; a blank value is 'unattributed', not zero. No masking or workspace-name join is present in this query (no workspace_id column is selected).</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Pick the biggest net_usage_quantity rows and compare premium against baseline variants of the same billing_origin_product: for each SKU family, contrast is_serverless=true vs false, is_photon=true vs false, and the dlt_tier / performance_target choice. Multiply the DBU delta by the SKU's list rate (join system.billing.list_prices on cloud+currency_code+usage_unit+sku_name with the point-in-time price predicate) to dollarize the serverless/Photon/tier premium, then decide whether the perf gain justifies it or whether workloads should be moved to the cheaper tier.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-lakeflow_jobs_on_all_purpose" style="--dom: var(--dom-jobs)">
+      <div class="ch-query-head">
+        <div class="ch-num">06</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Jobs &amp; Pipelines</span>
+            <span class="ch-qid">lakeflow_jobs_on_all_purpose</span>
+          </div>
+          <h2 class="ch-headline">Job Tasks On All-Purpose Compute</h2>
+          <p class="ch-oneliner">Per-job, per-cluster task-run counts over the trailing 30 days, tagged with the cluster's source so you can spot job tasks running on all-purpose (UI/API) compute instead of cheaper job clusters.</p>
+          <div class="ch-tables"><span class="chip">system.lakeflow.job_task_run_timeline</span><span class="chip">system.compute.clusters</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/jobs_pipelines/lakeflow_jobs_on_all_purpose.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/jobs_pipelines/lakeflow_jobs_on_all_purpose.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:lakeflow_jobs_on_all_purpose */
+WITH task_compute AS (
+  SELECT workspace_id, job_id, run_id, task_key, EXPLODE(compute_ids) AS compute_id
+  FROM system.lakeflow.job_task_run_timeline
+  WHERE period_start_time &gt;= date_add(current_date(), -30)
+    AND period_end_time &lt; date_trunc('DAY', current_timestamp())
+    AND result_state IS NOT NULL
+    AND compute_ids IS NOT NULL
+)
+SELECT tc.workspace_id, tc.job_id, tc.compute_id, c.cluster_source,
+       COUNT(DISTINCT tc.run_id) AS task_runs
+FROM task_compute tc
+LEFT JOIN (
+  SELECT workspace_id, cluster_id, cluster_source
+  FROM system.compute.clusters
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY workspace_id, cluster_id ORDER BY change_time DESC) = 1
+) c
+  ON tc.workspace_id = c.workspace_id AND tc.compute_id = c.cluster_id
+GROUP BY tc.workspace_id, tc.job_id, tc.compute_id, c.cluster_source</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>All-purpose (interactive) compute is billed at a materially higher DBU SKU than jobs compute for the same work, so any scheduled job task pinned to a UI- or API-created cluster is quietly overpaying every run. Grouping task-run counts by job and cluster surfaces exactly which jobs are the offenders and how often they run there, letting you prioritize migrating high-frequency jobs onto job clusters (or serverless) for a direct, recurring bill reduction. A NULL cluster_source (unmatched compute_id) is not proof of good behavior — it means the cluster could not be classified and needs manual review.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Looks at which clusters each job's tasks actually ran on, and tags every cluster with <strong>how it was created</strong>.</li>
+        <li>Flags tasks that ran on <strong>all-purpose (UI/API)</strong> clusters — billed higher than job clusters for the same work — and counts how many runs did so.</li>
+        <li>A cluster it can't classify is left as <strong>'unknown'</strong> rather than assumed fine, so you review it instead of trusting it.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">workspace_id</td><td>The workspace the job and cluster belong to. All ids below are unique only within this workspace, so always read a row as the (workspace_id, job_id, compute_id) tuple.</td></tr>
+          <tr><td class="col">job_id</td><td>The job (workflow) whose task ran on this cluster. Workspace-scoped; join back to system.lakeflow.jobs on (workspace_id, job_id) to get the job name.</td></tr>
+          <tr><td class="col">compute_id</td><td>The cluster id (one element of the task's compute_ids array) that the task executed on. Matches system.compute.clusters.cluster_id within the workspace.</td></tr>
+          <tr><td class="col">cluster_source</td><td>How the cluster was created: 'UI' or 'API' = all-purpose (the higher-cost anti-pattern to migrate); job-created sources = expected. NULL = the compute_id did not match a deduped cluster row (not assessed — investigate, do not treat as compliant).</td></tr>
+          <tr><td class="col">task_runs</td><td>COUNT(DISTINCT run_id): the number of distinct job runs whose tasks used this cluster in the window. A high value on a UI/API cluster is a frequently-repeating overspend, not a one-off.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>workspace_id</th><th>job_id</th><th>compute_id</th><th>cluster_source</th><th>task_runs</th></tr></thead>
+            <tbody>
+          <tr><td class="num">1234567890123456</td><td class="num">884422</td><td class="mono">0715-091234-ab12cd34</td><td class="mono">UI</td><td class="num">612</td></tr>
+          <tr><td class="num">1234567890123456</td><td class="num">775533</td><td class="mono">0715-090011-jobclu99</td><td class="mono">JOB</td><td class="num">1440</td></tr>
+          <tr><td class="num">9876543210987654</td><td class="num">660011</td><td class="mono">0715-084455-zz99yy88</td><td class="mono">API</td><td class="num">48</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.lakeflow.job_task_run_timeline</td><td>Primary fact: task-level execution log (hourly-sliced). Filtered to completed end rows (result_state IS NOT NULL) in the trailing 30 days, then EXPLODE(compute_ids) fans each task-state row into one row per cluster the task ran on, yielding (workspace_id, job_id, run_id, task_key, compute_id).</td></tr>
+          <tr><td class="col">system.compute.clusters</td><td>Cross-domain lookup: SCD2 cluster inventory, deduped to the latest row per (workspace_id, cluster_id) via QUALIFY ROW_NUMBER() ORDER BY change_time DESC. Supplies cluster_source (UI/API = all-purpose vs job-created) via a LEFT JOIN on (workspace_id, compute_id = cluster_id).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Anti-pattern filter is downstream: the query returns every (job, cluster) pairing; you must filter cluster_source IN ('UI','API') yourself to isolate all-purpose usage.</li>
+        <li>EXPLODE drops NULL/empty compute_ids arrays — those task runs are absent entirely, not counted as zero. Report unpopulated-compute rows as a separate 'not assessed' bucket (early-Dec-2025 compute_ids population caveat).</li>
+        <li>NULL cluster_source means the compute_id did not match a cluster row (unpopulated/aged-out compute or SCD2 gap) — 'empty != zero != error'; treat as not assessed, not as compliant.</li>
+        <li>Cross-domain join (confidence: needs_confirmation). Confirm on the target workspace that compute_ids is populated on old rows, and that cluster_source's exact name and value enum ('UI'/'API') and clusters' SCD2 behavior hold.</li>
+        <li>task_runs is a run count, not DBUs or dollars. This query carries no cost figures — quantify savings separately from system.billing.usage; DBUs are not dollars.</li>
+        <li>All join and grouping keys are workspace-scoped (workspace_id, cluster_id/compute_id and workspace_id, job_id); never match on the bare id or you fan out across workspaces.</li>
+        <li>Date window is a fixed trailing 30 days (date_add(current_date(), -30)) and excludes today (period_end_time &lt; date_trunc('DAY', ...)); it is not parameterized by :period_days here.</li>
+        <li>SCD2 dedupe on system.compute.clusters is mandatory (latest row per cluster by change_time); the query already applies it via QUALIFY. Note it does NOT additionally filter delete_time IS NULL, so a deleted-then-latest cluster row can still supply cluster_source.</li>
+        <li>Requires Unity Catalog and SELECT granted on both system.lakeflow and system.compute schemas.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Filter the output to cluster_source IN ('UI','API'), rank the resulting (workspace_id, job_id, compute_id) rows by task_runs, and migrate the highest-frequency offenders off all-purpose clusters onto job clusters or serverless; separately triage NULL cluster_source rows to confirm the compute could not be classified before assuming compliance.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-lakeflow_failed_jobs_wasted_dbus" style="--dom: var(--dom-jobs)">
+      <div class="ch-query-head">
+        <div class="ch-num">07</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Jobs &amp; Pipelines</span>
+            <span class="ch-qid">lakeflow_failed_jobs_wasted_dbus</span>
+          </div>
+          <h2 class="ch-headline">Failing Jobs Ranked by Wasted DBUs</h2>
+          <p class="ch-oneliner">One row per job that had at least one failed run in the trailing window, with its distinct/failed run counts, the latest failure's termination code, total job DBUs, and a wasted-DBU proxy (job DBUs scaled by failed-run share).</p>
+          <div class="ch-tables"><span class="chip">system.lakeflow.job_run_timeline</span><span class="chip">system.billing.usage</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/jobs_pipelines/lakeflow_failed_jobs_wasted_dbus.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/jobs_pipelines/lakeflow_failed_jobs_wasted_dbus.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:lakeflow_failed_jobs_wasted_dbus */
+WITH end_rows AS (
+  SELECT workspace_id, job_id, run_id, result_state, termination_code, period_start_time
+  FROM system.lakeflow.job_run_timeline
+  WHERE period_start_time &gt;= dateadd(day, -:period_days, current_date())
+    AND period_end_time &lt; date_trunc('DAY', current_timestamp())   -- drop incomplete current day
+    AND result_state IS NOT NULL                                   -- end row only
+),
+job_runs AS (
+  SELECT workspace_id, job_id,
+         COUNT(DISTINCT run_id) AS distinct_runs,
+         COUNT(DISTINCT CASE WHEN result_state IN ('FAILED','ERROR','TIMED_OUT')
+                             THEN run_id END) AS failed_runs
+  FROM end_rows
+  GROUP BY workspace_id, job_id
+),
+-- ARGMAX, not MAX: the termination_code of the LATEST failed run, per (workspace_id, job_id).
+-- MAX(termination_code) would pick the lexicographically-largest code, not the most recent.
+last_fail AS (
+  SELECT workspace_id, job_id, termination_code AS last_failed_termination_code
+  FROM end_rows
+  WHERE result_state IN ('FAILED','ERROR','TIMED_OUT')
+  QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY workspace_id, job_id ORDER BY period_start_time DESC
+  ) = 1
+),
+-- DBUs billed to each job over the window. usage_metadata.job_id is unique only within a
+-- workspace, so we attribute on (workspace_id, job_id). Net across ALL record_types; DBU only.
+job_dbus AS (
+  SELECT workspace_id,
+         usage_metadata.job_id AS job_id,
+         SUM(usage_quantity)   AS net_usage_quantity
+  FROM system.billing.usage
+  WHERE usage_date &gt;= dateadd(day, -:period_days, current_date())
+    AND usage_date &lt; current_date()
+    AND upper(usage_unit) = 'DBU'
+    AND usage_metadata.job_id IS NOT NULL
+  GROUP BY workspace_id, usage_metadata.job_id
+)
+SELECT r.workspace_id,
+       r.job_id,
+       r.distinct_runs,
+       r.failed_runs,
+       lf.last_failed_termination_code,
+       COALESCE(d.net_usage_quantity, 0)                                 AS net_job_dbus,
+       -- Wasted-DBU proxy: job DBUs scaled by the share of runs that failed. Honest proxy,
+       -- not exact run-level waste (usage_metadata has no run_id) — labelled as such downstream.
+       CASE WHEN r.distinct_runs &gt; 0
+            THEN COALESCE(d.net_usage_quantity, 0) * (r.failed_runs / r.distinct_runs)
+            ELSE 0 END                                                   AS wasted_dbus_proxy
+FROM job_runs r
+LEFT JOIN last_fail lf
+  ON r.workspace_id = lf.workspace_id AND r.job_id = lf.job_id
+LEFT JOIN job_dbus d
+  ON r.workspace_id = d.workspace_id AND r.job_id = d.job_id
+WHERE r.failed_runs &gt; 0</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Failing jobs still burn compute — a job that fails after 55 minutes bills the full 55 minutes of DBUs before it errors out. This query surfaces the biggest DBU-burning failing jobs so an admin can prioritize reliability fixes by dollar impact rather than by raw failure count, and pairs each with the latest failure's root-cause code to point at the fix (quota limits, cluster errors, storage access). The wasted_dbus_proxy is an honest prioritization signal, not an exact refundable amount, so it ranks remediation effort where it recovers the most compute spend.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Finds every job that had at least one <strong>failed run</strong> in the window, with its run counts and the latest failure's cause code.</li>
+        <li>Attaches the DBUs billed to each job and scales them by the failed-run share to estimate the <strong>compute burned on failures</strong>.</li>
+        <li>Ranks the waste so you fix the biggest DBU-burning failing jobs first — the estimate is a prioritisation signal, not an exact refund.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">workspace_id</td><td>The workspace the job belongs to; part of every join key because job_id is unique only within a workspace.</td></tr>
+          <tr><td class="col">job_id</td><td>The Databricks job (workflow) identifier, passed through unmasked; unique only within its workspace.</td></tr>
+          <tr><td class="col">distinct_runs</td><td>Integer count of distinct run_ids that reached an end row (result_state populated) in the window — the denominator of the failed share.</td></tr>
+          <tr><td class="col">failed_runs</td><td>Integer count of distinct run_ids whose end state was FAILED, ERROR, or TIMED_OUT. Always &gt;= 1 in this result set.</td></tr>
+          <tr><td class="col">last_failed_termination_code</td><td>The termination_code of the most recent failed run (by period_start_time), e.g. CLUSTER_ERROR or WORKSPACE_RUN_LIMIT_EXCEEDED. NULL means the code was not populated (pre-Aug-2024 or short-history) — read as 'unknown', not 'no cause'.</td></tr>
+          <tr><td class="col">net_job_dbus</td><td>Total DBUs (not dollars) billed to this job over the window, netted across all record_types and filtered to usage_unit='DBU'. COALESCE'd to 0 when no billing row matched.</td></tr>
+          <tr><td class="col">wasted_dbus_proxy</td><td>Proxy DBUs (not dollars) attributed to failed runs = net_job_dbus * (failed_runs / distinct_runs). A prioritization signal, not exact run-level waste, since billing has no run_id. Rank on this.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>workspace_id</th><th>job_id</th><th>distinct_runs</th><th>failed_runs</th><th>last_failed_termination_code</th><th>net_job_dbus</th><th>wasted_dbus_proxy</th></tr></thead>
+            <tbody>
+          <tr><td class="num">1234567890123456</td><td class="num">884422</td><td class="num">100</td><td class="num">25</td><td class="mono">CLUSTER_ERROR</td><td class="num">800</td><td class="num">200</td></tr>
+          <tr><td class="num">1234567890123456</td><td class="num">775511</td><td class="num">10</td><td class="num">10</td><td class="mono">STORAGE_ACCESS_ERROR</td><td class="num">1500</td><td class="num">1500</td></tr>
+          <tr><td class="num">9876543210987654</td><td class="num">660033</td><td class="num">48</td><td class="num">6</td><td class="mono">WORKSPACE_RUN_LIMIT_EXCEEDED</td><td class="num">1200</td><td class="num">150</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.lakeflow.job_run_timeline</td><td>Run-level execution log. Filtered to end rows (result_state IS NOT NULL) within the trailing :period_days window (excluding today) to count distinct runs and failed runs per (workspace_id, job_id), and to pick the latest failed run's termination_code via QUALIFY ROW_NUMBER.</td></tr>
+          <tr><td class="col">system.billing.usage</td><td>Metered-usage fact. Summed to net DBUs per (workspace_id, usage_metadata.job_id), filtered to usage_unit='DBU' and the same date window, to attach billed DBUs to each job. usage_metadata carries job_id but no run_id.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>wasted_dbus_proxy is a PROXY, not exact run-level waste: usage_metadata carries job_id but NO run_id, so DBUs attribute to the JOB and are scaled by failed-run share. A mostly-succeeding job over-attributes.</li>
+        <li>Units: net_job_dbus and wasted_dbus_proxy are DBUs, NOT dollars. There is no DBU-to-$ rate applied here; multiply by your negotiated SKU rate separately to estimate cost.</li>
+        <li>usage&lt;-&gt;run join is on (workspace_id, job_id), never job_id alone — job_id is unique only within a workspace, so a bare join fans out across a multi-workspace metastore.</li>
+        <li>usage_quantity is SUM'd across all record_types (ORIGINAL/RETRACTION/RESTATEMENT already net) and filtered to usage_unit='DBU' so bytes/hours/tokens never blend in.</li>
+        <li>last_failed_termination_code is the ARGMAX by period_start_time (latest failed run's code), not MAX() which would be lexicographically wrong. It may be NULL: termination_code was not populated before ~Aug-2024 and several run columns not before late-Nov-2025 — historical NULLs are 'unknown', never a finding.</li>
+        <li>Only end rows count: result_state IS NOT NULL isolates the final slice of hourly-sliced long runs; failure set is result_state IN ('FAILED','ERROR','TIMED_OUT') only (SKIPPED/CANCELLED/BLOCKED excluded).</li>
+        <li>Date window is trailing :period_days and excludes today: run timeline uses period_end_time &lt; date_trunc('DAY', current_timestamp()) and billing uses usage_date &lt; current_date() so the partial current day never skews totals.</li>
+        <li>Empty != zero != error: an account that runs no jobs returns an empty-but-valid result. All reads need Unity Catalog and SELECT granted on system.lakeflow and system.billing. confidence: needs_confirmation.</li>
+        <li>net_job_dbus is COALESCE'd to 0 when a failing job has no matching billing row, so wasted_dbus_proxy is 0 there — absence of billed DBUs, not zero waste.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Rank the returned jobs by wasted_dbus_proxy, open the top few in the Jobs UI, and use last_failed_termination_code to drive the fix (raise concurrency/queue limits for quota codes, fix compute/storage config for CLUSTER_ERROR/STORAGE_ACCESS_ERROR); target the biggest DBU-burning failing jobs first, treating the proxy as a prioritization signal not an exact billed refund.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-compute_warehouse_idle_gaps" style="--dom: var(--dom-compute)">
+      <div class="ch-query-head">
+        <div class="ch-num">08</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Compute</span>
+            <span class="ch-qid">compute_warehouse_idle_gaps</span>
+          </div>
+          <h2 class="ch-headline">Warehouse Idle-Tail Seconds</h2>
+          <p class="ch-oneliner">Per SQL warehouse, the total seconds spent RUNNING (the auto-stop idle tail), STARTING (cold-start tax) and STOPPED, the worst single RUNNING gap, and event counts by state — all derived from state-transition events over the trailing :period_days window.</p>
+          <div class="ch-tables"><span class="chip">system.compute.warehouse_events</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/compute/compute_warehouse_idle_gaps.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/compute/compute_warehouse_idle_gaps.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:compute_warehouse_idle_gaps */
+WITH ordered AS (
+    SELECT
+        warehouse_id,
+        event_type,
+        event_time,
+        LEAD(event_time) OVER (PARTITION BY warehouse_id ORDER BY event_time) AS next_event_time
+    FROM system.compute.warehouse_events
+    WHERE event_time &gt;= current_timestamp() - INTERVAL :period_days DAYS
+),
+gaps AS (
+    SELECT
+        warehouse_id,
+        event_type,
+        -- gap (seconds) this warehouse spent in `event_type` until its NEXT event.
+        -- The last event per warehouse has next_event_time = NULL -&gt; gap NULL (open, excluded).
+        CASE
+            WHEN next_event_time IS NULL THEN NULL
+            ELSE unix_timestamp(next_event_time) - unix_timestamp(event_time)
+        END AS gap_seconds
+    FROM ordered
+)
+SELECT
+    warehouse_id,
+    COUNT(*)                                                                       AS event_count,
+    -- seconds the warehouse held RUNNING before the next event (the auto-stop idle tail lives here)
+    SUM(CASE WHEN event_type = 'RUNNING'  AND gap_seconds IS NOT NULL THEN gap_seconds ELSE 0 END) AS running_seconds,
+    -- seconds spent STARTING (cold-start tax) and STOPPED (suspended, not billing compute)
+    SUM(CASE WHEN event_type = 'STARTING' AND gap_seconds IS NOT NULL THEN gap_seconds ELSE 0 END) AS starting_seconds,
+    SUM(CASE WHEN event_type = 'STOPPED'  AND gap_seconds IS NOT NULL THEN gap_seconds ELSE 0 END) AS stopped_seconds,
+    -- longest single RUNNING gap = the worst observed idle tail before a stop/next event
+    MAX(CASE WHEN event_type = 'RUNNING'  AND gap_seconds IS NOT NULL THEN gap_seconds END)         AS max_running_gap_seconds,
+    SUM(CASE WHEN event_type = 'RUNNING'  THEN 1 ELSE 0 END)                        AS running_events,
+    SUM(CASE WHEN event_type = 'STARTING' THEN 1 ELSE 0 END)                        AS starting_events,
+    SUM(CASE WHEN event_type = 'STOPPED'  THEN 1 ELSE 0 END)                        AS stopped_events
+FROM gaps
+GROUP BY warehouse_id</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>A SQL warehouse keeps billing compute for the entire stretch it sits RUNNING-but-idle before auto_stop_minutes finally suspends it — that idle tail is pure waste, repeated every time the warehouse goes quiet. This query quantifies exactly how many seconds each warehouse spent in that RUNNING tail and exposes the single worst gap, so an admin can prove a warehouse's auto_stop_minutes is set too high. It also separates STARTING seconds (the cold-start tax you pay for aggressive auto-stop) so the trade-off is visible, not guessed. The numbers are seconds and event counts only; the dollar impact appears after joining warehouse DBU usage from the billing domain.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>For each SQL warehouse, measures how long it sat <strong>RUNNING-but-idle</strong> before auto-stop finally suspended it — the idle tail you keep paying for.</li>
+        <li>Also separates cold-start (STARTING) time and time correctly STOPPED, and flags the single <strong>worst idle stretch</strong>.</li>
+        <li>Everything is in seconds and event counts, not dollars — pair it with billing to price the waste, then lower <code>auto_stop_minutes</code> on the offenders.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">warehouse_id</td><td>UUID of the SQL warehouse (passed through, unmasked). Join key back to system.compute.warehouses / sql_warehouse_config_current to recover name, size and auto_stop_minutes.</td></tr>
+          <tr><td class="col">event_count</td><td>Total state-transition events for this warehouse within the :period_days window, including the final event whose forward gap is NULL. A coarse activity/churn indicator, not a gap count.</td></tr>
+          <tr><td class="col">running_seconds</td><td>Total seconds the warehouse held the RUNNING state before its next event — the auto-stop idle tail lives here. Higher = more RUNNING-but-idle time to reclaim by lowering auto_stop_minutes. Seconds, not dollars.</td></tr>
+          <tr><td class="col">starting_seconds</td><td>Total seconds spent STARTING (cold-start / spin-up tax). Rises as auto-stop is made more aggressive — the counterweight to cutting running_seconds. Seconds.</td></tr>
+          <tr><td class="col">stopped_seconds</td><td>Total seconds the warehouse sat STOPPED (suspended, not billing compute). Large values are healthy — the warehouse was correctly off. Seconds.</td></tr>
+          <tr><td class="col">max_running_gap_seconds</td><td>The single longest RUNNING gap observed — the worst idle tail before a stop/next event. Compare against configured auto_stop_minutes*60: a value far exceeding it signals mis-config or keep-warm trickle queries. NULL if the warehouse had no non-NULL RUNNING gap.</td></tr>
+          <tr><td class="col">running_events</td><td>Count of RUNNING events in the window (each RUNNING transition, whether or not its gap was NULL). Denominator context for running_seconds.</td></tr>
+          <tr><td class="col">starting_events</td><td>Count of STARTING events — how many times the warehouse cold-started in the window.</td></tr>
+          <tr><td class="col">stopped_events</td><td>Count of STOPPED events — how many times the warehouse suspended in the window.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>warehouse_id</th><th>event_count</th><th>running_seconds</th><th>starting_seconds</th><th>stopped_seconds</th><th>max_running_gap_seconds</th><th>running_events</th><th>stopped_events</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">a1b2c3d4-0000-4a5b-8c6d-1e2f3a4b5c6d</td><td class="num">14</td><td class="num">5400</td><td class="num">240</td><td class="num">78000</td><td class="num">1800</td><td class="num">6</td><td class="num">3</td></tr>
+          <tr><td class="mono">f9e8d7c6-1111-4b2a-9d3e-2f1a0b9c8d7e</td><td class="num">4</td><td class="num">0</td><td class="num">60</td><td class="num">259200</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="num">0</td><td class="num">1</td></tr>
+          <tr><td class="mono">7c6b5a4d-2222-4c3b-8e4f-3a2b1c0d9e8f</td><td class="num">22</td><td class="num">900</td><td class="num">900</td><td class="num">5400</td><td class="num">300</td><td class="num">9</td><td class="num">9</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.compute.warehouse_events</td><td>Sole source. State-transition event log for SQL warehouses (one row per event, keyed by warehouse_id / event_type / event_time). The query orders all events per warehouse by event_time, uses LEAD(event_time) to find each event's next event, computes the gap in seconds the warehouse held that state, then rolls the gaps up per warehouse. Carries no DBU/$ — behavioral only.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>DBUs-are-not-dollars does not even apply here: system.compute.warehouse_events carries NO DBU and NO cost. Every output is in seconds or event counts — behavioral signal only. Dollarizing an idle tail needs a separate join to system.billing.usage / list prices (billing domain).</li>
+        <li>Date window: only events with event_time &gt;= current_timestamp() - INTERVAL :period_days DAYS are scanned. warehouse_events retention is limited; the query assumes events exist in the window. A shorter observed history means smaller *_seconds, not a quieter warehouse.</li>
+        <li>Open trailing interval: the LAST event per warehouse has next_event_time = NULL, so its gap is NULL and is EXCLUDED from every SUM/MAX (never assumed zero, never 'still running forever'). event_count still counts that final event, so event_count can exceed the number of gaps that fed the seconds totals.</li>
+        <li>Gap is attributed to the state that OPENED it, computed with LEAD(event_time) over ALL events for the warehouse ordered by event_time — NOT after filtering to one event_type. This measures a true RUNNING-&gt;STOPPED idle tail, not the spacing between RUNNING events.</li>
+        <li>Enum discipline: only the authoritative 6-value enum (SCALED_UP, SCALED_DOWN, STOPPING, RUNNING, STARTING, STOPPED) is trusted; undocumented SCALING_UP/SCALING_DOWN are ignored. Only RUNNING, STARTING and STOPPED gaps are summed — SCALED_UP/SCALED_DOWN/STOPPING gap seconds are not surfaced as their own columns.</li>
+        <li>empty != zero != error: an empty result means no warehouse events in the window (or SQL warehouses simply not used), not idle-free warehouses. A warehouse with activity but zero RUNNING events legitimately shows running_seconds=0 / running_events=0 / max_running_gap_seconds=NULL.</li>
+        <li>Must-not-do: per-event query activity is deliberately NOT joined here — that join fans out at day grain and overstates query counts. This query is event-only (note: the warehouse-idle finding PAGE separately LEFT JOINs the full warehouse list to surface unused warehouses, but this specific query does NOT — an unused warehouse with no events simply produces no row).</li>
+        <li>Availability: system.compute.warehouse_events is GA but requires Unity Catalog, the compute schema enabled on the metastore, and SELECT on system.*. Tables are regional — run per metastore region and union if needed.</li>
+        <li>No masking in this query: warehouse_id is a UUID passed through as-is (no warehouse_name is selected, so no name truncation applies).</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Rank warehouses by running_seconds and max_running_gap_seconds; for the worst offenders, cross-check auto_stop_minutes in sql_warehouse_config_current and lower it so warehouses suspend sooner, cutting idle-tail waste. A warehouse showing max_running_gap_seconds far larger than its configured auto_stop_minutes*60 is either mis-configured or being kept warm by trickle queries — investigate before tuning.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-query_costly_statements" style="--dom: var(--dom-performance)">
+      <div class="ch-query-head">
+        <div class="ch-num">09</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Query Performance</span>
+            <span class="ch-qid">query_costly_statements</span>
+          </div>
+          <h2 class="ch-headline">Your Heaviest Statements, Ranked</h2>
+          <p class="ch-oneliner">The top 1000 finished, non-cached SQL statements in the trailing window, ranked by execution time (a DBU-cost proxy), each carrying pruning, spill, shuffle, and scan counters plus a de-valued query text to diagnose the fix.</p>
+          <div class="ch-tables"><span class="chip">system.query.history</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/performance/query_costly_statements.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/performance/query_costly_statements.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:query_costly_statements */
+SELECT
+  workspace_id,
+  statement_id,
+  statement_type,
+  -- executed_by: partial-unmask (house style) — keep an email as da****@****, keep a service-principal
+  -- GUID as-is (opaque handle), else first-2-chars + ****. No raw username/email reaches the CSV.
+  CASE
+    WHEN executed_by IS NULL OR executed_by = '__REDACTED__' THEN executed_by
+    WHEN executed_by LIKE '%@%' THEN concat(substr(executed_by, 1, 2), '****@****')
+    WHEN executed_by RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN executed_by
+    ELSE concat(substr(executed_by, 1, 2), '****')
+  END                                    AS executed_by,
+  compute.warehouse_id                   AS warehouse_id,
+  compute.type                           AS compute_type,
+  start_time,
+  execution_duration_ms,
+  waiting_for_compute_duration_ms,
+  total_task_duration_ms,
+  read_bytes,
+  read_files,
+  pruned_files,
+  read_partitions,
+  read_rows,
+  produced_rows,
+  spilled_local_bytes,
+  shuffle_read_bytes,
+  from_result_cache,
+  -- statement_text de-valued at source: strip emails, then replace every single-quoted string literal
+  -- with '?' (chr(39) is the single quote, avoiding SQL-string escaping). Keeps the query shape
+  -- (table/column identifiers, structure) while removing literal data values.
+  regexp_replace(
+    regexp_replace(statement_text, '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}', '&lt;email&gt;'),
+    concat(chr(39), '[^', chr(39), ']*', chr(39)), '?'
+  )                                      AS statement_text
+FROM system.query.history
+WHERE start_time &gt;= dateadd(day, -:period_days, current_date())
+  AND start_time &lt;  current_date()
+  AND execution_status = 'FINISHED'
+  AND from_result_cache = false
+  AND execution_duration_ms &gt; 0
+ORDER BY execution_duration_ms DESC
+LIMIT 1000</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>This is the single best 'what to tune first' worklist: Databricks exposes no per-query dollar column, so ranking by execution_duration_ms is the closest proxy for DBU spend, and the top of this list is where money is actually burning. The attached counters tell you the fix rather than just the symptom: poor pruning (full scans) points at partitioning/clustering, spilled_local_bytes points at an undersized warehouse or memory-heavy rewrite, and large shuffle_read_bytes flags a bad join. Fixing the handful of statements at the top typically moves the warehouse's bill more than any autoscaling knob.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Lists your <strong>heaviest finished SQL statements</strong>, ranked by execution time — the closest proxy Databricks gives for per-query cost.</li>
+        <li>Attaches the diagnostic counters for each — pruning, spill, shuffle, scan volume — so you can see <strong>why</strong> it's heavy, not just that it is.</li>
+        <li>Strips data values out of the query text (emails and literals), leaving only the query <strong>shape</strong>, so nothing sensitive leaves the workspace.</li>
+        <li>Caps at the top 1000 by time, so a light-but-frequent query won't necessarily appear here.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">workspace_id</td><td>The workspace that ran the statement; per-region scope, so attribute cost only within this workspace/region.</td></tr>
+          <tr><td class="col">statement_id</td><td>Unique id of this statement execution; the row grain and the handle to look the query up in Query History.</td></tr>
+          <tr><td class="col">statement_type</td><td>SELECT / INSERT / MERGE / UPDATE / etc.; tells you whether the heavy work is a read or a write.</td></tr>
+          <tr><td class="col">executed_by</td><td>The principal who ran it, partial-masked (email as da****@****, service-principal GUID passed through as an opaque handle; NULL / '__REDACTED__' passed through unchanged); identifies the owner to talk to about a fix.</td></tr>
+          <tr><td class="col">warehouse_id</td><td>The SQL warehouse that ran it (from compute.warehouse_id); NULL means serverless (which attributes cost differently).</td></tr>
+          <tr><td class="col">compute_type</td><td>The compute.type (e.g. warehouse vs serverless); context for the warehouse_id NULLs.</td></tr>
+          <tr><td class="col">start_time</td><td>When the statement started; the only date-window basis and useful for correlating with billing hours.</td></tr>
+          <tr><td class="col">execution_duration_ms</td><td>Pure execution time in milliseconds; the cost proxy and the sort key, higher ~= more DBUs consumed.</td></tr>
+          <tr><td class="col">waiting_for_compute_duration_ms</td><td>Milliseconds spent waiting for compute to provision (cold-start / warehouse spin-up), not execution.</td></tr>
+          <tr><td class="col">total_task_duration_ms</td><td>Summed task (CPU) time across the cluster in ms; a parallelism / compute-intensity signal.</td></tr>
+          <tr><td class="col">read_bytes</td><td>Bytes scanned from storage; raw scan volume.</td></tr>
+          <tr><td class="col">read_files</td><td>Files actually read (post-pruning); denominator alongside pruned_files for pruning effectiveness.</td></tr>
+          <tr><td class="col">pruned_files</td><td>Files skipped by data/file pruning; effectiveness = pruned_files / (pruned_files + read_files), low = full scans.</td></tr>
+          <tr><td class="col">read_partitions</td><td>Partitions read after pruning (a post-pruning count, NOT partitions pruned).</td></tr>
+          <tr><td class="col">read_rows</td><td>Rows scanned from source, distinct from rows returned.</td></tr>
+          <tr><td class="col">produced_rows</td><td>Rows returned to the client; a huge read_rows with tiny produced_rows suggests scan amplification / weak filtering.</td></tr>
+          <tr><td class="col">spilled_local_bytes</td><td>Bytes spilled to local disk (memory pressure); non-zero means the statement needs a bigger warehouse or a rewrite. Local spill only, no remote-spill column exists. Renamed disk_bytes_spilled downstream.</td></tr>
+          <tr><td class="col">shuffle_read_bytes</td><td>Shuffle volume; large values flag a bad or exploding join.</td></tr>
+          <tr><td class="col">from_result_cache</td><td>Whether it was served from the result cache; always false here (filtered out), shown for completeness.</td></tr>
+          <tr><td class="col">statement_text</td><td>The de-valued SQL: emails replaced with &lt;email&gt; and single-quoted literals replaced with '?', so you see query shape/identifiers but never literal data values.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>statement_id</th><th>statement_type</th><th>executed_by</th><th>warehouse_id</th><th>execution_duration_ms</th><th>read_files</th><th>pruned_files</th><th>spilled_local_bytes</th><th>shuffle_read_bytes</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">01ef9a2b-3c4d-4e5f-8a9b-0c1d2e3f4a5b</td><td class="mono">SELECT</td><td class="mono">da****@****</td><td class="mono">a1b2c3d4e5f60789</td><td class="num">742000</td><td class="num">18400</td><td class="num">210</td><td class="num">0</td><td class="num">5368709120</td></tr>
+          <tr><td class="mono">01ef9a2b-7d8e-4f01-9a2b-3c4d5e6f7081</td><td class="mono">MERGE</td><td class="mono">01234567-89ab-cdef-0123-456789abcdef</td><td class="mono">a1b2c3d4e5f60789</td><td class="num">518000</td><td class="num">9600</td><td class="num">95</td><td class="num">4294967296</td><td class="num">1073741824</td></tr>
+          <tr><td class="mono">01ef9a2b-aa11-4b22-8c33-4d55e66f7788</td><td class="mono">SELECT</td><td class="mono">jo****</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="num">305000</td><td class="num">540</td><td class="num">23100</td><td class="num">0</td><td class="num">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.query.history</td><td>Sole source. One row per completed statement execution across SQL warehouses and serverless; this query keeps that native per-statement grain (no GROUP BY), reads the compute struct for warehouse_id and compute type, and emits the per-statement performance/I/O counters directly.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Cost is a proxy, not a fact: there is NO per-query DBU or dollar column. execution_duration_ms only approximates cost because warehouse DBUs are allocated ~proportionally to it; true dollars are estimated downstream against system.billing.usage.</li>
+        <li>Preview / availability gating: needs Unity Catalog and SELECT on system.query.history; the query schema may need per-metastore enablement and has been in Preview, an undisabled/unqueryable schema throws TABLE_OR_VIEW_NOT_FOUND.</li>
+        <li>Compute coverage: captures SQL warehouses and serverless only. Classic / all-purpose (interactive) cluster statements are NOT recorded, so a missing heavy job may just have run on classic compute (and its spill/shuffle/pruning signals are simply absent).</li>
+        <li>Empty != zero != error: a workspace with no matching non-cached finished activity returns zero rows, which is valid, not a failure.</li>
+        <li>Serverless rows carry warehouse_id = NULL and attribute cost differently, do not treat NULL as a warehouse.</li>
+        <li>read_partitions is a post-pruning count (partitions read), not partitions pruned; pruning effectiveness must be computed from pruned_files vs read_files.</li>
+        <li>spilled_local_bytes is local spill only, there is no remote-spill column in Databricks; it is renamed disk_bytes_spilled by the downstream collector.</li>
+        <li>Masking: executed_by is partial-masked in output (emails as da****@****, GUIDs kept as opaque handles), with NULL / '__REDACTED__' passed through unchanged; statement_text is de-valued (emails -&gt; &lt;email&gt;, single-quoted literals -&gt; '?'), and the --share build truncates statement_text entirely, so only query shape leaves the workspace.</li>
+        <li>Date window is trailing :period_days and excludes today (start_time &lt; current_date()), avoiding the partial current day and ingest latency; the most recent minutes of in-flight runs may not appear yet.</li>
+        <li>Workspace/region scope: workspace_id and history are per-region; attribute cost only within this workspace and region.</li>
+        <li>LIMIT 1000 means only the top slice by execution time is returned; a lighter-but-frequent statement can dominate spend in aggregate yet never appear here.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Start at the top of the list and triage each heavy statement by its signal: poor pruned_files/read_files ratio -&gt; add or fix partitioning / liquid clustering / Z-order; non-zero spilled_local_bytes -&gt; size up the warehouse or rewrite the memory-heavy step; large shuffle_read_bytes -&gt; fix the join. Use statement_id to open the full plan in Query History and loop in the masked executed_by owner.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_runas_escalation" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">10</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_runas_escalation</span>
+          </div>
+          <h2 class="ch-headline">Run-As Privilege Escalation Watch</h2>
+          <p class="ch-oneliner">A 30-day rollup of audited actions where the initiating principal (run_by) differs from the identity the action executed as (run_as), aggregated per service, action, and masked identity pair with event counts and first/last timestamps.</p>
+          <div class="ch-tables"><span class="chip">system.access.audit</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_runas_escalation.sql</span>
+          <span class="spacer"></span>
+          <a href="../queries/governance_access/access_runas_escalation.sql">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_runas_escalation */
+SELECT service_name, action_name,
+       CASE
+         WHEN identity_metadata.run_by IS NULL OR identity_metadata.run_by = '__REDACTED__' THEN identity_metadata.run_by
+         WHEN identity_metadata.run_by LIKE '%@%' THEN concat(substr(identity_metadata.run_by, 1, 2), '****@****')
+         WHEN identity_metadata.run_by RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN identity_metadata.run_by
+         ELSE concat(substr(identity_metadata.run_by, 1, 2), '****')
+       END AS run_by,
+       CASE
+         WHEN identity_metadata.run_as IS NULL OR identity_metadata.run_as = '__REDACTED__' THEN identity_metadata.run_as
+         WHEN identity_metadata.run_as LIKE '%@%' THEN concat(substr(identity_metadata.run_as, 1, 2), '****@****')
+         WHEN identity_metadata.run_as RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN identity_metadata.run_as
+         ELSE concat(substr(identity_metadata.run_as, 1, 2), '****')
+       END AS run_as,
+       COUNT(*) AS event_count,
+       MIN(event_time) AS first_event_time, MAX(event_time) AS last_event_time
+FROM system.access.audit
+WHERE identity_metadata.run_by IS NOT NULL
+  AND identity_metadata.run_as IS NOT NULL
+  AND identity_metadata.run_by &lt;&gt; identity_metadata.run_as
+  AND event_date &gt;= current_date() - INTERVAL 30 DAYS
+  AND event_date &lt; current_date()
+GROUP BY 1, 2, identity_metadata.run_by, identity_metadata.run_as</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Run-as escalation is the audit fingerprint of one principal executing under another identity's authority — the exact move behind privilege abuse, lateral movement, or a compromised service principal quietly acting as a human owner. Surfacing every run_by &lt;&gt; run_as pair with counts and recency lets an admin separate legitimate job/service-principal execution from unauthorized impersonation before it turns into data exfiltration or unreviewed permission changes. Because the signal is genuinely sparse (identity_metadata is usually NULL for ordinary actions), each row that does appear is worth an explicit look, and an empty result must be verified rather than trusted as clean.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Surfaces every audited action where the identity that <strong>triggered</strong> it differs from the identity it <strong>ran as</strong> — the fingerprint of run-as escalation.</li>
+        <li>Rolls each run-by → run-as pair up with how many times it happened and when it was first and last seen.</li>
+        <li>Masks the identities, and — because the signal is naturally rare — treats an empty result as <strong>'check the audit log is on'</strong>, not 'all clear'.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">service_name</td><td>The audit service that logged the events (e.g. unityCatalog, jobs, accountsAccessControl). Grouping dimension; tells you which surface the run-as activity occurred on.</td></tr>
+          <tr><td class="col">action_name</td><td>The specific operation performed. Treat as a free-form label grouped, not a filtered enum; the same run_by/run_as pair may span multiple actions.</td></tr>
+          <tr><td class="col">run_by</td><td>The principal that actually initiated the action, masked (email -&gt; first-2-chars + '****@****' e.g. 'da****@****'; other name -&gt; first-2-chars + '****' e.g. 'op****'; UUID / '__REDACTED__' passed through unchanged). This is the 'who triggered it'.</td></tr>
+          <tr><td class="col">run_as</td><td>The identity the action executed AS, masked by the same CASE logic as run_by. run_by &lt;&gt; run_as by construction (WHERE clause), so this row always represents one identity acting as another.</td></tr>
+          <tr><td class="col">event_count</td><td>COUNT(*) of audited events for this (service, action, run_by, run_as) combination in the window. Higher = more repeated escalation activity; a single one-off may be routine, a sustained high count warrants a look.</td></tr>
+          <tr><td class="col">first_event_time</td><td>MIN(event_time) for this pair in the window. Shows when the run-as relationship first appeared.</td></tr>
+          <tr><td class="col">last_event_time</td><td>MAX(event_time) for this pair. Recency signal; a last_event_time near the window end means the pattern is still active.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>service_name</th><th>action_name</th><th>run_by</th><th>run_as</th><th>event_count</th><th>first_event_time</th><th>last_event_time</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">jobs</td><td class="mono">runNow</td><td class="mono">da****@****</td><td class="mono">sv****@****</td><td class="num">42</td><td class="mono">2026-06-08 02:15:03</td><td class="mono">2026-07-05 02:15:11</td></tr>
+          <tr><td class="mono">unityCatalog</td><td class="mono">getTable</td><td class="mono">ad****@****</td><td class="mono">a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d</td><td class="num">7</td><td class="mono">2026-06-19 14:02:44</td><td class="mono">2026-07-04 09:31:20</td></tr>
+          <tr><td class="mono">accountsAccessControl</td><td class="mono">updatePermissions</td><td class="mono">op****</td><td class="mono">__REDACTED__</td><td class="num">1</td><td class="mono">2026-06-28 11:47:02</td><td class="mono">2026-06-28 11:47:02</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.access.audit</td><td>Sole source. The UC/account audit log is read for every event whose identity_metadata.run_by and run_as are both non-NULL and differ; service_name, action_name, event_time, event_date and the identity_metadata struct supply all grouping, masking, filtering, and timestamp fields.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Preview table: system.access.audit requires UC + system-table sharing enabled on the metastore and SELECT on system.access; TABLE_OR_VIEW_NOT_FOUND means not provisioned, not clean.</li>
+        <li>identity_metadata.run_by / run_as are commonly NULL for ordinary single-user actions, so this query is SPARSE by design across many accounts.</li>
+        <li>Empty != no escalation: if zero rows return, degrade to 'not assessed' and confirm the audit table is populated before treating it as an all-clear.</li>
+        <li>Date window is a fixed trailing 30 days via event_date, and event_date &lt; current_date() EXCLUDES today (only complete prior days are counted).</li>
+        <li>Identity masking is applied: emails become first-2-chars + '****@****' (e.g. 'da****@****'), other names become first-2-chars + '****' (e.g. 'op****'), while UUIDs and '__REDACTED__' pass through unchanged; downstream you cannot recover the raw identity from the output alone.</li>
+        <li>~15-minute ingest lag on audit; recent events may not yet appear (mitigated here since today is excluded).</li>
+        <li>action_name values are representative, not an exhaustive enum, and GROUP BY expands rows per (service, action) pair, so one escalating identity pair can appear on several rows.</li>
+        <li>Widen the 30-day window only as far as your workspace-configured system.access.* retention allows.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Triage each masked run_by → run_as pair: confirm the run_by principal is authorized to execute as the run_as identity (expected for job/service-principal ownership) and investigate any pair that is not — starting with the highest event_count and most recent last_event_time. Because the signal is sparse, if zero rows return, verify the audit table is actually populated before concluding "no escalation."
         </div>
       </div>
     </section>

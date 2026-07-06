@@ -1,5 +1,7 @@
 # Cost & Billing
 
+> 📖 **Guided HTML tour:** [`docs/index.html`](../../docs/index.html) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`cost_dollarized_by_sku_day`](../../docs/index.html#q-cost_dollarized_by_sku_day), [`cost_by_job`](../../docs/index.html#q-cost_by_job), [`cost_actual_vs_list_by_sku`](../../docs/index.html#q-cost_actual_vs_list_by_sku), [`cost_chargeback_by_tag`](../../docs/index.html#q-cost_chargeback_by_tag), [`cost_premium_serverless_photon`](../../docs/index.html#q-cost_premium_serverless_photon). *(Phase 1 = top 10; more in phases.)*
+
 This domain answers the core FinOps question for a Databricks account: **where does the money go, and can we trust the number?** It reads the `system.billing.*` price and usage tables to break spend down by SKU, product line, workspace, compute resource, job, notebook, serving endpoint, identity, and tag; to convert raw DBU consumption into list and negotiated dollars; and to prove that billing corrections do not double-count. It also reaches into `system.access.workspaces_latest` for a workspace-id → name lookup so every per-workspace cut reads as `dev / uat / prod` instead of an opaque numeric id.
 
 Every query is **copy-paste SQL** run in a Databricks SQL warehouse. They take a single bind parameter `:period_days` (the trailing look-back window in days). Nothing here writes; nothing depends on a dashboard or app.
