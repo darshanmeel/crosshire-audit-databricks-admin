@@ -1,0 +1,396 @@
+{
+  "cost": [
+    {
+      "query": "cost_account_prices_raw",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_actual_vs_list_by_sku",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_by_billing_origin_product",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_by_compute_resource",
+      "tier": "lite"
+    },
+    {
+      "query": "cost_by_job",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_by_notebook",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_by_serving_endpoint",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_chargeback_by_identity",
+      "tier": "lite"
+    },
+    {
+      "query": "cost_chargeback_by_tag",
+      "tier": "lite"
+    },
+    {
+      "query": "cost_cloud_infra",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_dbsql_allocation_gap",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_default_storage_dsu",
+      "tier": "deep"
+    },
+    {
+      "query": "cost_dollarized_by_sku_day",
+      "tier": "lite"
+    },
+    {
+      "query": "cost_genai_token_gpu",
+      "tier": "lite"
+    },
+    {
+      "query": "cost_networking_egress",
+      "tier": "lite"
+    },
+    {
+      "query": "cost_premium_serverless_photon",
+      "tier": "lite"
+    },
+    {
+      "query": "cost_restatement_trust_metric",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_serving_mode_by_endpoint",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_totals_by_sku_day",
+      "tier": "lite"
+    },
+    {
+      "query": "cost_usage_policy_coverage",
+      "tier": "lite"
+    },
+    {
+      "query": "cost_vector_search_spend",
+      "tier": "standard"
+    },
+    {
+      "query": "cost_workspace_names",
+      "tier": "lite"
+    },
+    {
+      "query": "pricing_list_prices_raw",
+      "tier": "lite"
+    }
+  ],
+  "performance": [
+    {
+      "query": "audit_self_cost",
+      "tier": "lite"
+    },
+    {
+      "query": "query_cache_coldstart",
+      "tier": "standard"
+    },
+    {
+      "query": "query_costly_statements",
+      "tier": "standard"
+    },
+    {
+      "query": "query_failed_queries_daily",
+      "tier": "lite"
+    },
+    {
+      "query": "query_local_spillage",
+      "tier": "standard"
+    },
+    {
+      "query": "query_per_query_estimate_lane",
+      "tier": "deep"
+    },
+    {
+      "query": "query_provenance_by_source",
+      "tier": "lite"
+    },
+    {
+      "query": "query_pruning_effectiveness",
+      "tier": "standard"
+    },
+    {
+      "query": "query_queuing_waits",
+      "tier": "standard"
+    },
+    {
+      "query": "query_shuffle_write_amplification",
+      "tier": "deep"
+    },
+    {
+      "query": "query_workload_mix_hours",
+      "tier": "lite"
+    }
+  ],
+  "compute": [
+    {
+      "query": "classic_clusters_config_current",
+      "tier": "lite"
+    },
+    {
+      "query": "compute_idle_node_ratio",
+      "tier": "standard"
+    },
+    {
+      "query": "compute_warehouse_autoscale_churn",
+      "tier": "standard"
+    },
+    {
+      "query": "compute_warehouse_idle_gaps",
+      "tier": "standard"
+    },
+    {
+      "query": "instance_events_idle_active",
+      "tier": "lite"
+    },
+    {
+      "query": "instance_pools_idle_capacity",
+      "tier": "lite"
+    },
+    {
+      "query": "node_timeline_utilization",
+      "tier": "lite"
+    },
+    {
+      "query": "node_types_reference",
+      "tier": "lite"
+    },
+    {
+      "query": "sql_warehouse_config_current",
+      "tier": "lite"
+    },
+    {
+      "query": "sql_warehouse_events_activity",
+      "tier": "lite"
+    }
+  ],
+  "jobs_pipelines": [
+    {
+      "query": "lakeflow_failed_jobs_wasted_dbus",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_failed_runs",
+      "tier": "lite"
+    },
+    {
+      "query": "lakeflow_health_rule_coverage",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_job_ownership_orphans",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_job_queue_time",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_job_tasks_no_timeout",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_jobs_no_timeout",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_jobs_on_all_purpose",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_never_started_runs",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_phase_cold_start",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_pipeline_cost",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_pipeline_idle_tail_duration",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_pipeline_update_failures_retries",
+      "tier": "lite"
+    },
+    {
+      "query": "lakeflow_pipelines_inventory_tier",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_retries_repairs",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_stale_zombie_jobs",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_succeeded_with_failed_tasks",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_tasks_near_timeout",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_termination_taxonomy",
+      "tier": "lite"
+    },
+    {
+      "query": "lakeflow_termination_type_probe",
+      "tier": "standard"
+    },
+    {
+      "query": "lakeflow_workload_mix_hours",
+      "tier": "lite"
+    }
+  ],
+  "serving_ai": [
+    {
+      "query": "compute_ai_gateway_usage",
+      "tier": "standard"
+    },
+    {
+      "query": "compute_serving_dormant_endpoints",
+      "tier": "standard"
+    },
+    {
+      "query": "compute_serving_endpoint_usage",
+      "tier": "standard"
+    },
+    {
+      "query": "serving_endpoint_traffic_by_endpoint",
+      "tier": "standard"
+    }
+  ],
+  "storage": [
+    {
+      "query": "iceberg_uniform_metadata",
+      "tier": "deep"
+    },
+    {
+      "query": "po_clustering_activity",
+      "tier": "standard"
+    },
+    {
+      "query": "po_clustering_column_churn",
+      "tier": "deep"
+    },
+    {
+      "query": "po_data_skipping_backfill",
+      "tier": "deep"
+    },
+    {
+      "query": "po_maintenance_cost_by_table",
+      "tier": "standard"
+    },
+    {
+      "query": "po_vacuum_reclaimed_bytes",
+      "tier": "standard"
+    },
+    {
+      "query": "storage_breakdown_analyze",
+      "tier": "deep"
+    },
+    {
+      "query": "table_inventory_type",
+      "tier": "deep"
+    },
+    {
+      "query": "table_props_time_travel_config",
+      "tier": "standard"
+    }
+  ],
+  "governance_access": [
+    {
+      "query": "access_admin_role_change_events",
+      "tier": "standard"
+    },
+    {
+      "query": "access_classified_unmasked",
+      "tier": "standard"
+    },
+    {
+      "query": "access_column_lineage_sensitive_reach",
+      "tier": "deep"
+    },
+    {
+      "query": "access_column_masks_inventory",
+      "tier": "standard"
+    },
+    {
+      "query": "access_data_classification_inventory",
+      "tier": "standard"
+    },
+    {
+      "query": "access_dead_table_candidates",
+      "tier": "standard"
+    },
+    {
+      "query": "access_grants_inventory",
+      "tier": "standard"
+    },
+    {
+      "query": "access_grants_inventory_extended",
+      "tier": "standard"
+    },
+    {
+      "query": "access_login_concentration",
+      "tier": "standard"
+    },
+    {
+      "query": "access_network_inbound_denials",
+      "tier": "deep"
+    },
+    {
+      "query": "access_network_outbound_denials",
+      "tier": "deep"
+    },
+    {
+      "query": "access_pii_propagation_untagged",
+      "tier": "standard"
+    },
+    {
+      "query": "access_row_filters_inventory",
+      "tier": "standard"
+    },
+    {
+      "query": "access_runas_escalation",
+      "tier": "deep"
+    },
+    {
+      "query": "access_table_lineage_blast_radius",
+      "tier": "standard"
+    },
+    {
+      "query": "access_tags_inventory",
+      "tier": "standard"
+    },
+    {
+      "query": "access_vector_search_traffic",
+      "tier": "standard"
+    }
+  ]
+}
