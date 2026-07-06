@@ -1,6 +1,6 @@
 # Governance, Access & Security
 
-> 📖 **Guided HTML tour:** [`docs/index.html`](../../docs/index.html) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`access_runas_escalation`](../../docs/index.html#q-access_runas_escalation). *(Phase 1 = top 10; more in phases.)*
+> 📖 **Guided HTML tour:** [`docs/index.html`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`access_runas_escalation`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#q-access_runas_escalation). *(Phase 1 = top 10; more in phases.)*
 
 This domain answers "who can touch what, who did touch what, and where is sensitive data leaking out of its guardrails." The queries read Unity Catalog's audit log, data/table/column lineage, network-policy denials, the privilege/tag/mask/row-filter metadata in `information_schema`, and auto-detected data classification — to inventory the current access posture and surface hygiene gaps (dead tables, untagged PII propagation, classified-but-unmasked columns, run-as escalation, login concentration, network exfiltration attempts).
 

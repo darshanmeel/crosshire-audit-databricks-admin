@@ -1,6 +1,6 @@
 # Query Performance
 
-> 📖 **Guided HTML tour:** [`docs/index.html`](../../docs/index.html) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`query_costly_statements`](../../docs/index.html#q-query_costly_statements). *(Phase 1 = top 10; more in phases.)*
+> 📖 **Guided HTML tour:** [`docs/index.html`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`query_costly_statements`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#q-query_costly_statements). *(Phase 1 = top 10; more in phases.)*
 
 This domain answers "which SQL statements are slow, wasteful, or failing — and why?" using Databricks' per-statement execution telemetry. It surfaces the heaviest statements (a stand-in for cost, since Databricks exposes **no** per-query dollar column), plus the specific tuning signals behind them: file pruning, disk spill, shuffle/write amplification, cache/cold-start behavior, queuing waits, failures, workload mix by hour, and query provenance (job vs. dashboard vs. ad-hoc). Every query here reads a single system table — `system.query.history` — so availability and caveats are shared across the whole folder.
 

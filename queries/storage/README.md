@@ -1,6 +1,6 @@
 # Storage & Optimization
 
-> 📖 **Guided HTML tour:** [`docs/index.html`](../../docs/index.html) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. *(Phase 1 covers the top 10 across cost, jobs, compute, performance and governance; this domain's queries are documented in a later phase.)*
+> 📖 **Guided HTML tour:** [`docs/index.html`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. *(Phase 1 covers the top 10 across cost, jobs, compute, performance and governance; this domain's queries are documented in a later phase.)*
 
 This domain answers "what is Databricks doing to maintain my Delta tables, what is it costing, and where is storage going to waste?" It pairs the **Predictive Optimization (PO) operations history** — the account-wide audit log of automatic OPTIMIZE / clustering / VACUUM / stats-backfill runs and their estimated DBU cost — with a **table inventory** (managed vs. external vs. view) and a set of **per-table probes** (`ANALYZE … COMPUTE STORAGE METRICS`, `DESCRIBE EXTENDED`) that fill the gaps system tables don't cover: physical size breakdown, time-travel retention config, and Iceberg/UniForm metadata.
 

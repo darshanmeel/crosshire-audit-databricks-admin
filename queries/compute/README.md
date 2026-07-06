@@ -1,6 +1,6 @@
 # Compute — Clusters, Warehouses, Nodes
 
-> 📖 **Guided HTML tour:** [`docs/index.html`](../../docs/index.html) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`compute_warehouse_idle_gaps`](../../docs/index.html#q-compute_warehouse_idle_gaps). *(Phase 1 = top 10; more in phases.)*
+> 📖 **Guided HTML tour:** [`docs/index.html`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`compute_warehouse_idle_gaps`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#q-compute_warehouse_idle_gaps). *(Phase 1 = top 10; more in phases.)*
 
 This domain answers "what compute exists, how it's configured, and how hard it's actually working." The queries snapshot the current configuration of classic clusters, SQL warehouses, and instance pools (right-sizing, auto-stop, access mode, tagging, spot mix), and measure real behavior over time from per-minute node utilization and warehouse/instance state-transition events (idle ratio, autoscale churn, idle tails, spot-vs-on-demand). None of these tables carry DBU or dollars — they are configuration and behavioral signals; dollarizing them requires a join to `system.billing.usage` / list prices, which lives in the billing domain.
 

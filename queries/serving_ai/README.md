@@ -1,6 +1,6 @@
 # Model Serving & AI
 
-> 📖 **Guided HTML tour:** [`docs/index.html`](../../docs/index.html) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. *(Phase 1 covers the top 10 across cost, jobs, compute, performance and governance; this domain's queries are documented in a later phase.)*
+> 📖 **Guided HTML tour:** [`docs/index.html`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. *(Phase 1 covers the top 10 across cost, jobs, compute, performance and governance; this domain's queries are documented in a later phase.)*
 
 This domain answers: *what is running on Databricks Model Serving, how much traffic and token throughput each endpoint handles, which endpoints are dormant (paying but idle), and whether AI Gateway is seeing abuse — error/rate-limit spikes, latency blowups, or runaway token volume.* The queries read the request/token telemetry tables (`system.serving.endpoint_usage`, `system.ai_gateway.usage`) and join them to the serving configuration dimension (`system.serving.served_entities`). None of these tables carry dollars — DBU cost for serving lives in `system.billing.usage`; these are request/token counters used to right-size and govern serving spend, not to compute it.
 
