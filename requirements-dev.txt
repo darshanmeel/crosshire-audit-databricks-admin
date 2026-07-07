@@ -3,4 +3,4 @@
 #
 # Pinned exactly for reproducible CI: the advisory sqlfluff parse job's behaviour is version-
 # sensitive, so a floating range could change parse results unannounced. Bump deliberately.
-sqlfluff==3.5.0
+sqlfluff==4.2.2
