@@ -1,12 +1,17 @@
 -- query_id: cost_dollarized_by_sku_day
--- source: system.billing.usage JOIN system.billing.list_prices
--- feeds: cost totals (dollarized); dollarization (list-price × discount_factor); credit/usage anomalies (dollar series); chargeback dollar rollups
--- confidence: needs_confirmation — verifier status unverifiable
--- NEEDS WORKSPACE CONFIRMATION: list_prices.pricing.effective_list.default — the doc types pricing.effective_list only as an "object"; it does NOT confirm a nested scalar subfield path pricing.effective_list.default nor that it is numerically CAST-able to DOUBLE. pricing.default is typed STRING, so any DOUBLE cast of it is likewise unconfirmed. Until confirmed, dollarize in-engine off pricing_list_prices_raw (raw JSON) instead.
--- caveats: LIST price only — pre-discount, DBU-only, excludes cloud infra/egress; engine applies discount_factor downstream. Open-interval price window: price_end_time NULL = currently effective. Until the effective_list.default path is confirmed on the workspace, collect the raw list_prices artifact (pricing_list_prices_raw) and dollarize in-engine rather than trusting net_list_cost.
-/* databricks_audit:cost_dollarized_by_sku_day */
--- NEEDS CONFIRMATION: list_rate path pricing.effective_list.default is UNVERIFIED.
--- Until confirmed, dollarize in-engine off pricing_list_prices_raw (raw JSON) instead.
+-- title: Dollarized cost by SKU and day (list price)
+-- domain: cost   tier: deep
+-- reads: system.billing.usage, system.billing.list_prices
+-- requires: SELECT on system.billing; GA (system.billing.usage and system.billing.list_prices are generally available)
+-- params: :period_days (default 30) rolling window in days
+-- confidence: needs_confirmation
+-- confidence_note: The nested path list_prices.pricing.effective_list.default is not confirmed as a numerically castable scalar (the schema only types pricing.effective_list as an object); until confirmed, treat net_list_cost as directional and prefer dollarizing from pricing_list_prices_raw instead.
+-- read_this: One row = a day + cloud + SKU + product + usage type/unit's usage, priced at list. The columns that matter are net_usage_quantity (the native-unit volume) and net_list_cost (usage_quantity x the list rate) - this is a pre-discount estimate, not what you actually pay.
+-- healthy: n/a - inventory
+-- investigate_if: n/a - inventory
+-- actions: n/a - inventory (reference/join input)
+-- next: pricing_list_prices_raw (for the raw price rows behind net_list_cost, safer to dollarize from until the effective_list.default path is confirmed), cost_actual_vs_list_by_sku (for a DBU-only actual-vs-list comparison)
+-- caveats: This is a list price only - pre-discount - so apply any negotiated discount factor yourself; net_list_cost is dollarized so it is safe to sum even though the underlying usage spans several usage_type/usage_unit families. The price window is open-interval: price_end_time NULL means the currently effective price. The path list_prices.pricing.effective_list.default that this query casts to DOUBLE is not confirmed - the schema only documents pricing.effective_list as an object, not this nested scalar - and pricing.default is typed STRING, so any DOUBLE cast of it is likewise unconfirmed. Until that path is confirmed on your workspace, prefer collecting the raw list_prices artifact (pricing_list_prices_raw) and dollarizing it yourself rather than trusting net_list_cost as-is.
 SELECT u.usage_date, u.cloud, u.sku_name, u.billing_origin_product, u.usage_type, u.usage_unit,
        lp.currency_code,
        SUM(u.usage_quantity)               AS net_usage_quantity,
@@ -24,3 +29,4 @@ LEFT JOIN (
 WHERE u.usage_date >= dateadd(day, -:period_days, current_date())
   AND u.usage_date < current_date()
 GROUP BY u.usage_date, u.cloud, u.sku_name, u.billing_origin_product, u.usage_type, u.usage_unit, lp.currency_code
+ORDER BY u.usage_date DESC, u.cloud, u.sku_name

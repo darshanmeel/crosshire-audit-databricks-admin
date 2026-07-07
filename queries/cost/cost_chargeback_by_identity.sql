@@ -1,9 +1,17 @@
 -- query_id: cost_chargeback_by_identity
--- source: system.billing.usage
--- feeds: chargeback/tagging (identity-level rollup); untagged-but-attributable spend (identity present, tag absent); service-principal vs human-USER spend split; top human users ("pure users" leaderboard); per-WORKSPACE identity attribution
+-- title: DBU usage by identity (chargeback)
+-- domain: cost   tier: standard
+-- reads: system.billing.usage
+-- requires: SELECT on system.billing; GA (system.billing.usage is generally available)
+-- params: :period_days (default 30) rolling window in days
 -- confidence: confirmed
--- caveats: identity_metadata is sparse/conditional and is replaced with '__REDACTED__' in FedRamp workspaces — engine must treat '__REDACTED__' and NULL as "identity unavailable", not a real principal. owned_by populates for SQL-warehouse usage only. identity_type is 'user' when run_as is an email, else 'service_principal' (SP app-id/name) — drop the run_as mask CASE (or build --no-redact) for an internal user leaderboard.
-/* databricks_audit:cost_chargeback_by_identity */
+-- confidence_note: identity_metadata fields are documented system.billing.usage columns.
+-- read_this: One row = a day + workspace + product + masked identity's DBU usage. The columns that matter are identity_type (user vs service_principal vs unknown) and identity_run_as (the masked principal) - use this to see who is spending, and how much of the spend has no attributable identity at all.
+-- healthy: n/a - inventory
+-- investigate_if: n/a - inventory
+-- actions: n/a - inventory (reference/join input)
+-- next: cost_chargeback_by_tag (for a tag-based cut of the same window), cost_workspace_names (to resolve workspace_id to a human name)
+-- caveats: identity_metadata is sparse/conditional and is replaced with '__REDACTED__' in FedRamp workspaces - treat '__REDACTED__' and NULL as "identity unavailable," not a real principal. owned_by populates for SQL-warehouse usage only. identity_type is 'user' when run_as is an email, else 'service_principal' (SP app-id/name). run_as/owned_by/created_by are partial-masked in-SQL (email -> first 2 chars + ****@****, a GUID kept as-is, anything else first 2 chars + ****) - drop that masking only if you are building an internal, access-controlled user leaderboard.
 SELECT usage_date, cloud, workspace_id, billing_origin_product,
        CASE
          WHEN identity_metadata.run_as IS NULL OR identity_metadata.run_as = '__REDACTED__' THEN 'unknown'
@@ -39,3 +47,4 @@ GROUP BY usage_date, cloud, workspace_id, billing_origin_product,
            ELSE 'service_principal'
          END,
          identity_metadata.run_as, identity_metadata.owned_by, identity_metadata.created_by
+ORDER BY usage_date DESC, workspace_id, identity_type

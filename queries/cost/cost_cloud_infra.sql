@@ -1,9 +1,17 @@
 -- query_id: cost_cloud_infra
--- source: system.billing.usage JOIN system.billing.list_prices
--- feeds: estimated billed cost by cloud, on the Pricing & Allocation tab. NOTE: Databricks does NOT expose a separate cloud-provider infra/egress cost system table in this environment (system.billing.cloud_infra_cost does not exist), so the original non-DBU infra-spend intent is not_assessed; this query reports DBU-derived billed cost from usage x list_prices as the closest real, runnable source.
+-- title: Estimated billed cost by cloud (DBU-derived)
+-- domain: cost   tier: deep
+-- reads: system.billing.usage, system.billing.list_prices
+-- requires: SELECT on system.billing; GA (system.billing.usage and system.billing.list_prices are generally available)
+-- params: :period_days (default 30) rolling window in days
 -- confidence: needs_confirmation
--- caveats: system.billing.cloud_infra_cost does NOT exist in this workspace -- system.billing contains only usage, list_prices, and attributed_usage. Cloud-provider infra/instance/egress cost outside DBUs is NOT available as a system table here and must be treated as not_assessed, never fabricated. As a real substitute this query estimates dollar cost = usage_quantity x list_prices.pricing.default, matched on sku_name+cloud+usage_unit within the price's effective window (price_end_time IS NULL = currently effective). currency_code comes from list_prices (system.billing.usage has no currency column). We aggregate by usage_date / cloud / currency_code and deliberately do NOT join the compute.warehouses / clusters change-history tables here, which would fan out rows and double-count SUM(cost). An empty result must render "not assessed", never $0.
-/* databricks_audit:cost_cloud_infra */
+-- confidence_note: system.billing.cloud_infra_cost does not exist in this workspace; this query substitutes a DBU-derived list-price estimate, so the dollar figures here are an estimate, not a reconciled cloud bill.
+-- read_this: One row = a day + cloud + currency's estimated billed cost. The column that matters is net_billed_cost, an estimate = usage_quantity x list_prices.pricing.default matched to the price row that was active on that usage row - not a substitute for your cloud provider's own cost export.
+-- healthy: n/a - inventory
+-- investigate_if: n/a - inventory
+-- actions: n/a - inventory (reference/join input)
+-- next: cost_totals_by_sku_day (for the same window broken out by SKU/workspace instead of cloud/currency), cost_networking_egress (for the DBU-billed egress slice specifically)
+-- caveats: system.billing.cloud_infra_cost does not exist in this workspace - system.billing contains only usage, list_prices, and attributed_usage. Cloud-provider infra/instance/egress cost outside DBUs is not available as a system table here and must be treated as not_assessed, never fabricated. As a real substitute, this query estimates dollar cost as usage_quantity x list_prices.pricing.default, matched on sku_name + cloud + usage_unit within the price's effective window (price_end_time IS NULL = currently effective). currency_code comes from list_prices because system.billing.usage has no currency column. This aggregates by usage_date / cloud / currency_code and deliberately does not join the compute.warehouses / clusters change-history tables, which would fan out rows and double-count the SUM. An empty result means "not assessed," never $0.
 SELECT u.usage_date, u.cloud, lp.currency_code,
        SUM(u.usage_quantity * lp.pricing.default) AS net_billed_cost,
        COUNT(*)                                   AS record_count
@@ -17,3 +25,4 @@ LEFT JOIN system.billing.list_prices lp
 WHERE u.usage_date >= dateadd(day, -:period_days, current_date())
   AND u.usage_date < current_date()
 GROUP BY u.usage_date, u.cloud, lp.currency_code
+ORDER BY u.usage_date DESC, u.cloud, lp.currency_code
