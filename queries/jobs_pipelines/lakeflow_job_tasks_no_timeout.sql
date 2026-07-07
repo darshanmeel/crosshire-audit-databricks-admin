@@ -1,21 +1,17 @@
 -- query_id: lakeflow_job_tasks_no_timeout
--- source: system.lakeflow.job_tasks
--- feeds: jobs-no-timeout
+-- title: Job tasks with no configured timeout, at-risk DBU exposure
+-- domain: jobs_pipelines   tier: standard
+-- reads: system.lakeflow.job_tasks, system.billing.usage, system.billing.list_prices
+-- requires: SELECT on system.lakeflow, system.billing; GA (job_tasks.timeout_seconds was added late Nov 2025)
+-- params: :period_days (default 30) billing look-back window for the cost rollup only (does not change this query's grain/filters/counts); :warn_no_timeout_tasks (default 5) no-timeout tasks per workspace that flags WARN; :crit_no_timeout_tasks (default 20) that flags CRITICAL
 -- confidence: confirmed
--- caveats: job_tasks is SCD2 -> latest per (workspace_id, job_id, task_key); task_key unique only within a job. Same not-populated-before-Dec-2025 caveat; tasks_timeout_null exposes the degradation case.
--- net_dbus is exact billed DBUs (usage_unit='DBU'); est_usd_list is a LIST-PRICE ESTIMATE
---   (usage_quantity x list_prices.pricing.default) -- NOT the negotiated invoice rate (not in any
---   system table) and excludes cloud infra/egress $. Directional, needs_confirmation.
--- Cost is attributed by billing ID over the window (per workspace_id + job_id), not per event/request.
---   Cost rollup is pre-aggregated then LEFT JOINed, so finding rows are never multiplied.
--- ATTRIBUTION CAVEAT: this finding counts TASKS, but system.billing.usage exposes only job_id (no
---   task_key), so DBUs cannot be split per task. net_dbus/est_usd_list here are the AT-RISK subset:
---   total DBUs of jobs that contain >=1 no-timeout task, summed to workspace grain. A qualifying job's
---   cost includes any of its tasks that DO have a timeout, so this over-attributes -- treat as an upper
---   bound on the exposure, not the exact cost of the untimed tasks.
--- WINDOW: the finding is a point-in-time state check with no period; :period_days sets the billing
---   look-back for the cost rollup only (does not change the finding's grain/filters/counts).
-/* databricks_audit:lakeflow_job_tasks_no_timeout */
+-- confidence_note: timeout_seconds is not populated before late Nov 2025; tasks_timeout_null exposes that so a short-history account degrades instead of reading NULL as "no timeout". net_dbus/est_usd_list here are an upper-bound exposure figure, not the exact cost of the untimed tasks - see caveats.
+-- read_this: One row = a workspace. The column that matters is tasks_no_timeout - active tasks with no configured (or zero-second) timeout; net_dbus/est_usd_list next to it are the at-risk DBUs of any job that contains at least one such task.
+-- healthy: tasks_no_timeout near 0 relative to active_tasks - field heuristic; tune :warn_no_timeout_tasks for your account.
+-- investigate_if: tasks_no_timeout at/above :warn_no_timeout_tasks (WARN) or :crit_no_timeout_tasks (CRITICAL) - field heuristic.
+-- actions: 1) list the flagged tasks and set an explicit timeout on each in the job UI/API (free); 2) add a default task timeout to your job-creation template or CI job-spec linter (config); 3) n/a - fixing this is free; it prevents future spend rather than requiring new spend.
+-- next: lakeflow_jobs_no_timeout (the job-level version of this same gap), lakeflow_tasks_near_timeout (for tasks that DO have a timeout but are running close to it)
+-- caveats: job_tasks is SCD2, so this takes the latest row per (workspace_id, job_id, task_key) by change_time; task_key is unique only within a job. The same not-populated-before-late-Nov-2025 caveat applies to timeout_seconds; tasks_timeout_null exposes the degradation case. net_dbus is the exact billed DBUs (usage_unit='DBU'); est_usd_list is a LIST-PRICE ESTIMATE (usage_quantity x list_prices.pricing.default), not your negotiated invoice rate, and it excludes cloud infra/egress cost - treat it as directional. Cost is attributed by (workspace_id, job_id) over the window, not per event/request; the rollup is pre-aggregated then LEFT JOINed, so result rows are never multiplied. ATTRIBUTION CAVEAT: this query counts TASKS, but system.billing.usage exposes only job_id (no task_key), so DBUs cannot be split per task. net_dbus/est_usd_list here are the AT-RISK subset: total DBUs of jobs that contain at least one no-timeout task, summed to workspace grain. A qualifying job's cost includes any of its tasks that DO have a timeout, so this over-attributes - treat it as an upper bound on the exposure, not the exact cost of the untimed tasks. WINDOW: this query itself is a point-in-time state check with no period; :period_days only sets the billing look-back for the cost rollup.
 WITH latest_tasks AS (
   SELECT workspace_id, job_id, task_key, timeout_seconds, delete_time
   FROM system.lakeflow.job_tasks
@@ -63,8 +59,15 @@ SELECT lt.workspace_id,
        SUM(CASE WHEN lt.timeout_seconds IS NULL OR lt.timeout_seconds = 0 THEN 1 ELSE 0 END) AS tasks_no_timeout,
        SUM(CASE WHEN lt.timeout_seconds IS NULL THEN 1 ELSE 0 END) AS tasks_timeout_null,
        COALESCE(rjc.dbus_at_risk, 0)    AS net_dbus,
-       COALESCE(rjc.est_usd_at_risk, 0) AS est_usd_list
+       COALESCE(rjc.est_usd_at_risk, 0) AS est_usd_list,
+       -- status: worst-first band on no-timeout task count (field heuristic; :warn_no_timeout_tasks / :crit_no_timeout_tasks).
+       CASE
+         WHEN SUM(CASE WHEN lt.timeout_seconds IS NULL OR lt.timeout_seconds = 0 THEN 1 ELSE 0 END) >= :crit_no_timeout_tasks THEN 'CRITICAL'
+         WHEN SUM(CASE WHEN lt.timeout_seconds IS NULL OR lt.timeout_seconds = 0 THEN 1 ELSE 0 END) >= :warn_no_timeout_tasks THEN 'WARN'
+         ELSE 'OK'
+       END AS status
 FROM latest_tasks lt
 LEFT JOIN risk_job_cost rjc ON rjc.workspace_id = lt.workspace_id
 WHERE lt.delete_time IS NULL
 GROUP BY lt.workspace_id, rjc.dbus_at_risk, rjc.est_usd_at_risk
+ORDER BY tasks_no_timeout DESC
