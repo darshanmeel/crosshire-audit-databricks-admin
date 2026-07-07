@@ -39,6 +39,24 @@ supports, skip what it doesn't.
 
 ## Conventions
 
-- Query output is **sensitive** — identities/emails are **not** masked by these raw queries (unlike the collector).
-- Every dollar figure is **`est · at list`** (from `system.billing.list_prices` `effective_list` — pre-discount,
-  DBU-only) unless the query explicitly joins `account_prices`.
+- **Identities are partial-masked.** Every query that emits a user/principal identity (19 of them) masks it
+  in-SQL — an email becomes `da****@****`, a service-principal GUID is kept as-is (already opaque), anything
+  else becomes first-two-chars + `****`. No query emits a raw username or email. Output is still
+  **sensitive** (workspace IDs, job IDs, table names, spend) — treat result CSVs as confidential and never
+  commit them (`.gitignore` blocks `*.csv`).
+- Every dollar figure is **`est · at list`** (from `system.billing.list_prices` `pricing.default` /
+  `effective_list` — pre-discount, DBU-only). It is a directional list-price estimate, **not** your
+  negotiated invoice rate (no system table carries that), and `usage_quantity` / `net_dbus` columns are
+  **DBUs, never dollars**.
+
+## Tiers
+
+Each query carries a `tier` in its header and in [`manifest.json`](queries/manifest.json):
+
+- **lite** — safe, always-available system tables (mostly `system.billing.*`, `system.compute.*`); run these first.
+- **standard** — needs a cross-domain join or a schema that a metastore admin may have to enable.
+- **deep** — needs Preview / Unity-Catalog-only schemas (lineage, classification, storage internals) that many accounts don't expose; expect some to return nothing or `TABLE_OR_VIEW_NOT_FOUND`.
+
+## License
+
+Apache-2.0 — see [`LICENSE`](LICENSE). Contributions and the header/verification conventions are documented in [`CONTRIBUTING.md`](CONTRIBUTING.md).
