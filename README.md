@@ -6,10 +6,9 @@ jobs, serving, storage, and governance** — built entirely on Databricks **syst
 `SELECT` you paste into a Databricks SQL editor / warehouse and run.
 
 > 📖 **Guided tour — [read it rendered →](https://darshanmeel.github.io/crosshire-audit-databricks-admin/)**
-> A browsable, editorial explainer that unpacks each query: *why it matters*, *what it does* in plain terms,
+> A browsable, editorial explainer that unpacks **every query**: *why it matters*, *what it does* in plain terms,
 > *how to read every output column*, an *illustrative sample result*, and the *caveats*.
-> Source: [`docs/index.html`](docs/index.html), served via GitHub Pages from `/docs`.
-> **Status:** Phase 1 — the **top 10** highest-impact queries are documented; the remaining 85 follow in phases.
+> Source: [`docs/index.html`](docs/index.html), served via GitHub Pages from `/docs`. **All 95 queries are documented.**
 
 95 queries across **7 domains**:
 
@@ -23,8 +22,9 @@ jobs, serving, storage, and governance** — built entirely on Databricks **syst
 | [Storage & Optimization](queries/storage/) | 9 | Predictive Optimization (clustering / compaction / VACUUM), table inventory, time-travel, Iceberg, ANALYZE |
 | [Governance, Access & Security](queries/governance_access/) | 17 | Grants, column masks / row filters, tags, data classification, lineage blast-radius, network denials, run-as escalation, admin changes |
 
-Each domain folder has its own **`README.md`** documenting **every system table it uses** (grain,
-key columns, availability) and **every query** (what it returns, why it matters).
+Each domain folder's **`README.md`** lists **the system tables that domain reads** (grain, key columns,
+availability); the **[guided tour](https://darshanmeel.github.io/crosshire-audit-databricks-admin/)** explains
+**every query** — what it returns, why it matters, how to read each column, a sample, and the caveats.
 
 ---
 
@@ -70,11 +70,9 @@ table is known to be gated, the domain README calls it out under *Availability*.
    window — adjust the `INTERVAL … DAYS` / date predicate to your reporting period.
 
 ## Conventions
-- Each `.sql` begins with a `-- query_id: <name>` comment matching its file name.
-- Identities/emails are **not** masked by these raw queries (unlike the collector) — handle output
-  as sensitive.
-- Every dollar figure is **`est · at list`** (priced from `system.billing.list_prices`
-  `effective_list` — pre-discount, DBU-only) unless the query explicitly joins `account_prices`.
+- Query output is **sensitive** — identities/emails are **not** masked by these raw queries (unlike the collector).
+- Every dollar figure is **`est · at list`** (from `system.billing.list_prices` `effective_list` — pre-discount,
+  DBU-only) unless the query explicitly joins `account_prices`.
 
 ## Publishing
 This folder is self-contained and safe to publish as its own repo — it contains **only SQL and

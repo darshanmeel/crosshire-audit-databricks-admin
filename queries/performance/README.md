@@ -52,39 +52,7 @@ This domain answers "which SQL statements are slow, wasteful, or failing — and
 
 **Not read by any `.sql` file in this folder.** Because `system.query.history` has no per-statement dollar/DBU column, the per-query **estimate lane** (`query_per_query_estimate_lane`) emits only the raw drivers (`execution_duration_ms`, `total_task_duration_ms`, `read_bytes`), and the actual dollar attribution happens **downstream** by weighting hourly warehouse DBUs from `system.billing.usage` and reconciling so per-query estimates sum to metered DBU. See the billing/cost domain README for that table's grain, columns, and availability.
 
-## Queries
+---
 
-All queries are `SELECT`-only reads of `system.query.history`. Depth is labeled by what each does: **detail** (per-statement rows), **aggregate** (grouped rollup), or **estimate-input** (feeds downstream cost allocation).
+**Per-query documentation** — what each query does, why it matters, how to read every output column, an illustrative sample of the result, and the caveats — lives in the guided HTML tour: **[read it rendered →](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#d-performance)**. The `.sql` files in this folder are the source of truth.
 
-### Heaviest statements & cost inputs
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `query_costly_statements` | *(detail)* Top ~1000 finished, non-cached statements ranked by `execution_duration_ms`, with per-statement pruning/shuffle/spill/scan counters and de-valued `statement_text`. | The single best "what to tune first" list — ranking by execution time ≈ ranking by DBU cost, and the attached signals tell you the fix (pruning vs. spill vs. shuffle). |
-| `query_per_query_estimate_lane` | *(estimate-input)* Per-statement duration/task/read_bytes drivers for finished, non-cached, warehouse (non-serverless) statements, bucketed by hour. | Raw input for downstream per-query dollar estimation; lets you approximate cost per statement even though Databricks exposes none. Bound the window — output can be large. |
-| `audit_self_cost` | *(aggregate)* Count + runtime of the audit's **own** queries (matched via the `databricks_audit` marker), by workspace and statement_type. | Measures what running this audit itself costs the workspace — full transparency, and the inverse of self-exclusion. |
-
-### Tuning signals
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `query_pruning_effectiveness` | *(aggregate)* Daily `pruned_files` vs `read_files` (plus partitions/bytes/rows), by warehouse/user/statement_type. | Low pruning = full scans; points at missing partitioning, clustering, or Z-order / liquid clustering opportunities. |
-| `query_local_spillage` | *(aggregate)* Daily count and sum/max of `spilled_local_bytes` for spilling statements, with shuffle context. | Local spill = memory pressure; identifies statements that need a bigger warehouse or a rewrite. (Remote spill is not measurable.) |
-| `query_shuffle_write_amplification` | *(aggregate)* Daily `shuffle_read_bytes` and `written_bytes/rows/files`, by warehouse/user/statement_type. | High shuffle flags bad joins; high `written_files` per row flags the small-files-on-write problem (later OPTIMIZE / compaction target). |
-| `query_cache_coldstart` | *(aggregate)* Daily result-cache hits, average/low `read_io_cache_percent`, and summed compute-wait + compilation time, per warehouse. | Separates the two cache signals and quantifies cold-start vs. compile-bound latency — informs warehouse auto-stop / warm-pool tuning. |
-| `query_queuing_waits` | *(aggregate)* Daily counts and summed durations for "queued at capacity" vs "waiting for compute", per warehouse. | Distinguishes under-provisioned warehouses (capacity queuing) from cold-start latency — different fixes (scale-out vs. keep warm). |
-
-### Reliability, mix & provenance
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `query_failed_queries_daily` | *(aggregate)* Daily FAILED/CANCELED counts, durations, and a de-valued `error_message` sample, by warehouse/user/statement_type. | Surfaces failing workloads and their error shapes; wasted compute and reliability hotspots. (`error_message` is blank under CMK.) |
-| `query_workload_mix_hours` | *(aggregate)* Day × hour-of-day × compute × statement_type × user histogram with counts, durations, bytes, produced rows. | Shows when and what the workload is — peak-hour concentration informs scheduling, autoscaling, and warehouse sizing. |
-| `query_provenance_by_source` | *(aggregate)* Attributes statements to a source (job / dashboard / notebook / alert / genie / sql_editor) and identity type (user vs. service principal), with counts and durations. | Reveals whether spend is scheduled jobs vs. ad-hoc exploration and who drives it. **Confidence: needs confirmation** — nested `query_source` dotted-path access and single-winner CASE precedence are unverified; simultaneous subfield population means CASE is a heuristic. |
-
-## Notes
-
-- **Date window.** Most queries hard-code `start_time >= current_date() - INTERVAL 30 DAYS AND start_time < current_date()`, i.e. the **last 30 complete days, excluding today** (avoids a partial current day and ingest latency). Two queries are parameterized with `:period_days` (`query_costly_statements`, `query_per_query_estimate_lane`, `audit_self_cost` — the latter includes today on purpose to capture its own in-flight run).
-- **Cost is a proxy, not a fact.** There is **no per-query DBU or dollar column**. `execution_duration_ms` is used as the cost proxy; true dollars are only estimated downstream against `system.billing.usage` (see billing domain).
-- **Masking.** `executed_by` is always partial-masked in output (emails → `xx****@****`, service-principal GUIDs kept as opaque handles). `statement_text` and `error_message` are de-valued at source: emails replaced with `<email>` and every single-quoted string literal replaced with `?`, preserving query **shape** while removing literal data values. A `--share` full-redact build truncates `statement_text`/`error_message` entirely.
-- **Compute coverage gotcha.** Classic / all-purpose (interactive) cluster statements are **not** in `system.query.history`. Any "0 spills / 0 shuffle" result may just mean the work ran on classic compute, not that there's no problem. Serverless rows have `warehouse_id = NULL`.
-- **NULL-vs-0 ambiguity.** For non-scan statements, the NULL-vs-0 behavior of counters like `read_io_cache_percent`, `pruned_files`, and `waiting_for_compute_duration_ms` on warm warehouses is undocumented; treat NULL and 0 as equivalent "no signal / no wait" and note WHERE guards exclude non-scan/non-write rows where relevant.
-- **Regional.** History is per-region; when combining with billing, attribute only within-region.
-- **Downstream rename.** `spilled_local_bytes` is renamed to `disk_bytes_spilled` by the collector/loader downstream — expect that alias outside the raw SQL.

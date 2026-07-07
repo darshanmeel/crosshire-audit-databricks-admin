@@ -110,51 +110,7 @@ Almost everything here lives in Unity Catalog system schemas, so the hard depend
 - **Key columns used:** `table_catalog`, `table_schema`, `table_name`, `table_type` (filtered to `MANAGED` / `EXTERNAL`), `table_owner`, `created`, `last_altered` (can be NULL / late-populated → "age unknown").
 - **Availability:** UC. **Privilege-aware** — tables the collector cannot see are absent (not "dead"). Used as the object universe for dead-table detection.
 
-## Queries
+---
 
-### Access & audit history
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `access_admin_role_change_events` | 90-day rollup of grant/admin change events (by service, action, actor) with counts, distinct source IPs, first/last event time | Admin & role-change hygiene — who altered permissions, from where, how often; pairs with the current-state grant inventory |
-| `access_login_concentration` | 30-day login rollup per principal × source IP × action, with success vs non-success counts | Spot login concentration, credential-stuffing / anomalous-IP patterns, and MFA/credential event distribution |
-| `access_runas_escalation` | 30-day events where `run_by <> run_as` (someone executed as a different identity) | Detect run-as / privilege-escalation activity; sparse by design, so empty ≠ "no escalation" |
+**Per-query documentation** — what each query does, why it matters, how to read every output column, an illustrative sample of the result, and the caveats — lives in the guided HTML tour: **[read it rendered →](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#d-governance)**. The `.sql` files in this folder are the source of truth.
 
-### Grants & privilege inventory (current state)
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `access_grants_inventory` | Grant counts and distinct objects by object scope (TABLE, CATALOG) × privilege × grantee | Baseline privilege map — who holds what, at what breadth; input to least-privilege review |
-| `access_grants_inventory_extended` | Grant counts by scope (SCHEMA, CONNECTION, CREDENTIAL, EXTERNAL_LOCATION) × privilege × grantee | Extends the grant map to schemas and integration objects (connections/credentials/external locations) — common blind spots |
-
-### Data classification, tags, masks & row filters
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `access_data_classification_inventory` | Auto-detected classification per column (class tag, confidence, max frequency, first/last detected) | Know where PII/sensitive data actually lives, per the scanner |
-| `access_tags_inventory` | Manual governance tag inventory at column and table scope (tag name/value × count) | Measure tagging discipline; the manual-tag counterpart to auto-classification |
-| `access_column_masks_inventory` | One row per masked column (mask name + using columns) | Verify which sensitive columns are actually masked |
-| `access_row_filters_inventory` | One row per row-filtered table (filter name + target columns) | Verify row-level access controls are in place |
-| `access_classified_unmasked` | HIGH-confidence classified columns LEFT JOINed to masks, flagging `is_unmasked` | The headline gap: sensitive data the scanner found that has no mask applied |
-| `access_pii_propagation_untagged` | Direct lineage flows from sensitivity-tagged source columns into UNTAGGED target columns, with responsible `created_by` | Catch PII leaking into new columns that lost their governance tag — with the principal to follow up with |
-
-### Lineage, blast radius & cleanup
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `access_table_lineage_blast_radius` | 90-day table-level lineage edges classified READ / WRITE / READ_WRITE, with event counts and distinct principals | Understand downstream blast radius before changing/dropping a table |
-| `access_column_lineage_sensitive_reach` | 90-day column-level lineage edges (source→target column) with event counts and distinct principals | Trace exactly how far a sensitive column propagates; feeds the classified-but-unmasked reach analysis |
-| `access_dead_table_candidates` | MANAGED/EXTERNAL tables that never appeared as a lineage source in the window, with owner and age | Cleanup **candidate** list (cross-check required) — never a DROP recommendation on its own |
-
-### Network & endpoint security
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `access_network_inbound_denials` | 30-day inbound (ingress) policy denials by outcome, rule, request path, principal, source IP | Surface blocked ingress attempts and validate ingress-policy coverage |
-| `access_network_outbound_denials` | 30-day outbound (egress) policy denials by source/destination type, access type, destination, with DNS/storage detail | Exfiltration monitoring — what egress was blocked and why |
-| `access_vector_search_traffic` | Vector Search query/scan traffic per endpoint per day | Identify provisioned-but-unqueried (idle) Vector Search endpoints; joined to spend for retire-candidate detection |
-
-## Notes
-
-- **Date windows are per-query, not uniform:** 30 days (`access_login_concentration`, `access_runas_escalation`, `access_network_*`), 90 days (`access_admin_role_change_events`, `access_table_lineage_blast_radius`, `access_column_lineage_sensitive_reach`), and a `:period_days` parameter (`access_dead_table_candidates`, `access_pii_propagation_untagged`, `access_vector_search_traffic`). Inbound network is hard-capped at 30-day retention regardless of the requested window. Widen windows only as far as your workspace-configured `system.access.*` retention allows — a short window over-flags quarterly/long-tail tables as "dead."
-- **`event_date` vs `event_time`:** `audit`, `table_lineage`, and `column_lineage` have a partition-friendly `event_date` column; the network tables (`inbound_network`, `outbound_network`) do **not** — they filter on `event_time` against `current_timestamp()`.
-- **Principal masking:** Every query masks identity fields (email → `xx****@****`, other names → `xx****`, UUIDs and `__REDACTED__` left intact) so the output is safe to share. Vector-search endpoint names are similarly truncated.
-- **Privilege-aware = "partial", always:** `information_schema` privilege/mask/row-filter/tag/table views only show what the running principal can see. Run collection under a high-privilege audit service principal, and still label results as partial — you cannot reproduce a full `SHOW GRANTS` graph, and a missing mask/tag/table row can mean "not visible," not "not there."
-- **Empty ≠ clean, and errors are expected:** Preview / feature-gated tables (data classification, network policies, masks, row filters) return nothing when the feature isn't enabled or used, and `TABLE_OR_VIEW_NOT_FOUND` when the schema isn't provisioned. Both are valid outcomes — degrade to "not assessed / feature not enabled," never to a false all-clear.
-- **Lineage is a subset:** table/column lineage misses operations UC doesn't observe (MERGE/JDBC/path/temp-view/`INSERT ... VALUES`). Dead-table and propagation findings are coverage-bounded candidates to cross-check against `system.access.audit`, `query.history`, and `system.storage.table_metrics_history` — not proof.
-- **A few subfield names are unverified** (`inbound_network.source.ip`; the sibling privilege views' object-name columns in `access_grants_inventory_extended`; PII `tag_name`/`tag_value` conventions in `access_pii_propagation_untagged`). The queries are written to use only confirmed columns or to degrade gracefully; confirm with `DESCRIBE` before relying on the unverified fields.

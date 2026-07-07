@@ -48,36 +48,7 @@ Cloud-VM lifecycle/state-transition events for classic-compute instances — the
 - **Key columns used:** `workspace_id`, `instance_id`, `node_type`, `availability_type` (`ON_DEMAND`/`SPOT` on AWS/Azure, `ON_DEMAND`/`PREEMPTIBLE` on GCP), `state` (`INSTANCE_LAUNCHING` / `INSTANCE_READY` = idle / `INSTANCE_PLACED` = in use / `INSTANCE_TERMINATED`), `event_type` (`INSTANCE_LAUNCHING` / `STATE_TRANSITION`), `cluster_id` (populated only when `state = INSTANCE_PLACED`), `event_time`.
 - **Availability:** **Public Preview** — may be empty/disabled (degrade to "preview table not populated"). UC + `SELECT` on `system.compute`. Regional, cloud-specific enum values. The query is a count/summary aggregate; converting `READY` vs `PLACED` events into exact idle-vs-active minutes needs per-instance windowing that is not attempted here.
 
-## Queries
+---
 
-### Configuration snapshots (current-state, SCD "latest row")
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `classic_clusters_config_current` | Latest config of every live classic cluster: node types, autoscale range, auto-termination, DBR version, `data_security_mode`, `policy_id`, pool linkage, tags, init scripts, cloud attributes. | The right-sizing / governance baseline — find oversized fixed clusters, missing auto-stop, EOL runtimes, clusters with no compute policy, and untagged compute. |
-| `sql_warehouse_config_current` | Latest config of every live SQL warehouse: type/channel/size, `min`/`max_clusters`, `auto_stop_minutes`, tags. | Spot oversized or never-auto-stopping warehouses and untagged warehouses for chargeback. |
-| `instance_pools_idle_capacity` | Latest config of every live instance pool: `min_idle_instances`, `max_capacity`, idle auto-termination, preloaded images, node type. | Idle-pool waste (`min_idle_instances` are always-on VMs) and pool right-sizing; Docker/preload risk. *(Preview table.)* |
-| `node_types_reference` | Static vCPU / memory / GPU per node type. | The capacity denominator to join against clusters and node_timeline for right-sizing math. |
+**Per-query documentation** — what each query does, why it matters, how to read every output column, an illustrative sample of the result, and the caveats — lives in the guided HTML tour: **[read it rendered →](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#d-compute)**. The `.sql` files in this folder are the source of truth.
 
-### Utilization & idle behavior (time-window telemetry)
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `node_timeline_utilization` | Per cluster/node-type/role: minute-row count, avg & peak CPU, avg & peak memory, CPU-wait, total network sent/received, over `:lookback_days` (≤90). | Evidence for right-sizing — chronically low CPU/mem = oversized; high CPU-wait = I/O-bound; network as a coarse egress proxy. |
-| `compute_idle_node_ratio` | Per cluster: total vs idle minute-slices (idle = CPU < 5%), the idle **ratio**, plus avg/peak CPU & memory and observed span. | Ranks classic clusters by how much of their runtime was genuinely idle — the auto-stop / auto-termination candidate list. |
-| `instance_events_idle_active` | Per workspace/node-type/availability/state/event-type: event counts, distinct instances, first/last event. | Spot-vs-on-demand cost mix and a first look at idle (`INSTANCE_READY`) vs active (`INSTANCE_PLACED`) instances. *(Preview table.)* |
-
-### SQL-warehouse event analysis
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `sql_warehouse_events_activity` | Per warehouse & event_type: event count, first/last event time, max/avg `cluster_count`. | Resume/suspend churn, idle warehouses (no recent RUNNING/STARTING), and autoscaling/queuing behavior at a glance. |
-| `compute_warehouse_idle_gaps` | Per warehouse: seconds spent RUNNING (the auto-stop idle tail), STARTING (cold-start tax) and STOPPED, plus the worst single RUNNING gap, via `LEAD(event_time)` over all events. | Quantifies how long warehouses sit RUNNING-but-idle before stopping — tune `auto_stop_minutes` down. Trailing (last) gap is left NULL, never assumed. |
-| `compute_warehouse_autoscale_churn` | Per warehouse: `SCALED_UP`/`SCALED_DOWN` counts, total scaling events, observed span in hours, max/avg `cluster_count`. | Detects warehouses thrashing clusters up and down (cold-start + spin-up waste); the churn *rate* is scaling-events ÷ observed span. |
-
-## Notes
-- **Date windows:** utilization/event queries are parameterized — `:lookback_days` (node_timeline) and `:period_days` (warehouse_events, instance_events). **`node_timeline` retention is 90 days**, so `:lookback_days` must be ≤ 90; a longer window silently truncates to "last 90 days." Config-snapshot queries take no window (latest-row-wins).
-- **No dollars in this domain.** No compute table carries DBU or cost. Idle/oversized findings become dollars only after joining to `system.billing.usage` and list prices (billing domain). `node_timeline`, `warehouse_events`, and `instance_events` are behavioral/telemetry signals only.
-- **Classic-only telemetry.** `node_timeline` and `instance_events` cover classic compute; there is **no node-level utilization for SQL warehouses or serverless**. SQL-warehouse behavior comes only from `warehouse_events`; serverless has no node visibility here at all.
-- **Masking.** Identifier/PII columns are masked in-query: `cluster_name` / `warehouse_name` / `instance_pool_name` are truncated to 2 chars + `****`; `owned_by` is redacted by pattern (emails → `xx****@****`, UUID service principals left intact, `__REDACTED__` passed through).
-- **SCD gotcha.** Config tables are change-logs, not current-state views. Every snapshot query must reduce to the latest `change_time` per id and filter `delete_time IS NULL`; skipping this returns stale/duplicate/deleted rows.
-- **Event enum discipline.** Only the 6 documented `warehouse_events` types are trusted; `SCALING_UP`/`SCALING_DOWN` are ignored. Idle/gap math uses `LEAD` over **all** events (not one filtered type) so a RUNNING→STOPPED tail is measured correctly, and open trailing intervals stay NULL.
-- **Preview / availability.** `instance_pools` and `instance_events` are **Public Preview** — an empty result or `TABLE_OR_VIEW_NOT_FOUND` is expected and not an error. All of `system.compute` requires Unity Catalog, the `compute` schema enabled on the metastore, and `SELECT` granted on `system.*`. Tables are **regional** — run per metastore region and union if needed. A feature the account doesn't use (no pools, no SQL warehouses, no spot instances) yields a valid-but-empty result.
-- **Short-job blind spot.** Nodes/clusters that ran under ~10 minutes may never appear in `node_timeline`, so their absence means "too short to measure," not "idle."

@@ -44,32 +44,7 @@ Returns a single row of physical size: `total_bytes`, `num_total_files`, `active
 ### DESCRIBE EXTENDED / SHOW TBLPROPERTIES (`table_props_time_travel_config`, `iceberg_uniform_metadata`)
 Delta table properties (`delta.logRetentionDuration`, `delta.deletedFileRetentionDuration`, `delta.dataSkippingNumIndexedCols`, `delta.dataSkippingStatsColumns`, `delta.autoOptimize.optimizeWrite`, `delta.autoOptimize.autoCompact`, `delta.enableDeletionVectors`) and the "Delta Uniform Iceberg" metadata section. Retention values are CalendarInterval strings (e.g. `'interval 30 days'`) that must be parsed to days.
 
-## Queries
+---
 
-### Predictive Optimization operations (system.storage.predictive_optimization_operations_history)
+**Per-query documentation** — what each query does, why it matters, how to read every output column, an illustrative sample of the result, and the caveats — lives in the guided HTML tour: **[read it rendered →](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#d-storage)**. The `.sql` files in this folder are the source of truth.
 
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `po_maintenance_cost_by_table` | Per table × op-type × status: operation count, summed **estimated DBU**, first/last op time, over 30 days. | The master PO cost/coverage view — dollarizes automatic maintenance and surfaces which tables have `FAILED` ops (maintenance success-rate). |
-| `po_clustering_activity` | Per table: count of `CLUSTERING` ops with files/bytes removed vs. clustered and clustering estimated DBU (30d). | Shows how hard liquid/automatic clustering is working per table and what that compaction is costing. |
-| `po_clustering_column_churn` | Per table: whether the auto-selected clustering columns changed, old→new columns, reason, last-selection time, event count (30d). | Churning clustering keys = unstable data layout / poor key choice; a signal to pin clustering columns manually. |
-| `po_data_skipping_backfill` | Per table: which data-skipping stat columns were added/removed/new, plus scanned bytes/files and last event (30d). | Confirms stats were backfilled for pruning; helps explain data-skipping coverage (actual prune ratio lives in `system.query.history`, not here). |
-| `po_vacuum_reclaimed_bytes` | Per table: successful VACUUM op count, deleted files, **reclaimed bytes**, and VACUUM estimated DBU (30d). | Quantifies storage bloat actually reclaimed by VACUUM; pair with `vacuumable_bytes` to find unreclaimed waste. |
-
-### Inventory & per-table probes
-
-| Query id | What it returns | Why an admin cares |
-|---|---|---|
-| `table_inventory_type` | Count of tables grouped by catalog, schema, `table_type` (MANAGED/EXTERNAL/VIEW), and `data_source_format`. | Baseline inventory; EXTERNAL tables are **not** PO-eligible, so this bounds the PO coverage gap and flags Iceberg candidates. |
-| `storage_breakdown_analyze` | Single-row physical size split: active vs. time-travel vs. vacuumable vs. total bytes/files (per table, on demand). | The only way to get real table size — quantifies time-travel bloat and dollarizes unreclaimed storage. Deep-tier, DBR 18.0+. |
-| `table_props_time_travel_config` | The 7 Delta retention/optimization/data-skipping table properties per managed Delta table. | Over-long `logRetentionDuration`/`deletedFileRetentionDuration` = storage bloat; also shows auto-optimize and deletion-vector config. |
-| `iceberg_uniform_metadata` | The "Delta Uniform Iceberg" metadata section from `DESCRIBE EXTENDED` for tables flagged external/non-Delta. | Detects UniForm / managed-Iceberg tables; metadata only (no size). |
-
-## Notes
-
-- **Date window & masking:** the PO queries use a fixed **30-day** trailing window, `start_time >= current_date() - INTERVAL 30 DAYS AND start_time < current_date()`. The `< current_date()` guard intentionally drops **today** (whose DBU is still populating) but not yesterday — treat the most recent included day as **provisional** because `usage_quantity` can lag its operation row by up to ~24h. Retention on the source is ~180 days, so windows longer than that will silently truncate.
-- **All `operation_metrics` values are strings** (`map<string,string>`) and must be `CAST` before arithmetic; each `operation_type` populates a **disjoint** key set, which is why every query filters on a single `operation_type` before reading its keys.
-- **Estimated, not billed:** `usage_quantity` here is `ESTIMATED_DBU` — SUM it for a maintenance cost line, but reconcile against `system.billing.usage` for the authoritative spend.
-- **Size is not in system tables:** `storage_breakdown_analyze` and `table_props_time_travel_config` are **on-demand per-table** statements (Deep tier), not queryable history. When they aren't collected, degrade the finding to "not assessed — storage size not in system tables; requires ANALYZE / DBR 18.0+" rather than reporting zero.
-- **Confidence flags in this domain:** `table_inventory_type` and `iceberg_uniform_metadata` are marked **needs_confirmation** — only `table_type` (and the presence of the UniForm section) is doc-verified; `table_catalog`/`table_schema`/`data_source_format` column names and the exact UniForm key strings are plausible but **unverified** and validate on a real customer run.
-- **Empty ≠ broken:** if PO is disabled, the metastore isn't UC, the feature/region isn't enabled, or the account simply never ran a given op type, expect a **valid empty result** (or `TABLE_OR_VIEW_NOT_FOUND` if the schema isn't provisioned). `information_schema` results are additionally clipped to the collector principal's grants.
