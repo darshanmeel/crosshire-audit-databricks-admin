@@ -8,12 +8,12 @@ no dashboard: every file is a plain `SELECT` you paste into a Databricks SQL edi
 Every query explained — why it matters, what it does in plain terms, how to read each output column, an
 illustrative sample of the result, and the caveats.
 
-## 95 queries across 7 domains
+## 96 queries across 7 domains
 
 | Domain | Queries | What it answers |
 |---|--:|---|
 | [Cost & Billing](queries/cost/) | 23 | Dollarized DBU spend by SKU / product / job / notebook / endpoint / tag / identity; list vs account price; egress; GenAI tokens |
-| [Query Performance](queries/performance/) | 11 | Costly statements, bytes scanned / pruning / spill / shuffle, cache cold-start, queuing, failed queries, workload mix |
+| [Query Performance](queries/performance/) | 12 | Costly statements (raw + per-fingerprint), bytes scanned / pruning / spill / shuffle, cache cold-start, queuing, failed queries, workload mix |
 | [Compute](queries/compute/) | 10 | Cluster & SQL-warehouse config, node utilization, idle ratio, autoscale churn, instance pools/events |
 | [Jobs & Pipelines (Lakeflow)](queries/jobs_pipelines/) | 21 | Job/pipeline runs, failures, timeouts, retries, queue/cold-start, orphans, wasted DBUs, all-purpose placement |
 | [Model Serving & AI](queries/serving_ai/) | 4 | Serving endpoint traffic, dormant endpoints, AI-gateway token usage |
@@ -22,6 +22,17 @@ illustrative sample of the result, and the caveats.
 
 Each domain folder's **`README.md`** is a one-line index of its queries; open the
 **[interactive docs](https://learn.crosshire.ch/learn/tech/databricks/audit)** for the full write-up.
+
+## What each query carries
+
+Every `.sql` file opens with a structured header (see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the
+schema): what one row means (`read_this`), the healthy vs. investigate-if bands (labeled field
+heuristics you tune with `:params`), a free / config / spend action ladder, and every methodological
+caveat. **Finding** queries also emit a `status` column (`OK | WARN | CRITICAL | NOT_ASSESSED`) and
+sort worst-first; **inventory** queries are stable references you join to.
+
+[`queries/manifest.json`](queries/manifest.json) is a machine-readable index of all of the above,
+**generated** from those headers by `python tools/build_manifest.py` (never hand-edited).
 
 ## How to run
 
