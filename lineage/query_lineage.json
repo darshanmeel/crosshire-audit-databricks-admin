@@ -1,0 +1,1384 @@
+{
+  "kind": "query_lineage",
+  "note": "Derived purely from queries/manifest.json (the queries' reads: headers). No external data.",
+  "summary": {
+    "queries": 96,
+    "distinct_sources": 39
+  },
+  "queries": [
+    {
+      "query_id": "classic_clusters_config_current",
+      "domain": "compute",
+      "tier": "lite",
+      "reads": [
+        "system.compute.clusters"
+      ]
+    },
+    {
+      "query_id": "compute_idle_node_ratio",
+      "domain": "compute",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.compute.node_timeline"
+      ]
+    },
+    {
+      "query_id": "compute_warehouse_autoscale_churn",
+      "domain": "compute",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.compute.warehouse_events"
+      ]
+    },
+    {
+      "query_id": "compute_warehouse_idle_gaps",
+      "domain": "compute",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.compute.warehouse_events"
+      ]
+    },
+    {
+      "query_id": "instance_events_idle_active",
+      "domain": "compute",
+      "tier": "lite",
+      "reads": [
+        "system.compute.instance_events"
+      ]
+    },
+    {
+      "query_id": "instance_pools_idle_capacity",
+      "domain": "compute",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.compute.instance_pools"
+      ]
+    },
+    {
+      "query_id": "node_timeline_utilization",
+      "domain": "compute",
+      "tier": "lite",
+      "reads": [
+        "system.compute.node_timeline"
+      ]
+    },
+    {
+      "query_id": "node_types_reference",
+      "domain": "compute",
+      "tier": "lite",
+      "reads": [
+        "system.compute.node_types"
+      ]
+    },
+    {
+      "query_id": "sql_warehouse_config_current",
+      "domain": "compute",
+      "tier": "lite",
+      "reads": [
+        "system.compute.warehouses"
+      ]
+    },
+    {
+      "query_id": "sql_warehouse_events_activity",
+      "domain": "compute",
+      "tier": "lite",
+      "reads": [
+        "system.compute.warehouse_events"
+      ]
+    },
+    {
+      "query_id": "cost_account_prices_raw",
+      "domain": "cost",
+      "tier": "lite",
+      "reads": [
+        "system.billing.list_prices"
+      ]
+    },
+    {
+      "query_id": "cost_actual_vs_list_by_sku",
+      "domain": "cost",
+      "tier": "deep",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_by_billing_origin_product",
+      "domain": "cost",
+      "tier": "lite",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_by_compute_resource",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_by_job",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_by_notebook",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_by_serving_endpoint",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_chargeback_by_identity",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_chargeback_by_tag",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_cloud_infra",
+      "domain": "cost",
+      "tier": "deep",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_dbsql_allocation_gap",
+      "domain": "cost",
+      "tier": "deep",
+      "reads": [
+        "system.billing.attributed_usage",
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_default_storage_dsu",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_dollarized_by_sku_day",
+      "domain": "cost",
+      "tier": "deep",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_genai_token_gpu",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_networking_egress",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_premium_serverless_photon",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_restatement_trust_metric",
+      "domain": "cost",
+      "tier": "lite",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_serving_mode_by_endpoint",
+      "domain": "cost",
+      "tier": "deep",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_totals_by_sku_day",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_usage_policy_coverage",
+      "domain": "cost",
+      "tier": "standard",
+      "reads": [
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_vector_search_spend",
+      "domain": "cost",
+      "tier": "deep",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage"
+      ]
+    },
+    {
+      "query_id": "cost_workspace_names",
+      "domain": "cost",
+      "tier": "lite",
+      "reads": [
+        "system.access.workspaces_latest"
+      ]
+    },
+    {
+      "query_id": "pricing_list_prices_raw",
+      "domain": "cost",
+      "tier": "lite",
+      "reads": [
+        "system.billing.list_prices"
+      ]
+    },
+    {
+      "query_id": "access_admin_role_change_events",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.access.audit"
+      ]
+    },
+    {
+      "query_id": "access_classified_unmasked",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.data_classification.results",
+        "system.information_schema.column_masks"
+      ]
+    },
+    {
+      "query_id": "access_column_lineage_sensitive_reach",
+      "domain": "governance_access",
+      "tier": "deep",
+      "reads": [
+        "system.access.column_lineage"
+      ]
+    },
+    {
+      "query_id": "access_column_masks_inventory",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.information_schema.column_masks"
+      ]
+    },
+    {
+      "query_id": "access_data_classification_inventory",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.data_classification.results"
+      ]
+    },
+    {
+      "query_id": "access_dead_table_candidates",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.access.table_lineage",
+        "system.information_schema.tables"
+      ]
+    },
+    {
+      "query_id": "access_grants_inventory",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.information_schema.catalog_privileges",
+        "system.information_schema.table_privileges"
+      ]
+    },
+    {
+      "query_id": "access_grants_inventory_extended",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.information_schema.connection_privileges",
+        "system.information_schema.credential_privileges",
+        "system.information_schema.external_location_privileges",
+        "system.information_schema.schema_privileges"
+      ]
+    },
+    {
+      "query_id": "access_login_concentration",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.access.audit"
+      ]
+    },
+    {
+      "query_id": "access_network_inbound_denials",
+      "domain": "governance_access",
+      "tier": "deep",
+      "reads": [
+        "system.access.inbound_network"
+      ]
+    },
+    {
+      "query_id": "access_network_outbound_denials",
+      "domain": "governance_access",
+      "tier": "deep",
+      "reads": [
+        "system.access.outbound_network"
+      ]
+    },
+    {
+      "query_id": "access_pii_propagation_untagged",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.access.column_lineage",
+        "system.information_schema.column_tags"
+      ]
+    },
+    {
+      "query_id": "access_row_filters_inventory",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.information_schema.row_filters"
+      ]
+    },
+    {
+      "query_id": "access_runas_escalation",
+      "domain": "governance_access",
+      "tier": "deep",
+      "reads": [
+        "system.access.audit"
+      ]
+    },
+    {
+      "query_id": "access_table_lineage_blast_radius",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.access.table_lineage"
+      ]
+    },
+    {
+      "query_id": "access_tags_inventory",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.information_schema.column_tags",
+        "system.information_schema.table_tags"
+      ]
+    },
+    {
+      "query_id": "access_vector_search_traffic",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.access.audit"
+      ]
+    },
+    {
+      "query_id": "lakeflow_failed_jobs_wasted_dbus",
+      "domain": "jobs_pipelines",
+      "tier": "deep",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.lakeflow.job_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_failed_runs",
+      "domain": "jobs_pipelines",
+      "tier": "lite",
+      "reads": [
+        "system.lakeflow.job_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_health_rule_coverage",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.lakeflow.jobs"
+      ]
+    },
+    {
+      "query_id": "lakeflow_job_ownership_orphans",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.lakeflow.jobs"
+      ]
+    },
+    {
+      "query_id": "lakeflow_job_queue_time",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.lakeflow.job_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_job_tasks_no_timeout",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.lakeflow.job_tasks"
+      ]
+    },
+    {
+      "query_id": "lakeflow_jobs_no_timeout",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.lakeflow.jobs"
+      ]
+    },
+    {
+      "query_id": "lakeflow_jobs_on_all_purpose",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.compute.clusters",
+        "system.lakeflow.job_task_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_never_started_runs",
+      "domain": "jobs_pipelines",
+      "tier": "lite",
+      "reads": [
+        "system.lakeflow.job_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_phase_cold_start",
+      "domain": "jobs_pipelines",
+      "tier": "lite",
+      "reads": [
+        "system.lakeflow.job_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_pipeline_cost",
+      "domain": "jobs_pipelines",
+      "tier": "deep",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.lakeflow.pipeline_update_timeline",
+        "system.lakeflow.pipelines"
+      ]
+    },
+    {
+      "query_id": "lakeflow_pipeline_idle_tail_duration",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.lakeflow.pipeline_update_timeline",
+        "system.lakeflow.pipelines"
+      ]
+    },
+    {
+      "query_id": "lakeflow_pipeline_update_failures_retries",
+      "domain": "jobs_pipelines",
+      "tier": "lite",
+      "reads": [
+        "system.lakeflow.pipeline_update_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_pipelines_inventory_tier",
+      "domain": "jobs_pipelines",
+      "tier": "lite",
+      "reads": [
+        "system.lakeflow.pipelines"
+      ]
+    },
+    {
+      "query_id": "lakeflow_retries_repairs",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.lakeflow.job_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_stale_zombie_jobs",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.lakeflow.job_run_timeline",
+        "system.lakeflow.jobs"
+      ]
+    },
+    {
+      "query_id": "lakeflow_succeeded_with_failed_tasks",
+      "domain": "jobs_pipelines",
+      "tier": "lite",
+      "reads": [
+        "system.lakeflow.job_run_timeline",
+        "system.lakeflow.job_task_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_tasks_near_timeout",
+      "domain": "jobs_pipelines",
+      "tier": "standard",
+      "reads": [
+        "system.lakeflow.job_task_run_timeline",
+        "system.lakeflow.job_tasks"
+      ]
+    },
+    {
+      "query_id": "lakeflow_termination_taxonomy",
+      "domain": "jobs_pipelines",
+      "tier": "lite",
+      "reads": [
+        "system.lakeflow.job_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_termination_type_probe",
+      "domain": "jobs_pipelines",
+      "tier": "lite",
+      "reads": [
+        "system.lakeflow.job_run_timeline"
+      ]
+    },
+    {
+      "query_id": "lakeflow_workload_mix_hours",
+      "domain": "jobs_pipelines",
+      "tier": "lite",
+      "reads": [
+        "system.lakeflow.job_run_timeline"
+      ]
+    },
+    {
+      "query_id": "audit_self_cost",
+      "domain": "performance",
+      "tier": "lite",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_cache_coldstart",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_costly_statements",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_costly_statements_grouped",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_failed_queries_daily",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_local_spillage",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_per_query_estimate_lane",
+      "domain": "performance",
+      "tier": "deep",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_provenance_by_source",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_pruning_effectiveness",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_queuing_waits",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_shuffle_write_amplification",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "query_workload_mix_hours",
+      "domain": "performance",
+      "tier": "standard",
+      "reads": [
+        "system.query.history"
+      ]
+    },
+    {
+      "query_id": "compute_ai_gateway_usage",
+      "domain": "serving_ai",
+      "tier": "standard",
+      "reads": [
+        "system.ai_gateway.usage"
+      ]
+    },
+    {
+      "query_id": "compute_serving_endpoint_cost_status",
+      "domain": "serving_ai",
+      "tier": "standard",
+      "reads": [
+        "system.access.workspaces_latest",
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.serving.endpoint_usage",
+        "system.serving.served_entities"
+      ]
+    },
+    {
+      "query_id": "compute_serving_endpoint_usage",
+      "domain": "serving_ai",
+      "tier": "deep",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.serving.endpoint_usage",
+        "system.serving.served_entities"
+      ]
+    },
+    {
+      "query_id": "serving_endpoint_traffic_by_endpoint",
+      "domain": "serving_ai",
+      "tier": "deep",
+      "reads": [
+        "system.billing.list_prices",
+        "system.billing.usage",
+        "system.serving.endpoint_usage",
+        "system.serving.served_entities"
+      ]
+    },
+    {
+      "query_id": "iceberg_uniform_metadata",
+      "domain": "storage",
+      "tier": "deep",
+      "reads": []
+    },
+    {
+      "query_id": "po_clustering_activity",
+      "domain": "storage",
+      "tier": "standard",
+      "reads": [
+        "system.storage.predictive_optimization_operations_history"
+      ]
+    },
+    {
+      "query_id": "po_clustering_column_churn",
+      "domain": "storage",
+      "tier": "deep",
+      "reads": [
+        "system.storage.predictive_optimization_operations_history"
+      ]
+    },
+    {
+      "query_id": "po_data_skipping_backfill",
+      "domain": "storage",
+      "tier": "deep",
+      "reads": [
+        "system.storage.predictive_optimization_operations_history"
+      ]
+    },
+    {
+      "query_id": "po_maintenance_cost_by_table",
+      "domain": "storage",
+      "tier": "standard",
+      "reads": [
+        "system.storage.predictive_optimization_operations_history"
+      ]
+    },
+    {
+      "query_id": "po_vacuum_reclaimed_bytes",
+      "domain": "storage",
+      "tier": "standard",
+      "reads": [
+        "system.storage.predictive_optimization_operations_history"
+      ]
+    },
+    {
+      "query_id": "storage_breakdown_analyze",
+      "domain": "storage",
+      "tier": "deep",
+      "reads": []
+    },
+    {
+      "query_id": "table_inventory_type",
+      "domain": "storage",
+      "tier": "deep",
+      "reads": [
+        "system.information_schema.tables"
+      ]
+    },
+    {
+      "query_id": "table_props_time_travel_config",
+      "domain": "storage",
+      "tier": "standard",
+      "reads": []
+    }
+  ],
+  "source_index": {
+    "system.access.audit": [
+      "access_admin_role_change_events",
+      "access_login_concentration",
+      "access_runas_escalation",
+      "access_vector_search_traffic"
+    ],
+    "system.access.column_lineage": [
+      "access_column_lineage_sensitive_reach",
+      "access_pii_propagation_untagged"
+    ],
+    "system.access.inbound_network": [
+      "access_network_inbound_denials"
+    ],
+    "system.access.outbound_network": [
+      "access_network_outbound_denials"
+    ],
+    "system.access.table_lineage": [
+      "access_dead_table_candidates",
+      "access_table_lineage_blast_radius"
+    ],
+    "system.access.workspaces_latest": [
+      "compute_serving_endpoint_cost_status",
+      "cost_workspace_names"
+    ],
+    "system.ai_gateway.usage": [
+      "compute_ai_gateway_usage"
+    ],
+    "system.billing.attributed_usage": [
+      "cost_dbsql_allocation_gap"
+    ],
+    "system.billing.list_prices": [
+      "compute_idle_node_ratio",
+      "compute_serving_endpoint_cost_status",
+      "compute_serving_endpoint_usage",
+      "compute_warehouse_autoscale_churn",
+      "compute_warehouse_idle_gaps",
+      "cost_account_prices_raw",
+      "cost_actual_vs_list_by_sku",
+      "cost_cloud_infra",
+      "cost_dollarized_by_sku_day",
+      "cost_serving_mode_by_endpoint",
+      "cost_vector_search_spend",
+      "instance_pools_idle_capacity",
+      "lakeflow_failed_jobs_wasted_dbus",
+      "lakeflow_job_tasks_no_timeout",
+      "lakeflow_jobs_no_timeout",
+      "lakeflow_jobs_on_all_purpose",
+      "lakeflow_pipeline_cost",
+      "lakeflow_pipeline_idle_tail_duration",
+      "lakeflow_retries_repairs",
+      "lakeflow_stale_zombie_jobs",
+      "pricing_list_prices_raw",
+      "serving_endpoint_traffic_by_endpoint"
+    ],
+    "system.billing.usage": [
+      "compute_idle_node_ratio",
+      "compute_serving_endpoint_cost_status",
+      "compute_serving_endpoint_usage",
+      "compute_warehouse_autoscale_churn",
+      "compute_warehouse_idle_gaps",
+      "cost_actual_vs_list_by_sku",
+      "cost_by_billing_origin_product",
+      "cost_by_compute_resource",
+      "cost_by_job",
+      "cost_by_notebook",
+      "cost_by_serving_endpoint",
+      "cost_chargeback_by_identity",
+      "cost_chargeback_by_tag",
+      "cost_cloud_infra",
+      "cost_dbsql_allocation_gap",
+      "cost_default_storage_dsu",
+      "cost_dollarized_by_sku_day",
+      "cost_genai_token_gpu",
+      "cost_networking_egress",
+      "cost_premium_serverless_photon",
+      "cost_restatement_trust_metric",
+      "cost_serving_mode_by_endpoint",
+      "cost_totals_by_sku_day",
+      "cost_usage_policy_coverage",
+      "cost_vector_search_spend",
+      "instance_pools_idle_capacity",
+      "lakeflow_failed_jobs_wasted_dbus",
+      "lakeflow_job_tasks_no_timeout",
+      "lakeflow_jobs_no_timeout",
+      "lakeflow_jobs_on_all_purpose",
+      "lakeflow_pipeline_cost",
+      "lakeflow_pipeline_idle_tail_duration",
+      "lakeflow_retries_repairs",
+      "lakeflow_stale_zombie_jobs",
+      "serving_endpoint_traffic_by_endpoint"
+    ],
+    "system.compute.clusters": [
+      "classic_clusters_config_current",
+      "lakeflow_jobs_on_all_purpose"
+    ],
+    "system.compute.instance_events": [
+      "instance_events_idle_active"
+    ],
+    "system.compute.instance_pools": [
+      "instance_pools_idle_capacity"
+    ],
+    "system.compute.node_timeline": [
+      "compute_idle_node_ratio",
+      "node_timeline_utilization"
+    ],
+    "system.compute.node_types": [
+      "node_types_reference"
+    ],
+    "system.compute.warehouse_events": [
+      "compute_warehouse_autoscale_churn",
+      "compute_warehouse_idle_gaps",
+      "sql_warehouse_events_activity"
+    ],
+    "system.compute.warehouses": [
+      "sql_warehouse_config_current"
+    ],
+    "system.data_classification.results": [
+      "access_classified_unmasked",
+      "access_data_classification_inventory"
+    ],
+    "system.information_schema.catalog_privileges": [
+      "access_grants_inventory"
+    ],
+    "system.information_schema.column_masks": [
+      "access_classified_unmasked",
+      "access_column_masks_inventory"
+    ],
+    "system.information_schema.column_tags": [
+      "access_pii_propagation_untagged",
+      "access_tags_inventory"
+    ],
+    "system.information_schema.connection_privileges": [
+      "access_grants_inventory_extended"
+    ],
+    "system.information_schema.credential_privileges": [
+      "access_grants_inventory_extended"
+    ],
+    "system.information_schema.external_location_privileges": [
+      "access_grants_inventory_extended"
+    ],
+    "system.information_schema.row_filters": [
+      "access_row_filters_inventory"
+    ],
+    "system.information_schema.schema_privileges": [
+      "access_grants_inventory_extended"
+    ],
+    "system.information_schema.table_privileges": [
+      "access_grants_inventory"
+    ],
+    "system.information_schema.table_tags": [
+      "access_tags_inventory"
+    ],
+    "system.information_schema.tables": [
+      "access_dead_table_candidates",
+      "table_inventory_type"
+    ],
+    "system.lakeflow.job_run_timeline": [
+      "lakeflow_failed_jobs_wasted_dbus",
+      "lakeflow_failed_runs",
+      "lakeflow_job_queue_time",
+      "lakeflow_never_started_runs",
+      "lakeflow_phase_cold_start",
+      "lakeflow_retries_repairs",
+      "lakeflow_stale_zombie_jobs",
+      "lakeflow_succeeded_with_failed_tasks",
+      "lakeflow_termination_taxonomy",
+      "lakeflow_termination_type_probe",
+      "lakeflow_workload_mix_hours"
+    ],
+    "system.lakeflow.job_task_run_timeline": [
+      "lakeflow_jobs_on_all_purpose",
+      "lakeflow_succeeded_with_failed_tasks",
+      "lakeflow_tasks_near_timeout"
+    ],
+    "system.lakeflow.job_tasks": [
+      "lakeflow_job_tasks_no_timeout",
+      "lakeflow_tasks_near_timeout"
+    ],
+    "system.lakeflow.jobs": [
+      "lakeflow_health_rule_coverage",
+      "lakeflow_job_ownership_orphans",
+      "lakeflow_jobs_no_timeout",
+      "lakeflow_stale_zombie_jobs"
+    ],
+    "system.lakeflow.pipeline_update_timeline": [
+      "lakeflow_pipeline_cost",
+      "lakeflow_pipeline_idle_tail_duration",
+      "lakeflow_pipeline_update_failures_retries"
+    ],
+    "system.lakeflow.pipelines": [
+      "lakeflow_pipeline_cost",
+      "lakeflow_pipeline_idle_tail_duration",
+      "lakeflow_pipelines_inventory_tier"
+    ],
+    "system.query.history": [
+      "audit_self_cost",
+      "query_cache_coldstart",
+      "query_costly_statements",
+      "query_costly_statements_grouped",
+      "query_failed_queries_daily",
+      "query_local_spillage",
+      "query_per_query_estimate_lane",
+      "query_provenance_by_source",
+      "query_pruning_effectiveness",
+      "query_queuing_waits",
+      "query_shuffle_write_amplification",
+      "query_workload_mix_hours"
+    ],
+    "system.serving.endpoint_usage": [
+      "compute_serving_endpoint_cost_status",
+      "compute_serving_endpoint_usage",
+      "serving_endpoint_traffic_by_endpoint"
+    ],
+    "system.serving.served_entities": [
+      "compute_serving_endpoint_cost_status",
+      "compute_serving_endpoint_usage",
+      "serving_endpoint_traffic_by_endpoint"
+    ],
+    "system.storage.predictive_optimization_operations_history": [
+      "po_clustering_activity",
+      "po_clustering_column_churn",
+      "po_data_skipping_backfill",
+      "po_maintenance_cost_by_table",
+      "po_vacuum_reclaimed_bytes"
+    ]
+  },
+  "join_graph": [
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.billing.usage"
+      ],
+      "co_read_in_queries": 20
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.lakeflow.job_run_timeline"
+      ],
+      "co_read_in_queries": 3
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.serving.endpoint_usage"
+      ],
+      "co_read_in_queries": 3
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.serving.served_entities"
+      ],
+      "co_read_in_queries": 3
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.lakeflow.job_run_timeline"
+      ],
+      "co_read_in_queries": 3
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.serving.endpoint_usage"
+      ],
+      "co_read_in_queries": 3
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.serving.served_entities"
+      ],
+      "co_read_in_queries": 3
+    },
+    {
+      "tables": [
+        "system.serving.endpoint_usage",
+        "system.serving.served_entities"
+      ],
+      "co_read_in_queries": 3
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.compute.warehouse_events"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.lakeflow.jobs"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.lakeflow.pipeline_update_timeline"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.lakeflow.pipelines"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.compute.warehouse_events"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.lakeflow.jobs"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.lakeflow.pipeline_update_timeline"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.lakeflow.pipelines"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.lakeflow.pipeline_update_timeline",
+        "system.lakeflow.pipelines"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.access.column_lineage",
+        "system.information_schema.column_tags"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.access.table_lineage",
+        "system.information_schema.tables"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.access.workspaces_latest",
+        "system.billing.list_prices"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.access.workspaces_latest",
+        "system.billing.usage"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.access.workspaces_latest",
+        "system.serving.endpoint_usage"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.access.workspaces_latest",
+        "system.serving.served_entities"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.attributed_usage",
+        "system.billing.usage"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.compute.clusters"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.compute.instance_pools"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.compute.node_timeline"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.lakeflow.job_task_run_timeline"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.list_prices",
+        "system.lakeflow.job_tasks"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.compute.clusters"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.compute.instance_pools"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.compute.node_timeline"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.lakeflow.job_task_run_timeline"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.billing.usage",
+        "system.lakeflow.job_tasks"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.compute.clusters",
+        "system.lakeflow.job_task_run_timeline"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.data_classification.results",
+        "system.information_schema.column_masks"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.catalog_privileges",
+        "system.information_schema.table_privileges"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.column_tags",
+        "system.information_schema.table_tags"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.connection_privileges",
+        "system.information_schema.credential_privileges"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.connection_privileges",
+        "system.information_schema.external_location_privileges"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.connection_privileges",
+        "system.information_schema.schema_privileges"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.credential_privileges",
+        "system.information_schema.external_location_privileges"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.credential_privileges",
+        "system.information_schema.schema_privileges"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.external_location_privileges",
+        "system.information_schema.schema_privileges"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.lakeflow.job_run_timeline",
+        "system.lakeflow.job_task_run_timeline"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.lakeflow.job_run_timeline",
+        "system.lakeflow.jobs"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.lakeflow.job_task_run_timeline",
+        "system.lakeflow.job_tasks"
+      ],
+      "co_read_in_queries": 1
+    }
+  ]
+}

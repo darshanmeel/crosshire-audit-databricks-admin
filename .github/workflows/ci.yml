@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  headers:
+    name: Header schema + manifest/sqlfluff sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Authoritative gate: all v2 header fields present, enums valid, every `next:` target
+      # resolves (malformed next-entries now fail loudly), no hard-coded windows, no internal
+      # vocabulary, status labels in-enum, and BOTH generated artifacts (manifest.json AND
+      # .sqlfluff) are in sync with the headers.
+      - name: Lint headers + check manifest & .sqlfluff are in sync
+        run: python tools/lint_headers.py
+      # Creds-free regression check: confirm every query's :params resolve from the manifest.
+      - name: Resolve all queries (dry-run)
+        run: python tools/run_audit.py --dry-run > /dev/null
+
+  sqlfluff:
+    name: SQL parse check (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true   # advisory only: Databricks-specific syntax can outrun sqlfluff
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install sqlfluff (pinned)
+        run: pip install -r requirements-dev.txt
+      # PRS = the parse-error rule only. We are not enforcing layout/style, just that each file
+      # parses as Databricks SQL once the :params are substituted (see .sqlfluff).
+      - name: Parse-check all queries
+        run: sqlfluff lint queries --dialect databricks --rules PRS

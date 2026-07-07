@@ -1,0 +1,11 @@
+# This repo is SQL + docs only — never commit query RESULTS (they contain real account data).
+*.csv
+*.json
+!queries/manifest.json
+# generated dbt-style lineage (only system-table + query names, no account data):
+!lineage/query_lineage.json
+results/
+out/
+__pycache__/
+.DS_Store
+.ipynb_checkpoints/
