@@ -3,6 +3,11 @@
 -- feeds: Job Health page — top failing jobs ranked by wasted DBUs (reliability-1)
 -- confidence: needs_confirmation
 -- caveats: WASTED DBUs = the net DBUs billed on usage rows whose usage_metadata.job_id ran a FAILED/ERROR/TIMED_OUT job-run in the window. usage.usage_metadata carries job_id but NOT run_id, so DBUs attribute to the JOB, not the individual failed run — a job that mostly succeeds will over-attribute (disclosed downstream, never presented as exact run-level waste). job_id is unique only WITHIN a workspace -> the usage<->run join is on (workspace_id, job_id), never job_id alone (multi-workspace metastore fan-out is the must-fix). usage_quantity is SUM'd across ALL record_types (ORIGINAL/RETRACTION/RESTATEMENT already net) and filtered to usage_unit='DBU' so bytes/hours/tokens are never blended into the DBU total. termination_code/result_state are populated only in the run END row (>1h runs slice hourly) — filtered to result_state IS NOT NULL. termination_code itself is "not populated before Aug 2024" and several run columns "not populated before late Nov 2025" — historical NULLs are disclosed as unknown, never read as a finding. The dominant termination_code per job is the ARGMAX by period_start_time (latest failure's code), NOT MAX(termination_code) which is lexicographic and wrong (must-fix).
+-- net_dbus is exact billed DBUs (usage_unit='DBU'); est_usd_list is a LIST-PRICE ESTIMATE
+--   (usage_quantity x list_prices.pricing.default) -- NOT the negotiated invoice rate (not in any
+--   system table) and excludes cloud infra/egress $. Directional, needs_confirmation.
+-- Cost is attributed by billing ID (workspace_id + job_id) over the window (per-job), not per run/event.
+--   Cost rollup is pre-aggregated then LEFT JOINed, so finding rows are never multiplied.
 /* databricks_audit:lakeflow_failed_jobs_wasted_dbus */
 WITH end_rows AS (
   SELECT workspace_id, job_id, run_id, result_state, termination_code, period_start_time
@@ -29,18 +34,30 @@ last_fail AS (
     PARTITION BY workspace_id, job_id ORDER BY period_start_time DESC
   ) = 1
 ),
+-- List price effective at each usage row's time, keyed by sku_name+cloud+usage_unit.
+price AS (
+  SELECT sku_name, cloud, usage_unit, price_start_time, price_end_time,
+         CAST(pricing.default AS DOUBLE) AS list_rate
+  FROM system.billing.list_prices
+),
 -- DBUs billed to each job over the window. usage_metadata.job_id is unique only within a
 -- workspace, so we attribute on (workspace_id, job_id). Net across ALL record_types; DBU only.
+-- Pre-aggregated by exactly (workspace_id, job_id) so the LEFT JOIN below stays strictly 1:1.
 job_dbus AS (
-  SELECT workspace_id,
-         usage_metadata.job_id AS job_id,
-         SUM(usage_quantity)   AS net_usage_quantity
-  FROM system.billing.usage
-  WHERE usage_date >= dateadd(day, -:period_days, current_date())
-    AND usage_date < current_date()
-    AND upper(usage_unit) = 'DBU'
-    AND usage_metadata.job_id IS NOT NULL
-  GROUP BY workspace_id, usage_metadata.job_id
+  SELECT u.workspace_id,
+         u.usage_metadata.job_id AS job_id,
+         SUM(u.usage_quantity)                            AS net_usage_quantity,
+         SUM(u.usage_quantity * COALESCE(p.list_rate, 0)) AS est_usd_list
+  FROM system.billing.usage u
+  LEFT JOIN price p
+    ON u.sku_name = p.sku_name AND u.cloud = p.cloud AND u.usage_unit = p.usage_unit
+   AND u.usage_end_time >= p.price_start_time
+   AND (p.price_end_time IS NULL OR u.usage_end_time < p.price_end_time)
+  WHERE u.usage_date >= dateadd(day, -:period_days, current_date())
+    AND u.usage_date < current_date()
+    AND upper(u.usage_unit) = 'DBU'
+    AND u.usage_metadata.job_id IS NOT NULL
+  GROUP BY u.workspace_id, u.usage_metadata.job_id
 )
 SELECT r.workspace_id,
        r.job_id,
@@ -52,7 +69,10 @@ SELECT r.workspace_id,
        -- not exact run-level waste (usage_metadata has no run_id) — labelled as such downstream.
        CASE WHEN r.distinct_runs > 0
             THEN COALESCE(d.net_usage_quantity, 0) * (r.failed_runs / r.distinct_runs)
-            ELSE 0 END                                                   AS wasted_dbus_proxy
+            ELSE 0 END                                                   AS wasted_dbus_proxy,
+       -- Cost visibility (ADDED): exact billed DBUs and list-price USD estimate for the job.
+       COALESCE(d.net_usage_quantity, 0)                                 AS net_dbus,
+       COALESCE(d.est_usd_list, 0)                                       AS est_usd_list
 FROM job_runs r
 LEFT JOIN last_fail lf
   ON r.workspace_id = lf.workspace_id AND r.job_id = lf.job_id
