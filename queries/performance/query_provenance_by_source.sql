@@ -1,10 +1,17 @@
 -- query_id: query_provenance_by_source
--- source: system.query.history
--- feeds: workload mix/hours; per-query ESTIMATE lane; per-WORKSPACE query provenance; editor-style ad-hoc (sql_editor / notebook) vs scheduled (job) split; who runs ad-hoc — top human users vs service principals (executed_by)
--- confidence: needs_confirmation — verifier status unverifiable
--- NEEDS WORKSPACE CONFIRMATION: the dotted-path SELECT/GROUP BY access syntax against the nested query_source struct — query_source.job_info.job_id, query_source.dashboard_id, query_source.legacy_dashboard_id, query_source.notebook_id, query_source.alert_id, query_source.genie_space_id, query_source.sql_query_id. The subfield names are confirmed; the literal access expression and the single-winner CASE precedence are NOT verbatim in the doc. The doc explicitly says multiple subfields can populate simultaneously and are NOT execution-ordered, so the CASE is a heuristic, not authoritative attribution. Confirm the struct path resolves and decide whether to emit ALL non-null source flags rather than a single CASE winner. No safer-fallback SQL given by the spec — spec SQL used verbatim as primary.
--- caveats: Each subfield is NULL when that entity wasn't involved. Provenance covers Databricks entities only. If grouping by a doubly-nested subfield (job_info.job_id) is rejected, alias the extracted scalar in a subquery before GROUP BY. Also confirm executed_by vs executed_as/executed_as_user_id for run-as / service-principal attribution.
-/* databricks_audit:query_provenance_by_source */
+-- title: Query volume and duration by source (job, dashboard, notebook, ad-hoc)
+-- domain: performance   tier: standard
+-- reads: system.query.history
+-- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- params: :period_days (default 30) rolling window in days
+-- confidence: needs_confirmation
+-- confidence_note: The nested query_source struct's dotted-path access (query_source.job_info.job_id, query_source.dashboard_id, etc.) and the single-winner CASE precedence used to pick one source_kind per query are not verified verbatim against a live workspace. The subfield names themselves are confirmed, but Databricks' own documentation says multiple subfields can be populated on the same query simultaneously and are not execution-ordered, so this CASE is a heuristic, not authoritative attribution. Confirm the struct path resolves in your workspace, and consider emitting all non-null source flags instead of a single winner if you need exact attribution.
+-- read_this: One row = a workspace + compute + identity + source_kind (job, dashboard, legacy_dashboard, notebook, alert, genie, sql_editor, or other) describing where queries came from. The columns that matter are source_kind (which surface issued the query) and query_count - a workspace dominated by "other" or split evenly between ad-hoc (sql_editor/notebook) and scheduled (job) sources tells you whether spend is coming from production pipelines or exploratory work.
+-- healthy: n/a - inventory
+-- investigate_if: n/a - inventory
+-- actions: n/a - inventory (reference/join input)
+-- next: query_workload_mix_hours (for the same volume broken out by hour-of-day instead of source), query_per_query_estimate_lane (to turn this volume into a cost estimate)
+-- caveats: Each query_source subfield is NULL when that entity was not involved in the query, so a row's source_kind reflects only the first non-null subfield in the CASE precedence order above (job, then dashboard, then legacy_dashboard, then notebook, then alert, then genie, then sql_editor) - not necessarily the only surface involved in that query. Provenance only covers Databricks-native entities (jobs, dashboards, notebooks, alerts, Genie spaces, the SQL editor); anything issuing SQL from outside these (a third-party BI tool, a raw API call) will show up as "other." If your workspace rejects grouping by a doubly-nested subfield like job_info.job_id, extract it into a scalar in a subquery before grouping. executed_by is partial-masked as shown (email -> da****@****, service-principal GUID kept as-is, anything else first-2-chars + ****); identity_type is a coarse user/service_principal/unknown split derived from that same masked signal, not a verified directory lookup. If you need exact run-as attribution for service principals, also check executed_as / executed_as_user_id, which this query does not select.
 -- NEEDS CONFIRMATION: nested-struct dotted-path access + CASE attribution precedence are UNVERIFIED.
 -- Confirm the struct path resolves and decide whether to emit ALL non-null source flags
 -- rather than a single CASE winner (simultaneous population is documented).
@@ -32,7 +39,7 @@ SELECT workspace_id,
        SUM(total_duration_ms)     AS total_duration_ms_sum,
        SUM(read_bytes)            AS read_bytes_sum
 FROM system.query.history
-WHERE start_time >= current_date() - INTERVAL 30 DAYS
+WHERE start_time >= current_date() - INTERVAL :period_days DAYS
   AND start_time < current_date()
 GROUP BY workspace_id, compute.type, compute.warehouse_id, source_kind,
          CASE WHEN executed_by IS NULL              THEN 'unknown'
@@ -42,3 +49,4 @@ GROUP BY workspace_id, compute.type, compute.warehouse_id, source_kind,
               WHEN executed_by LIKE '%@%'           THEN concat(substr(executed_by, 1, 2), '****@****')
               ELSE executed_by END,
          query_source.job_info.job_id, query_source.dashboard_id, query_source.notebook_id
+ORDER BY workspace_id, compute_type, source_kind

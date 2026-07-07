@@ -1,16 +1,17 @@
 -- query_id: audit_self_cost
--- source: system.query.history
--- feeds: Audit Cost tab — what running THIS audit cost the workspace
--- confidence: confirmed (measured magnitude). Reports COUNT + runtime of the audit's own
---   queries; Databricks does NOT expose per-query DBU, so the engine reports magnitude and
---   marks the dollar 'not assessed' (parity with the rest of the DBX dollar stance) unless a
---   DBU rate is supplied downstream.
--- caveats: INVERSE of self-exclusion — INCLUDES the audit's own queries on purpose. Every
---   CrossHire query embeds the /* databricks_audit:<id> */ marker, so we match on statement_text.
---   system.query.history has short ingest latency, so the most recent minutes of the in-flight
---   run may not be reflected yet; the figure is cumulative across audit runs in the window.
---   No upper-bound on start_time so today's (this run's) landed queries are included.
-/* databricks_audit:audit_self_cost */
+-- title: Cost of running this audit itself
+-- domain: performance   tier: lite
+-- reads: system.query.history
+-- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- params: :period_days (default 30) rolling window in days
+-- confidence: confirmed
+-- confidence_note: Measured magnitude - query count and runtime are directly observable columns in system.query.history; Databricks exposes no per-query DBU column, so the dollar cost of running this audit stays "not assessed" by design, not by omission.
+-- read_this: One row = a workspace + statement type describing how many queries this audit itself issued and how long they ran. The columns that matter are query_count and total_duration_secs - how much of your own query-history footprint running this audit adds.
+-- healthy: n/a - inventory
+-- investigate_if: n/a - inventory
+-- actions: n/a - inventory (reference/join input)
+-- next: query_costly_statements (if you want to see the audit's own queries ranked individually), query_workload_mix_hours (to see how the audit's load compares to the rest of your workload)
+-- caveats: This is the INVERSE of self-exclusion - it deliberately INCLUDES this audit's own queries so you can see what running it cost. Queries are matched by a text marker embedded in every query this audit issues, so this only catches queries whose statement_text contains that marker; anything that strips or rewrites statement_text before it reaches system tables will fall out of this count. system.query.history has short ingest latency, so the most recent minutes of a run still in flight may not be reflected yet - the totals here are cumulative across every audit run inside :period_days, not just the latest one. There is no upper bound on start_time, so today's already-landed queries are included even while the run continues. Databricks does not expose a per-query DBU column, so this reports COUNT and runtime (magnitude) only - the dollar cost is "not assessed" unless you separately supply a DBU rate.
 SELECT
     workspace_id,
     statement_type,
@@ -23,4 +24,5 @@ SELECT
 FROM system.query.history
 WHERE start_time >= dateadd(day, -:period_days, current_date())
   AND statement_text ILIKE '%databricks_audit%'
-GROUP BY workspace_id, statement_type;
+GROUP BY workspace_id, statement_type
+ORDER BY workspace_id, statement_type
