@@ -1,6 +1,12 @@
 # sqlfluff config (OPTIONAL / advisory CI check).
-# The authoritative gate is tools/lint_headers.py; sqlfluff only sanity-parses the SQL.
-# Named parameter markers (:period_days, thresholds) are resolved by the placeholder templater.
+# The authoritative gate is tools/lint_headers.py; sqlfluff only sanity-parses the SQL, and the
+# job is continue-on-error. Layout/style is deliberately NOT enforced (max_line_length = 0,
+# --rules PRS = parse-errors only) because sqlfluff can't fully parse Databricks syntax.
+#
+# GENERATED from the query `-- params:` headers by tools/build_sqlfluff_params.py.
+# DO NOT hand-edit the [sqlfluff:templater:placeholder] values below -- they must match the header
+# defaults (CI runs `build_sqlfluff_params.py --check`). To change one, edit the query header and
+# rerun: python tools/build_sqlfluff_params.py
 [sqlfluff]
 dialect = databricks
 templater = placeholder

@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # Keep the GitHub Actions used by ci.yml current.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # Keep the pinned dev tooling (requirements-dev.txt) current.
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly

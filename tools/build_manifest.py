@@ -75,9 +75,16 @@ def build() -> dict:
     for p in hs.iter_query_files(QUERIES):
         hdr = hs.parse_header(p.read_text(encoding="utf-8"), path=str(p))
         manifest.setdefault(hdr["domain"], []).append(entry_for(hdr))
+    # Every domain must be a known schema domain (the linter also enforces domain == folder).
+    # Fail loudly on an unknown domain rather than bucketing it to a non-deterministic 99 tail
+    # that would make the byte-for-byte --check gate flaky across a rename.
+    unknown = sorted(set(manifest) - hs.DOMAINS)
+    if unknown:
+        raise hs.HeaderError(f"unknown domain(s) {unknown} — not in header_schema.DOMAINS")
     # Deterministic ordering: domains in schema order, entries by query_id.
+    domain_order = sorted(hs.DOMAINS)
     ordered = {}
-    for domain in sorted(manifest, key=lambda d: sorted(hs.DOMAINS).index(d) if d in hs.DOMAINS else 99):
+    for domain in sorted(manifest, key=domain_order.index):
         ordered[domain] = sorted(manifest[domain], key=lambda e: e["query_id"])
     return ordered
 

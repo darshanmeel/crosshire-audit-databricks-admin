@@ -36,6 +36,9 @@ domains = {d for d in dbutils.widgets.get("domain").split(",") if d.strip()}
 stars_only = dbutils.widgets.get("stars_only") == "true"
 period_days = int(dbutils.widgets.get("period_days"))
 write_to = dbutils.widgets.get("write_to").strip()
+# H1: write_to is interpolated into DDL -> require a plain catalog.schema identifier.
+if write_to and not re.match(r"^[A-Za-z0-9_]+\.[A-Za-z0-9_]+$", write_to):
+    raise ValueError(f"write_to must be 'catalog.schema' (letters, digits, underscore only), got {write_to!r}")
 
 known = {p["name"] for dom in manifest.values() for e in dom for p in e["params"]}
 
@@ -48,8 +51,11 @@ print(f"{len(selected)} queries selected")
 
 # COMMAND ----------
 
-NOT_ASSESSED = ["TABLE_OR_VIEW_NOT_FOUND", "insufficient_privileges", "PERMISSION_DENIED",
-                "does not exist", "SCHEMA_NOT_FOUND", "not enabled", "cannot be found"]
+# Error CLASSES that mean "data not available to assess" (see run_audit.py H2): match bracketed
+# error codes, NOT prose like "does not exist" that also appears in genuine query bugs.
+NOT_ASSESSED = ["TABLE_OR_VIEW_NOT_FOUND", "SCHEMA_NOT_FOUND", "CATALOG_NOT_FOUND",
+                "INSUFFICIENT_PERMISSIONS", "INSUFFICIENT_PRIVILEGES", "PERMISSION_DENIED",
+                "UC_NOT_ENABLED", "FEATURE_NOT_ENABLED"]
 
 def resolve_sql(entry):
     path = os.path.join(QUERIES, entry["domain"], entry["query_id"] + ".sql")
@@ -73,8 +79,10 @@ for e in selected:
     sql = resolve_sql(e)
     try:
         if write_to:
-            spark.sql(f"CREATE OR REPLACE TABLE {write_to}.{qid} AS {sql}")
-            df = spark.table(f"{write_to}.{qid}")
+            cat, sch = write_to.split(".")
+            target = f"`{cat}`.`{sch}`.`{qid}`"  # backtick-quoted identifier (H1)
+            spark.sql(f"CREATE OR REPLACE TABLE {target} AS {sql}")
+            df = spark.table(target)
         else:
             df = spark.sql(sql)
         n = df.count()

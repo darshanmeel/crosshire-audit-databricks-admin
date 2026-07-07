@@ -86,6 +86,10 @@
       ],
       "next": [
         {
+          "query_id": "compute_warehouse_idle_gaps",
+          "if": "the idle compute is a SQL warehouse, not a classic cluster"
+        },
+        {
           "query_id": "cost_by_compute_resource",
           "if": "to see the same cluster's full billed DBUs by day"
         }
@@ -770,6 +774,10 @@
       "actions": [],
       "next": [
         {
+          "query_id": "cost_serving_mode_by_endpoint",
+          "if": "for a dollarized, cost-mode-aware cut of the same MODEL_SERVING usage"
+        },
+        {
           "query_id": "cost_vector_search_spend",
           "if": "for the dollarized VECTOR_SEARCH cut"
         }
@@ -840,6 +848,10 @@
         {
           "query_id": "cost_totals_by_sku_day",
           "if": "for the total DBU denominator to compute an untagged %"
+        },
+        {
+          "query_id": "cost_usage_policy_coverage",
+          "if": "for the serverless-specific coverage gap, tracked separately from tags"
         }
       ],
       "sql_url": "https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/cost/cost_chargeback_by_tag.sql",
@@ -985,6 +997,10 @@
       "actions": [],
       "next": [
         {
+          "query_id": "pricing_list_prices_raw",
+          "if": "for the raw price rows behind net_list_cost, safer to dollarize from until the effective_list.default path is confirmed"
+        },
+        {
           "query_id": "cost_actual_vs_list_by_sku",
           "if": "for a DBU-only actual-vs-list comparison"
         }
@@ -1016,6 +1032,10 @@
       "investigate_if": "n/a - inventory",
       "actions": [],
       "next": [
+        {
+          "query_id": "cost_serving_mode_by_endpoint",
+          "if": "for the dollarized, per-endpoint MODEL_SERVING cut"
+        },
         {
           "query_id": "cost_vector_search_spend",
           "if": "for the dollarized VECTOR_SEARCH cut"
@@ -1176,6 +1196,10 @@
       ],
       "next": [
         {
+          "query_id": "cost_by_serving_endpoint",
+          "if": "for the raw, non-dollarized per-endpoint usage split by usage_type"
+        },
+        {
           "query_id": "compute_serving_dormant_endpoints",
           "if": "to check whether a CRITICAL endpoint is actually seeing real traffic"
         }
@@ -1299,6 +1323,10 @@
       ],
       "next": [
         {
+          "query_id": "cost_by_serving_endpoint",
+          "if": "for the raw, non-dollarized MODEL_SERVING + VECTOR_SEARCH usage"
+        },
+        {
           "query_id": "compute_serving_dormant_endpoints",
           "if": "to check whether a CRITICAL endpoint is actually receiving traffic before you shrink it"
         }
@@ -1357,6 +1385,10 @@
         {
           "query_id": "cost_actual_vs_list_by_sku",
           "if": "for a ready-made actual-vs-list comparison built from this same table"
+        },
+        {
+          "query_id": "cost_dollarized_by_sku_day",
+          "if": "for a ready-made dollarized cost series, though its list_rate path is less confirmed than dollarizing from this raw table yourself"
         }
       ],
       "sql_url": "https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/cost/pricing_list_prices_raw.sql",
@@ -1440,6 +1472,10 @@
         {
           "query_id": "access_column_masks_inventory",
           "if": "see every mask already in place"
+        },
+        {
+          "query_id": "access_pii_propagation_untagged",
+          "if": "check whether this same sensitive data propagates further, still unmasked"
         }
       ],
       "sql_url": "https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_classified_unmasked.sql",
@@ -2313,6 +2349,10 @@
         {
           "query_id": "lakeflow_phase_cold_start",
           "if": "for the full setup/queue/execution/cleanup breakdown"
+        },
+        {
+          "query_id": "lakeflow_stale_zombie_jobs",
+          "if": "the job turns out to rarely run, queuing may not be worth fixing"
         }
       ],
       "sql_url": "https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/jobs_pipelines/lakeflow_job_queue_time.sql",
@@ -2567,6 +2607,10 @@
         "keep a small always-on pool of pre-warmed instances if setup latency is business-critical (spend)."
       ],
       "next": [
+        {
+          "query_id": "lakeflow_job_queue_time",
+          "if": "queue time is one slice of this same breakdown, isolated"
+        },
         {
           "query_id": "lakeflow_workload_mix_hours",
           "if": "to see whether the affected job runs often enough to be worth the fix"
@@ -2906,6 +2950,10 @@
       ],
       "next": [
         {
+          "query_id": "lakeflow_failed_runs",
+          "if": "for runs that failed outright, not just a masked task"
+        },
+        {
           "query_id": "lakeflow_tasks_near_timeout",
           "if": "a task timing out is one common cause of a masked task failure"
         }
@@ -2957,6 +3005,10 @@
         "if the task is legitimately compute-bound, give it a faster node type or more parallelism (spend)."
       ],
       "next": [
+        {
+          "query_id": "lakeflow_job_tasks_no_timeout",
+          "if": "the tasks with no timeout at all, a related gap"
+        },
         {
           "query_id": "lakeflow_phase_cold_start",
           "if": "for the run-level setup/queue/execution breakdown"
@@ -3025,6 +3077,10 @@
       "investigate_if": "n/a - inventory",
       "actions": [],
       "next": [
+        {
+          "query_id": "lakeflow_termination_taxonomy",
+          "if": "the confirmed termination_code taxonomy, safe to use today"
+        },
         {
           "query_id": "lakeflow_failed_runs",
           "if": "drill into runs behind a given termination_type once confirmed"
@@ -3482,6 +3538,10 @@
       ],
       "next": [
         {
+          "query_id": "query_local_spillage",
+          "if": "the same warehouse also spills, pointing to under-provisioned memory on top of poor pruning"
+        },
+        {
           "query_id": "query_shuffle_write_amplification",
           "if": "the same reads are also shuffle-heavy"
         }
@@ -3590,6 +3650,10 @@
         {
           "query_id": "query_local_spillage",
           "if": "the same warehouse also spills - shuffle and spill often co-occur"
+        },
+        {
+          "query_id": "query_pruning_effectiveness",
+          "if": "small files hurt pruning too, on the read side"
         }
       ],
       "sql_url": "https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/performance/query_shuffle_write_amplification.sql",

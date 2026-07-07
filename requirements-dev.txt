@@ -1,0 +1,6 @@
+# Dev / CI tooling only. The runtime tools (tools/*.py) are stdlib-only; the audit runner needs
+# databricks-sql-connector separately, and ONLY for live execution (not --dry-run / --list).
+#
+# Pinned exactly for reproducible CI: the advisory sqlfluff parse job's behaviour is version-
+# sensitive, so a floating range could change parse results unannounced. Bump deliberately.
+sqlfluff==3.5.0

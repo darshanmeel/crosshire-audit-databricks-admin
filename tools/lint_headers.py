@@ -36,10 +36,27 @@ FORBIDDEN = [
     (re.compile(r"databricks_audit:"), "internal 'databricks_audit:' marker"),
     (re.compile(r"^--\s*feeds\s*:", re.M), "internal 'feeds:' header"),
     (re.compile(r"lookback_days"), "old ':lookback_days' param (use :period_days)"),
-    (re.compile(r"\bpreview\b(?=[^\n]*confidence)", re.I), None),  # placeholder, disabled below
 ]
-# Drop the disabled placeholder.
-FORBIDDEN = [f for f in FORBIDDEN if f[1] is not None]
+
+# H4: queries that emit a `status` column must only emit these labels, so the runner scorecard
+# (which tallies exactly this set) can never silently miss an off-contract band like 'HIGH'.
+STATUS_ENUM = {"OK", "WARN", "CRITICAL", "NOT_ASSESSED"}
+# Isolate ONLY the status CASE: the negative lookahead stops the span from crossing an earlier
+# column's `END AS <x>`, so we never harvest another column's THEN/ELSE literals.
+_STATUS_CASE_RE = re.compile(r"CASE\b((?:(?!\bEND\s+AS\b).)*?)\bEND\s+AS\s+status\b", re.I | re.S)
+_STATUS_VALUE_RE = re.compile(r"\b(?:THEN|ELSE)\s+'([^']*)'", re.I)
+_NESTED_CASE_RE = re.compile(r"\bCASE\b(?:(?!\bCASE\b|\bEND\b).)*?\bEND\b", re.I | re.S)
+
+
+def status_labels(span: str) -> list[str]:
+    """The status CASE's own THEN/ELSE labels, with nested CASE...END blocks stripped first so a
+    categorical CASE used inside a WHEN condition (e.g. `(CASE ... ELSE 'none' END) = 'none'`)
+    can't leak its branch literals into the status label set."""
+    prev = None
+    while prev != span:
+        prev = span
+        span = _NESTED_CASE_RE.sub(" ", span)
+    return _STATUS_VALUE_RE.findall(span)
 
 # A2: hard-coded time windows that must have become :period_days.
 WINDOW_BAD = [
@@ -61,9 +78,9 @@ def lint_file(path: Path, all_ids: set[str]) -> list[str]:
         return [str(e)]
 
     for f in hs.FIELDS:
-        if f in ("domain",):
-            continue
-        if not str(hdr.get(f if f != "domain" else "domain", "")).strip():
+        if f == "domain":
+            continue  # domain + tier ride on the combined 'domain:' line, validated below
+        if not str(hdr.get(f, "")).strip():
             errs.append(f"{rel}: field '{f}' is empty")
 
     if hdr["query_id"] != path.stem:
@@ -80,6 +97,9 @@ def lint_file(path: Path, all_ids: set[str]) -> list[str]:
 
     # A2 window hygiene: no hard-coded windows anywhere. The only allowed rolling window is
     # :period_days. Genuine point-in-time snapshots (no window at all) are allowed to omit it.
+    # NOTE: WINDOW_BAD scans `body` (SQL only), NOT the header — an "INTERVAL 30 DAYS" or a
+    # "not populated before Nov 2025" phrase in a caveats: sentence is prose, not an executable
+    # window. FORBIDDEN (below) deliberately scans the FULL file text, header included.
     for rx, label in WINDOW_BAD:
         if rx.search(body):
             errs.append(f"{rel}: {label}")
@@ -94,6 +114,13 @@ def lint_file(path: Path, all_ids: set[str]) -> list[str]:
     for rx, label in FORBIDDEN:
         if rx.search(text):
             errs.append(f"{rel}: forbidden {label}")
+
+    # H4: any query that emits a `status` column may only emit the runner's four band labels,
+    # so the scorecard (which tallies exactly this set) can never silently drop an off-band value.
+    for span in _STATUS_CASE_RE.findall(body):
+        for lit in status_labels(span):
+            if lit not in STATUS_ENUM:
+                errs.append(f"{rel}: status label '{lit}' not in status enum {sorted(STATUS_ENUM)}")
 
     return errs
 
@@ -111,18 +138,23 @@ def main() -> int:
         for e in errs:
             print("  " + e, file=sys.stderr)
 
-    # Manifest sync check.
-    r = subprocess.run(
-        [sys.executable, str(ROOT / "tools" / "build_manifest.py"), "--check"],
-        capture_output=True, text=True,
-    )
-    sys.stdout.write(r.stdout)
-    sys.stderr.write(r.stderr)
-    manifest_ok = r.returncode == 0
+    # Generated-artifact sync checks: manifest.json and .sqlfluff are BOTH generated from these
+    # headers, so both must be in sync (a drift means someone hand-edited a generated file).
+    def _sync_ok(script: str) -> bool:
+        r = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / script), "--check"],
+            capture_output=True, text=True,
+        )
+        sys.stdout.write(r.stdout)
+        sys.stderr.write(r.stderr)  # advisory "note:" lines (e.g. conflicting param defaults) show here
+        return r.returncode == 0
 
-    if errs or not manifest_ok:
+    manifest_ok = _sync_ok("build_manifest.py")
+    sqlfluff_ok = _sync_ok("build_sqlfluff_params.py")
+
+    if errs or not manifest_ok or not sqlfluff_ok:
         return 1
-    print("all header + manifest checks passed.")
+    print("all header + manifest + sqlfluff checks passed.")
     return 0
 
 

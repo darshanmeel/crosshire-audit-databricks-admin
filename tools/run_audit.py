@@ -35,17 +35,20 @@ ROOT = Path(__file__).resolve().parent.parent
 QUERIES = ROOT / "queries"
 MANIFEST = QUERIES / "manifest.json"
 
-# Errors we treat as "not assessed" rather than a hard failure.
+# Databricks error CLASSES that mean "the data isn't there to assess" (missing table / no grant /
+# feature not enabled) — NOT a query bug. Matched as tokens against the bracketed error class the
+# connector surfaces (e.g. "[TABLE_OR_VIEW_NOT_FOUND] ..."). Prose fragments like "does not exist"
+# and bare "UnityCatalog" were REMOVED on purpose: they also appear in genuine bugs ("column X does
+# not exist"), and the whole honesty layer breaks if a real failure is mislabeled "not assessed".
 NOT_ASSESSED_SIGNS = [
     "TABLE_OR_VIEW_NOT_FOUND",
-    "insufficient_privileges",
-    "INSUFFICIENT_PERMISSIONS",
-    "PERMISSION_DENIED",
-    "does not exist",
-    "cannot be found",
     "SCHEMA_NOT_FOUND",
-    "UnityCatalog",
-    "not enabled",
+    "CATALOG_NOT_FOUND",
+    "INSUFFICIENT_PERMISSIONS",
+    "INSUFFICIENT_PRIVILEGES",
+    "PERMISSION_DENIED",
+    "UC_NOT_ENABLED",
+    "FEATURE_NOT_ENABLED",
 ]
 
 
@@ -98,8 +101,13 @@ def resolve_sql(entry: dict, known: set[str], overrides: dict) -> str:
 
 
 def classify_error(msg: str) -> str:
-    m = msg or ""
-    return "NOT_ASSESSED" if any(s.lower() in m.lower() for s in NOT_ASSESSED_SIGNS) else "ERROR"
+    m = (msg or "").upper()
+    if "STATEMENT_TIMEOUT" in m or "TIMED OUT" in m or "QUERY TIMEOUT" in m:
+        return "TIMEOUT"
+    return "NOT_ASSESSED" if any(s.upper() in m for s in NOT_ASSESSED_SIGNS) else "ERROR"
+
+
+_WRITE_TO_RE = re.compile(r"^[A-Za-z0-9_]+\.[A-Za-z0-9_]+$")
 
 
 def status_summary(cols, rows) -> str:
@@ -123,9 +131,19 @@ def main() -> int:
                     help="override a threshold param (repeatable)")
     ap.add_argument("--write-to", metavar="catalog.schema",
                     help="OPT-IN: persist each result to <catalog.schema>.<query_id> (Guardrail 4)")
+    ap.add_argument("--timeout", type=int, default=300,
+                    help="per-query statement timeout in seconds (default 300); a query that exceeds it "
+                         "is recorded TIMEOUT and the run continues")
     ap.add_argument("--dry-run", action="store_true", help="print resolved SQL, do not execute")
     ap.add_argument("--list", action="store_true", help="list selected queries and exit")
     args = ap.parse_args()
+
+    # H1: --write-to is interpolated into DDL, so it must be a plain catalog.schema identifier.
+    # Reject anything else BEFORE connecting (no injection / no broken DDL from spaces or hyphens).
+    if args.write_to and not _WRITE_TO_RE.match(args.write_to):
+        print(f"--write-to must be 'catalog.schema' (letters, digits, underscore only), "
+              f"got {args.write_to!r}", file=sys.stderr)
+        return 2
 
     manifest = load_manifest()
     known = all_param_names(manifest)
@@ -173,6 +191,9 @@ def main() -> int:
 
     scorecard = []
     with dbsql.connect(server_hostname=host, http_path=http_path, access_token=token) as conn:
+        # M5: bound every statement so one pathological query can't hang the whole audit.
+        with conn.cursor() as _c:
+            _c.execute(f"SET STATEMENT_TIMEOUT = {int(args.timeout)}")
         for e in selected:
             qid = e["query_id"]
             sql = resolve_sql(e, known, overrides)
@@ -180,7 +201,8 @@ def main() -> int:
             try:
                 with conn.cursor() as cur:
                     if args.write_to:
-                        target = f"{args.write_to}.{qid}"
+                        cat, sch = args.write_to.split(".")
+                        target = f"`{cat}`.`{sch}`.`{qid}`"  # backtick-quoted identifier (H1)
                         cur.execute(f"CREATE OR REPLACE TABLE {target} AS {sql}")
                         cur.execute(f"SELECT * FROM {target}")
                     else:
@@ -191,17 +213,17 @@ def main() -> int:
                 scorecard.append((qid, e["tier"], "OK", len(rows), status_summary(cols, rows), f"{dt:.1f}s"))
             except Exception as ex:  # noqa: BLE001 - runtime resilience is the point
                 outcome = classify_error(str(ex))
-                reason = str(ex).splitlines()[0][:70]
+                reason = str(ex).splitlines()[0]  # L5: truncated once, at print, below
                 scorecard.append((qid, e["tier"], outcome, 0, reason, f"{time.time()-t0:.1f}s"))
 
-    # Scorecard
-    print(f"\n{'query_id':40} {'tier':8} {'outcome':12} {'rows':>6} {'status / reason':32} time")
-    print("-" * 118)
+    # Scorecard. `status / reason` is truncated in exactly ONE place (the {:60.60} field).
+    print(f"\n{'query_id':40} {'tier':8} {'outcome':12} {'rows':>6} {'status / reason':60} time")
+    print("-" * 146)
     counts = {}
     for qid, tier, outcome, nrows, extra, dt in scorecard:
         counts[outcome] = counts.get(outcome, 0) + 1
-        print(f"{qid:40} {tier:8} {outcome:12} {nrows:>6} {extra:32.32} {dt}")
-    print("-" * 118)
+        print(f"{qid:40} {tier:8} {outcome:12} {nrows:>6} {extra:60.60} {dt}")
+    print("-" * 146)
     print("  ".join(f"{k}={v}" for k, v in sorted(counts.items())))
     if args.write_to:
         print(f"\nresults persisted under {args.write_to}.<query_id>")

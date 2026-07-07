@@ -119,13 +119,18 @@ def parse_next(value: str) -> list[dict]:
     out = []
     if not value or value.strip().lower().startswith("n/a"):
         return out
-    for token in value.split(","):
+    # Split on TOP-LEVEL commas only (_NEXT_SPLIT_RE): a next-token's "(if ...)" condition may
+    # itself contain commas, and a plain str.split(",") would shred it and silently drop the
+    # target. A non-empty token that still fails to parse is a malformed next-entry (typo,
+    # unbalanced paren) and is raised loudly rather than dropped — a broken cross-link must fail
+    # the linter, not vanish into an empty list that quietly passes.
+    for token in _NEXT_SPLIT_RE.split(value):
         token = token.strip()
         if not token:
             continue
         m = _NEXT_RE.match(token)
         if not m:
-            continue
+            raise HeaderError(f"malformed next-entry token {token!r}")
         out.append({"query_id": m.group(1), "if": (m.group(2) or "").strip()})
     return out
 
@@ -159,6 +164,11 @@ def parse_header(text: str, *, path: str = "<memory>") -> dict:
         )
     domain, tier = dm.group(1), dm.group(2)
 
+    try:
+        nxt = parse_next(raw["next"])
+    except HeaderError as e:
+        raise HeaderError(f"{path}: {e}") from None
+
     return {
         "query_id": raw["query_id"].strip(),
         "title": raw["title"].strip(),
@@ -174,7 +184,7 @@ def parse_header(text: str, *, path: str = "<memory>") -> dict:
         "healthy": raw["healthy"].strip(),
         "investigate_if": raw["investigate_if"].strip(),
         "actions": parse_actions(raw["actions"]),
-        "next": parse_next(raw["next"]),
+        "next": nxt,
         "caveats": raw["caveats"].strip(),
         "_raw": raw,
     }

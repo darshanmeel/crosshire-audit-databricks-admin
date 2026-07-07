@@ -1,0 +1,7 @@
+# Default owner for the whole repo.
+* @darshanmeel
+
+# The query library and its tooling contract (headers, manifest, linter, runner).
+/queries/ @darshanmeel
+/tools/    @darshanmeel
+/.github/  @darshanmeel
