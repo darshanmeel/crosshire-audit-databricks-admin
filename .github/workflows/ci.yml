@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  headers:
+    name: Header schema + manifest sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Authoritative gate: all v2 header fields present, enums valid, every `next:` target
+      # resolves, no hard-coded windows, no internal-pipeline vocabulary, and manifest.json is
+      # in sync with the headers (build_manifest --check runs inside lint_headers).
+      - name: Lint headers + check manifest is in sync
+        run: python tools/lint_headers.py
+
+  sqlfluff:
+    name: SQL parse check (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true   # advisory only: Databricks-specific syntax can outrun sqlfluff
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install sqlfluff
+        run: pip install "sqlfluff>=3,<4"
+      # PRS = the parse-error rule only. We are not enforcing layout/style, just that each file
+      # parses as Databricks SQL once the :params are substituted (see .sqlfluff).
+      - name: Parse-check all queries
+        run: sqlfluff lint queries --dialect databricks --rules PRS
