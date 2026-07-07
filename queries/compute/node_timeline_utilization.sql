@@ -1,15 +1,17 @@
--- query_id:   node_timeline_utilization
--- source:     system.compute.node_timeline
--- feeds:      oversized/right-sizing (CPU/mem utilization vs provisioned capacity);
---             network egress per node (coarse proxy)
+-- query_id: node_timeline_utilization
+-- title: Per-cluster CPU / memory / network utilization profile
+-- domain: compute   tier: lite
+-- reads: system.compute.node_timeline
+-- requires: SELECT on system.compute; GA
+-- params: :period_days (default 30) rolling window in days, capped at 90 in-SQL by node_timeline retention; :min_slices (default 60) minimum node-minutes before a cluster is judged (fewer -> NOT_ASSESSED); :oversized_cpu_pct (default 20) avg CPU percent below which a cluster looks oversized; :oversized_mem_pct (default 30) avg memory percent below which a cluster looks oversized; :top_n (default 200) row cap
 -- confidence: confirmed
--- caveats:    Retention 90 DAYS ONLY — :lookback_days must be capped at 90; a 12-month trend
---             silently truncates (degrade to "assessed over last 90 days"). Nodes that ran
---             < 10 minutes MAY NOT APPEAR (short-job blind spot). Classic compute ONLY — no
---             SQL-warehouse/serverless node utilization exists. mem_used_percent includes
---             background processes. (disk_free_bytes_per_mount_point is a map; not selected.)
---             Regional.
-/* databricks_audit:node_timeline_utilization */
+-- confidence_note: node_timeline utilization columns verified in a live workspace.
+-- read_this: One row = one cluster + node_type + driver/worker role, with average and peak CPU and memory over the window. avg_cpu_pct and avg_mem_pct are the columns that matter: both low over many slices means the node is oversized for its workload. This is a right-sizing profile; compute_idle_node_ratio is the dedicated idle finding.
+-- healthy: avg_cpu_pct at/above :oversized_cpu_pct OR avg_mem_pct at/above :oversized_mem_pct - the box is being used (field heuristic).
+-- investigate_if: avg_cpu_pct below :oversized_cpu_pct AND avg_mem_pct below :oversized_mem_pct across enough slices (WARN = oversized candidate) - field heuristic; peak_* matters too, a low average with a high peak may just be bursty.
+-- actions: 1) confirm the low utilization is steady (not a bursty job) from peak_cpu_pct / peak_mem_pct before acting (free); 2) drop to a smaller node type or fewer workers, or enable autoscaling (config); 3) switch to a memory- or compute-optimized family that matches the real bottleneck (spend).
+-- next: compute_idle_node_ratio (to rank the same clusters by idle-slice ratio and wasted list-price $), cost_by_compute_resource (to attach billed DBUs to a right-sizing candidate)
+-- caveats: node_timeline retention is 90 DAYS ONLY, so :period_days is capped at LEAST(:period_days, 90) in SQL - a longer trend silently truncates (read it as "assessed over the last 90 days at most"). Nodes that ran under ~10 minutes MAY NOT APPEAR (short-job blind spot). Classic compute ONLY - no SQL-warehouse or serverless node utilization exists in this table. mem_used_percent includes background processes, so it is not pure workload memory. disk_free_bytes_per_mount_point is a map and is not selected. Utilization is per region.
 SELECT cluster_id, node_type, driver,
        COUNT(*) AS minute_rows,
        MIN(start_time) AS first_minute, MAX(end_time) AS last_minute,
@@ -18,7 +20,16 @@ SELECT cluster_id, node_type, driver,
        AVG(mem_used_percent) AS avg_mem_pct, MAX(mem_used_percent) AS peak_mem_pct,
        AVG(cpu_wait_percent) AS avg_cpu_wait_pct,
        SUM(network_sent_bytes)     AS total_network_sent_bytes,
-       SUM(network_received_bytes) AS total_network_received_bytes
+       SUM(network_received_bytes) AS total_network_received_bytes,
+       -- status: oversized-candidate band (field heuristic). Too few slices -> NOT_ASSESSED.
+       CASE
+         WHEN COUNT(*) < :min_slices THEN 'NOT_ASSESSED'
+         WHEN AVG(cpu_user_percent + cpu_system_percent) < :oversized_cpu_pct
+          AND AVG(mem_used_percent) < :oversized_mem_pct THEN 'WARN'
+         ELSE 'OK'
+       END AS status
 FROM system.compute.node_timeline
-WHERE start_time >= current_timestamp() - INTERVAL :lookback_days DAYS
+WHERE start_time >= dateadd(DAY, -LEAST(:period_days, 90), current_date())
 GROUP BY cluster_id, node_type, driver
+ORDER BY avg_cpu_pct ASC
+LIMIT :top_n

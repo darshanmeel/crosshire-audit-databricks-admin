@@ -1,19 +1,17 @@
--- query_id:   classic_clusters_config_current
--- source:     system.compute.clusters
--- feeds:      oversized/right-sizing classic clusters; idle auto-stop config; cluster access-mode
---             posture (data_security_mode); DBR/runtime sprawl & EOL; compute-policy coverage
---             (policy_id NULL); init-script/Docker risk; spot-vs-on-demand mix (cloud attributes);
---             chargeback/tagging
+-- query_id: classic_clusters_config_current
+-- title: Classic cluster configuration (current)
+-- domain: compute   tier: lite
+-- reads: system.compute.clusters
+-- requires: SELECT on system.compute; GA
+-- params: none (config snapshot, no time window)
 -- confidence: confirmed
--- caveats:    Classic compute ONLY (all-purpose, jobs, Lakeflow SDP, pipeline-maintenance) — no
---             serverless, no SQL warehouses. NO runtime_engine/photon column (confirmed absent all
---             clouds). data_security_mode enum: USER_ISOLATION / SINGLE_USER / LEGACY_PASSTHROUGH /
---             LEGACY_SINGLE_USER / LEGACY_TABLE_ACL / NONE / null. worker_count NULL for autoscaling;
---             min/max_autoscale_workers NULL for fixed-size. aws/azure/gcp_attributes are STRUCTs
---             selected whole — only the cloud's own struct is populated; their subfields are
---             example-documented only (extracting a specific subfield is needs_confirmation —
---             see checklist). Regional.
-/* databricks_audit:classic_clusters_config_current */
+-- confidence_note: Columns verified against system.compute.clusters in a live workspace; cloud-specific attribute structs (aws_attributes/azure_attributes/gcp_attributes) are documented by example only.
+-- read_this: One row = the latest known configuration for one classic cluster (all-purpose, job, Lakeflow SDP, or pipeline-maintenance) that has not been deleted. The columns that matter are data_security_mode (access-mode posture) and policy_id (NULL means the cluster is not governed by a compute policy).
+-- healthy: n/a - inventory
+-- investigate_if: n/a - inventory
+-- actions: n/a - inventory (reference/join input)
+-- next: node_types_reference (to size vCPU/memory/GPU for driver_node_type/worker_node_type), compute_idle_node_ratio (to see idle time on these classic clusters)
+-- caveats: Classic compute ONLY (all-purpose, jobs, Lakeflow SDP, pipeline-maintenance) - no serverless, no SQL warehouses (see sql_warehouse_config_current for those). There is no runtime_engine/photon column (confirmed absent on all clouds, so Photon-on-classic cannot be read from this table). data_security_mode enum is USER_ISOLATION / SINGLE_USER / LEGACY_PASSTHROUGH / LEGACY_SINGLE_USER / LEGACY_TABLE_ACL / NONE / null. worker_count is NULL for autoscaling clusters; min_autoscale_workers/max_autoscale_workers are NULL for fixed-size clusters. aws_attributes/azure_attributes/gcp_attributes are STRUCTs selected whole - only the cloud you are actually running on has its struct populated, and pulling one specific subfield out of these structs is needs_confirmation (verify the field exists for your cloud/region before relying on it). Regional - run per metastore region.
 SELECT cluster_id,
        CASE WHEN cluster_name IS NULL THEN cluster_name ELSE concat(substr(cluster_name, 1, 2), '****') END AS cluster_name,
        CASE
@@ -32,3 +30,4 @@ FROM (
   FROM system.compute.clusters
 )
 WHERE rn = 1 AND delete_time IS NULL
+ORDER BY cluster_id

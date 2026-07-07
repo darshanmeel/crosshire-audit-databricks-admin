@@ -1,14 +1,17 @@
--- query_id:   sql_warehouse_config_current
--- source:     system.compute.warehouses
--- feeds:      idle/oversized SQL warehouses; warehouse resume/suspend (config side);
---             chargeback/tagging (warehouse tags); autoscaling config (min/max_clusters)
+-- query_id: sql_warehouse_config_current
+-- title: SQL warehouse configuration (current)
+-- domain: compute   tier: lite
+-- reads: system.compute.warehouses
+-- requires: SELECT on system.compute; GA
+-- params: none (config snapshot, no time window)
 -- confidence: confirmed
--- caveats:    SCD snapshot: latest row per warehouse_id; delete_time NULL = not deleted.
---             warehouse_size enum incl. 5X_LARGE (Beta on PRO/SERVERLESS). tags is a map.
---             Regional — run per metastore region. (Doc prose says "12 columns" but its own
---             §4 table lists 13; the query uses all 13 — a doc-internal miscount, not an
---             artifact error.)
-/* databricks_audit:sql_warehouse_config_current */
+-- confidence_note: Columns verified against system.compute.warehouses in a live workspace, cross-checked against the full column list (see caveats for a vendor-doc miscount).
+-- read_this: One row = the latest known configuration for one SQL warehouse that has not been deleted. The columns that matter are warehouse_size, min_clusters/max_clusters (autoscaling bounds), and auto_stop_minutes (how long the warehouse waits before suspending).
+-- healthy: n/a - inventory
+-- investigate_if: n/a - inventory
+-- actions: n/a - inventory (reference/join input)
+-- next: compute_warehouse_idle_gaps (to see this warehouse's actual RUNNING idle tail against its auto_stop_minutes), compute_warehouse_autoscale_churn (to see if min_clusters/max_clusters is causing thrash), sql_warehouse_events_activity (for the raw event history)
+-- caveats: SCD snapshot: this returns the latest row per warehouse_id, so a deleted warehouse (delete_time NOT NULL) is excluded. warehouse_size enum includes 5X_LARGE (Beta, PRO/SERVERLESS channel only). tags is a map. Regional - run per metastore region. One source note: the original vendor documentation for this table says it "has 12 columns" but its own reference table for the same table lists 13 - that is a documentation-internal miscount in the vendor docs, not an error in this query, which selects all 13.
 SELECT warehouse_id, CASE WHEN warehouse_name IS NULL THEN warehouse_name ELSE concat(substr(warehouse_name, 1, 2), '****') END AS warehouse_name, workspace_id, account_id, warehouse_type, warehouse_channel,
        warehouse_size, min_clusters, max_clusters, auto_stop_minutes, tags, change_time, delete_time
 FROM (
@@ -18,3 +21,4 @@ FROM (
   FROM system.compute.warehouses
 )
 WHERE rn = 1 AND delete_time IS NULL
+ORDER BY warehouse_id
