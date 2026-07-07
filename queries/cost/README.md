@@ -1,68 +1,33 @@
 # Cost & Billing
 
-> 📖 **Guided HTML tour:** [`docs/index.html`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`cost_dollarized_by_sku_day`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#q-cost_dollarized_by_sku_day), [`cost_by_job`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#q-cost_by_job), [`cost_actual_vs_list_by_sku`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#q-cost_actual_vs_list_by_sku), [`cost_chargeback_by_tag`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#q-cost_chargeback_by_tag), [`cost_premium_serverless_photon`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#q-cost_premium_serverless_photon). *(Phase 1 = top 10; more in phases.)*
+Where the money goes — and whether you can trust the number. DBU spend dollarized by SKU, product, job, notebook, endpoint, tag and identity; negotiated-vs-list price; egress and GenAI tokens.
 
-This domain answers the core FinOps question for a Databricks account: **where does the money go, and can we trust the number?** It reads the `system.billing.*` price and usage tables to break spend down by SKU, product line, workspace, compute resource, job, notebook, serving endpoint, identity, and tag; to convert raw DBU consumption into list and negotiated dollars; and to prove that billing corrections do not double-count. It also reaches into `system.access.workspaces_latest` for a workspace-id → name lookup so every per-workspace cut reads as `dev / uat / prod` instead of an opaque numeric id.
+📖 **Full interactive docs → [every query, explained](https://learn.crosshire.ch/learn/tech/databricks/audit#d-cost)** — why it matters, what it does, how to read every output column, a sample of the result, and the caveats.
 
-Every query is **copy-paste SQL** run in a Databricks SQL warehouse. They take a single bind parameter `:period_days` (the trailing look-back window in days). Nothing here writes; nothing depends on a dashboard or app.
+| # | Query | What it does |
+|--:|---|---|
+| 01 | [`cost_actual_vs_list_by_sku`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_actual_vs_list_by_sku) ★ | Per-SKU net DBUs alongside their negotiated-rate dollars and list-rate dollars, so an admin can quantify how much the account's negotiated discount actually saves on each SKU. |
+| 02 | [`cost_by_job`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_by_job) ★ | Net DBU consumption and distinct run count per job per day, split by workspace, cloud, product line, and classic-vs-serverless placement. |
+| 03 | [`cost_chargeback_by_tag`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_chargeback_by_tag) ★ | Net DBU consumption and record count broken down by every custom_tags key/value pair per usage_date, cloud, workspace, and product line — with untagged usage retained as NULL-key rows so the "% untagged" denominator is real. |
+| 04 | [`cost_dollarized_by_sku_day`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_dollarized_by_sku_day) ★ | Net DBU (and other-unit) consumption multiplied by the point-in-time list rate to produce a pre-discount list-dollar figure (net_list_cost) per usage_date x cloud x SKU x product x usage_type x unit x currency. |
+| 05 | [`cost_premium_serverless_photon`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_premium_serverless_photon) ★ | Net DBU consumption per usage_date x cloud x SKU x product line, split out by the serverless, Photon, jobs/SQL/DLT tier, and serverless performance-target choices so each premium lever can be sized. |
+| 06 | [`cost_account_prices_raw`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_account_prices_raw) | The full history of your account's actual negotiated per-SKU rates, one row per price change, kept raw so downstream logic can price each usage record in its own validity window. |
+| 07 | [`cost_by_billing_origin_product`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_by_billing_origin_product) | Net metered consumption over the trailing window, broken out by Databricks product line, unit of measure, and cloud, with a record count per group. |
+| 08 | [`cost_by_compute_resource`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_by_compute_resource) | A daily, per-workspace breakdown of net DBU consumption attributed to each individual cluster, SQL warehouse, and instance pool, split by product line and serverless-vs-classic. |
+| 09 | [`cost_by_notebook`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_by_notebook) | Net DBU consumption per notebook-attached interactive/all-purpose notebook, sliced by day, cloud, workspace, product line, and serverless-vs-classic. |
+| 10 | [`cost_by_serving_endpoint`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_by_serving_endpoint) | A daily breakdown of Model Serving and Vector Search DBU consumption per endpoint, workspace, and usage type, so you can see which AI endpoints drive the bill. |
+| 11 | [`cost_chargeback_by_identity`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_chargeback_by_identity) | Net DBU consumption rolled up per identity (human user vs service principal, with masked run-as / owner / creator) sliced by day, cloud, workspace, and product line. |
+| 12 | [`cost_cloud_infra`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_cloud_infra) | A daily rollup of the cloud provider's own infrastructure and network/egress charges (real billed dollars, not DBUs) broken out by cloud and currency over the trailing window. |
+| 13 | [`cost_dbsql_allocation_gap`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_dbsql_allocation_gap) | Two labelled daily DBU rollups for SQL-warehouse (DBSQL) usage in one result set — one from raw billing, one from Databricks' fair-split attribution — so you can difference them to size unattributed / cross-subsidized shared-pool DBUs. |
+| 14 | [`cost_default_storage_dsu`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_default_storage_dsu) | Net default-storage (DSU) usage broken out per day, cloud, SKU, storage API tier (TIER_1 vs TIER_2), and catalog. |
+| 15 | [`cost_genai_token_gpu`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_genai_token_gpu) | Net TOKEN / GPU_TIME / ANSWER consumption per day, broken out by SKU, product line, usage type, serving type, and serving endpoint. |
+| 16 | [`cost_networking_egress`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_networking_egress) | One row per usage-date, cloud, networking SKU, region pair, client, and Delta Sharing recipient, giving the net billed networking volume (bytes or hours) over the trailing window. |
+| 17 | [`cost_restatement_trust_metric`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_restatement_trust_metric) | Per cloud, the net billed usage alongside its original, retracted, and restated components plus the latest ingestion date, quantifying how much consumption was later corrected and proving the net figure never double-counts those corrections. |
+| 18 | [`cost_serving_mode_by_endpoint`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_serving_mode_by_endpoint) | Per-endpoint model-serving consumption over the trailing window, broken out by billed signal (serving type, usage type, and scale-from-zero LAUNCH flag) so each endpoint's cost mode can be inferred, with a bounded, unverified list-dollar figure. |
+| 19 | [`cost_totals_by_sku_day`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_totals_by_sku_day) | Net metered consumption (DBUs/bytes/tokens/hours) per day, cloud, workspace, SKU, product line, usage type and serverless flag, with the correction-record breakdown that proves the net figure is trustworthy. |
+| 20 | [`cost_usage_policy_coverage`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_usage_policy_coverage) | Net DBU consumption bucketed by whether a usage policy is attached (usage_policy / legacy budget_policy / none) and whether custom tags are present, with is_serverless exposed as a dimension (not a filter) so coverage % can be computed over serverless spend, sliced per day, cloud, workspace, and product line. |
+| 21 | [`cost_vector_search_spend`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_vector_search_spend) | Daily Vector Search consumption per endpoint, split into serving/ingest DBUs versus DSU storage, with an unverified list-dollar estimate alongside each raw usage figure. |
+| 22 | [`cost_workspace_names`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-cost_workspace_names) | A tiny reference table that resolves each numeric workspace ID to its human name and active/deleted status, one row per workspace. |
+| 23 | [`pricing_list_prices_raw`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-pricing_list_prices_raw) | The full history of Databricks public list (pre-discount) prices per SKU, one row per price change, collected raw so the engine can price each usage row in its correct time window. |
 
----
-
-## System tables used
-
-### `system.billing.usage`
-The account's billed-consumption fact table and the backbone of almost every query in this folder.
-
-- **Grain:** one row per (usage record) — a metered slice of consumption for a given account/workspace, SKU, usage date/hour, compute resource, and `record_type`. A single logical charge can appear as multiple rows across `record_type` values (ORIGINAL, then a later RETRACTION/RESTATEMENT correction), so a *net* figure must SUM `usage_quantity` across **all** record types — never filter to `ORIGINAL`.
-- **Key columns these queries use:**
-  - `usage_date` (DATE, the recommended partition/filter column), `usage_end_time` (TIMESTAMP, used to pick the active price window), `ingestion_date` (load date, distinct from usage_date — drives the freshness/lag caveat).
-  - `usage_quantity` — the metered amount in `usage_unit`. **This is DBUs/bytes/hours/tokens, NOT dollars.**
-  - `usage_unit` — `DBU`, `STORAGE_SPACE` bytes, hours, `TOKEN`, etc. Queries that price against a per-DBU rate filter `usage_unit = 'DBU'` so they never blend units.
-  - `usage_type` — confirmed enum: `COMPUTE_TIME, STORAGE_SPACE, NETWORK_BYTE, NETWORK_HOUR, API_OPERATION, TOKEN, GPU_TIME, ANSWER`.
-  - `record_type` — `ORIGINAL / RETRACTION / RESTATEMENT` (the correction/trust signal).
-  - `sku_name`, `billing_origin_product` (product line: `JOBS / SQL / DLT / MODEL_SERVING / VECTOR_SEARCH / DEFAULT_STORAGE / …` — populated but with **no published closed enum**, so literals like `DEFAULT_STORAGE` are treated as unverified; a blank value is "unattributed", not zero), `cloud`, `currency_code`, `workspace_id` (NULL for account-level SKUs — kept as "not workspace-attributable"), `account_id`.
-  - `custom_tags` (MAP — compute-resource and serverless-usage-policy tags; keys are customer-defined, never hardcode them).
-  - `usage_metadata` (STRUCT): `cluster_id`, `warehouse_id`, `instance_pool_id`, `job_id`, `job_run_id`, `notebook_id`, `endpoint_id`, `endpoint_name`, `storage_api_type`, `catalog_id`, `metastore_id` (AWS-only), `source_region`/`destination_region` (always NULL on GCP), `networking_client`, `recipient_id`, `usage_policy_id`, `budget_policy_id` (deprecated). These are sparse/conditional — populated only for the compute type that generated the row (e.g. `job_id` only for jobs compute, `notebook_id` only for notebook-attached interactive usage), otherwise NULL.
-  - `identity_metadata` (STRUCT): `run_as`, `owned_by` (SQL-warehouse usage only), `created_by`. Sparse, and replaced with the literal `'__REDACTED__'` in FedRamp workspaces — treat `'__REDACTED__'`/NULL as "identity unavailable".
-  - `product_features` (STRUCT): `is_serverless`, `is_photon`, `jobs_tier`, `sql_tier`, `dlt_tier`, `performance_target`, `serving_type`. Sparse — subfields are NULL where the choice doesn't apply.
-- **Availability:** GA and generally the most reliably-populated billing table. Requires **Unity Catalog** (system schemas are UC-only) and that `system.billing` be enabled on the metastore, plus `SELECT` granted on the table. A feature the account doesn't use simply yields no rows for it (e.g. no serving = no `MODEL_SERVING` rows), which is a valid empty result, not `$0`.
-
-### `system.billing.list_prices`
-The public **list (pre-discount) price** history per SKU. Joined to `usage` to dollarize DBUs.
-
-- **Grain:** one row per SKU **price change** — i.e. a `[price_start_time, price_end_time)` validity window per (sku_name, cloud, currency_code, usage_unit). `price_end_time IS NULL` means the currently-active price.
-- **Key columns:** `price_start_time`, `price_end_time`, `account_id`, `sku_name`, `cloud`, `currency_code`, `usage_unit`, and the `pricing` STRUCT — `pricing.default` (typed **STRING** in docs) and `pricing.effective_list` (typed only as an **object** in docs; the nested `pricing.effective_list.default` scalar path and its numeric cast are **unverified**), plus `pricing.promotional`. Queries collect these raw as JSON strings so collection survives struct drift and dollarize in-engine.
-- **Availability:** GA, UC-required, `SELECT` needed. Small table. Because the join is a point-in-time window match, the price predicate **must** be `(price_end_time IS NULL OR usage < price_end_time)` — using only `usage < price_end_time` silently zeroes recent usage.
-
-### `system.billing.account_prices`
-The account's **actual negotiated** price history — the same shape as `list_prices` but carrying the discounted rate the account really pays.
-
-- **Grain:** one row per SKU negotiated-price change (`[price_start_time, price_end_time)` window per sku_name + cloud + currency_code + usage_unit). `price_end_time IS NULL` = currently-active negotiated price.
-- **Key columns:** `price_start_time`, `price_end_time`, `account_id`, `sku_name`, `cloud`, `currency_code`, `usage_unit`, and `pricing.default` (the negotiated rate; typed **STRING**, numeric cast unverified). **Important:** this table has **only** `pricing.default` — there is **no** `pricing.effective_list` here (that lives on `list_prices`). Actual-vs-list compares `account_prices.pricing.default` against `list_prices.pricing.effective_list.default`.
-- **Availability:** GA, UC-required, `SELECT` needed. Multi-cloud/multi-currency accounts have several rows per `sku_name`, so joins must key on cloud + currency_code + usage_unit + sku_name, not `sku_name` alone.
-
-### `system.billing.attributed_usage`
-Databricks' **fair-split allocation** of shared-pool DBUs back to the consuming entity.
-
-- **Grain:** one row per attributed usage slice (assumed to mirror `system.billing.usage`: `usage_date`, `usage_quantity`, `usage_unit`, `billing_origin_product`, `cloud`, …).
-- **Key columns used:** `usage_date`, `cloud`, `billing_origin_product`, `usage_unit`, `usage_quantity`.
-- **Availability:** **Coverage is DBSQL (SQL warehouses) ONLY** — it does not track jobs/DLT/all-purpose. Preview/newer; exact schema **not verified** on-workspace (a missing column errors the query, which the engine degrades to "not assessed" rather than fabricating a 0). Only meaningful when both sides of the raw-vs-attributed comparison are scoped to `billing_origin_product = 'SQL'`.
-
-### `system.billing.cloud_infra_cost`
-The **cloud provider's own infrastructure charge** (instance hours, network/egress) that sits *outside* DBU pricing — the 10–25% of spend the `usage` table misses.
-
-- **Grain:** one row per infra cost slice, aggregated here by the table's own dimensions `usage_date` / `cloud` / `currency_code`.
-- **Key columns (assumed, unverified on-workspace):** `usage_date`, `cloud`, `currency_code`, and `cost` (DOUBLE — a **real billed dollar** in the row's currency, unlike `usage_quantity`).
-- **Availability:** largely **AWS-only**, Preview, and **empty on many accounts** (requires the cloud-provider cost export / network policy to be enabled). An empty result must render "not assessed", never `$0`. **Do not** LEFT JOIN compute change-history tables (warehouses/clusters) into this rollup — they fan out rows and double-count `SUM(cost)`; dedupe to latest-row-per-id first in a separate step if attribution is needed.
-
-### `system.access.workspaces_latest`
-A tiny workspace-id → name lookup, kept deliberately separate from billing.
-
-- **Grain:** one row per workspace (latest snapshot).
-- **Key columns:** `workspace_id`, `workspace_name`, `status` (active vs deleted).
-- **Availability:** part of `system.access` (UC-required, `SELECT` needed; may not be enabled on every metastore). It is intentionally **not** joined into `billing.usage` at query time — if it's unavailable, only NAME resolution is lost and every per-workspace cost figure (keyed on `workspace_id`) still works, falling back to the numeric id.
-
----
-
-**Per-query documentation** — what each query does, why it matters, how to read every output column, an illustrative sample of the result, and the caveats — lives in the guided HTML tour: **[read it rendered →](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#d-cost)**. The `.sql` files in this folder are the source of truth.
-
+<sub>★ = first-audit pick. This is a one-line index — the full write-up (output columns, sample rows, caveats) lives in the [interactive docs](https://learn.crosshire.ch/learn/tech/databricks/audit). The `.sql` files in this folder are the source of truth.</sub>

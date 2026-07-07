@@ -1,116 +1,27 @@
 # Governance, Access & Security
 
-> 📖 **Guided HTML tour:** [`docs/index.html`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/) explains the library query-by-query — why it matters, what it does in plain terms, how to read every output column, sample output, and caveats. From this domain: [`access_runas_escalation`](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#q-access_runas_escalation). *(Phase 1 = top 10; more in phases.)*
+Who can touch what, who did, and where sensitive data leaks its guardrails. Grants, column masks and row filters, tags, data classification, lineage blast-radius, network denials and run-as escalation.
 
-This domain answers "who can touch what, who did touch what, and where is sensitive data leaking out of its guardrails." The queries read Unity Catalog's audit log, data/table/column lineage, network-policy denials, the privilege/tag/mask/row-filter metadata in `information_schema`, and auto-detected data classification — to inventory the current access posture and surface hygiene gaps (dead tables, untagged PII propagation, classified-but-unmasked columns, run-as escalation, login concentration, network exfiltration attempts).
+📖 **Full interactive docs → [every query, explained](https://learn.crosshire.ch/learn/tech/databricks/audit#d-governance)** — why it matters, what it does, how to read every output column, a sample of the result, and the caveats.
 
-Almost everything here lives in Unity Catalog system schemas, so the hard dependency is UC + a metastore with system-table sharing enabled, and the collecting principal must have `SELECT` on `system.*`. Because `information_schema` is privilege-aware and most of these tables are Preview and/or feature-gated, an empty or `TABLE_OR_VIEW_NOT_FOUND` result is expected and is not the same as "clean."
+| # | Query | What it does |
+|--:|---|---|
+| 01 | [`access_runas_escalation`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_runas_escalation) ★ | A 30-day rollup of audited actions where the initiating principal (run_by) differs from the identity the action executed as (run_as), aggregated per service, action, and masked identity pair with event counts and first/last timestamps. |
+| 02 | [`access_admin_role_change_events`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_admin_role_change_events) | A 90-day rollup of account, access-control, and Unity Catalog audit events grouped by service, action, and acting principal, showing how often each fired, from how many distinct source IPs, and the first/last time it was seen. |
+| 03 | [`access_classified_unmasked`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_classified_unmasked) | A current-state list of HIGH-confidence auto-classified (PII/sensitive) columns, each showing whether a column mask is applied and flagging the ones that are left unmasked. |
+| 04 | [`access_column_lineage_sensitive_reach`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_column_lineage_sensitive_reach) | A 90-day rollup of observed column-to-column data flows, one row per source-column to target-column edge (also split by entity_type and direct_access), showing how many times each edge fired, how many distinct principals drove it, and when it last happened. |
+| 05 | [`access_column_masks_inventory`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_column_masks_inventory) | A current-state inventory listing every column in the metastore that has a column mask applied, naming the mask function and the columns it reads. |
+| 06 | [`access_data_classification_inventory`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_data_classification_inventory) | A deduplicated inventory of every column the auto-classifier flagged as sensitive, one row per catalog/schema/table/column/class-tag/confidence/data-type, carrying the peak match frequency and first/last detection times. |
+| 07 | [`access_dead_table_candidates`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_dead_table_candidates) | Every MANAGED or EXTERNAL table in your account that never showed up as a read (lineage source) during the look-back window, listed with its owner and staleness age as cleanup candidates to investigate. |
+| 08 | [`access_grants_inventory`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_grants_inventory) | A current-state, privilege-scoped inventory of table- and catalog-level grants, rolled up to one row per object scope, privilege type, and grantee with the number of grants and distinct objects each covers. |
+| 09 | [`access_grants_inventory_extended`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_grants_inventory_extended) | A privilege map counting who holds which grants on schemas, UC connections, credentials, and external locations, one row per object scope, privilege, and grantee. |
+| 10 | [`access_login_concentration`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_login_concentration) | A 30-day rollup of account authentication activity, one row per masked principal x source IP x service x action, with success and non-success event counts and a first/last-seen window. |
+| 11 | [`access_network_inbound_denials`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_network_inbound_denials) | A 30-day rollup of inbound (ingress) network-policy enforcement events, grouped by policy outcome, rule, request path, principal, and source IP, with a count and first/last timestamps per group — the query groups by outcome rather than filtering it, so it surfaces whatever outcomes the table records (DENY / DENY_DRY_RUN denials in practice). |
+| 12 | [`access_network_outbound_denials`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_network_outbound_denials) | A 30-day rollup of outbound (egress) network-policy denials, grouped by source and destination type, access type, and destination, with DNS/storage rejection detail and denial counts. |
+| 13 | [`access_pii_propagation_untagged`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_pii_propagation_untagged) | One row per direct column-lineage flow where a sensitivity-tagged source column fed an untagged target column, naming the responsible principal and how many times it happened. |
+| 14 | [`access_row_filters_inventory`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_row_filters_inventory) | A current-state list of every table in the metastore that has a row-level access filter attached, naming the filter and the columns it evaluates. |
+| 15 | [`access_table_lineage_blast_radius`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_table_lineage_blast_radius) | A 90-day rollup of table-level data-flow edges, each classified as READ, WRITE, READ_WRITE, or UNKNOWN, with how many times it occurred, how many distinct principals drove it, and when it last happened. |
+| 16 | [`access_tags_inventory`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_tags_inventory) | A rollup of every manual governance tag applied at column and table scope, showing each tag name/value pair and how many objects carry it. |
+| 17 | [`access_vector_search_traffic`](https://learn.crosshire.ch/learn/tech/databricks/audit#q-access_vector_search_traffic) | A daily count of Vector Search query and scan events per endpoint over the trailing window, used to tell which endpoints are actually being used versus provisioned-but-idle. |
 
-## System tables used
-
-### system.access.audit
-- **What it is:** The Unity Catalog / account audit log — every recorded control-plane and data-access action (logins, permission changes, run-as, vector-search queries, etc.).
-- **Grain:** One row per audited event (a single action by a single actor at a point in time).
-- **Key columns used:** `service_name` (e.g. `accounts`, `accountsAccessControl`, `unityCatalog`, `vectorSearch`), `action_name` (the operation; note action values are representative, not an exhaustive enum — group by it, never hardcode a filter list), `user_identity` struct → `email` / `subject_name` (the acting principal; `subject_name`, NOT `subjectName`; frequently NULL), `source_ip_address`, `response.status_code` (200 = success), `identity_metadata.run_by` / `identity_metadata.run_as` (for run-as escalation; usually NULL for ordinary single-user actions), `request_params['endpoint_name']` (vector-search endpoint), `event_time`, `event_date` (partition column used for windowing).
-- **Availability:** Preview. Requires UC + system-table sharing enabled on the metastore, and `SELECT` on `system.access`. Account-level events are global (`workspace_id=0`); workspace events are regional. ~15-minute ingest lag — treat the most recent hour as provisional.
-
-### system.access.column_lineage
-- **What it is:** Column-to-column data-flow lineage captured when UC observes an operation.
-- **Grain:** One row per observed column-level lineage edge (source column → target column) per event.
-- **Key columns used:** `source_table_full_name` / `target_table_full_name`, discrete `source_table_catalog/schema/name` + `source_column_name` (and target equivalents), `entity_type`, `direct_access` (true = direct read/write; false = indirect/view-expansion), `created_by`, `event_time`, `event_date`.
-- **Availability:** GA. Requires UC + `SELECT` on `system.access`. Regional. **Subset by design** — operations with no source (e.g. `INSERT ... VALUES` literals) emit no row, so it undercounts; report as coverage-bounded, never a proof of absence.
-
-### system.access.table_lineage
-- **What it is:** Table-level data-flow lineage (read / write / read-write relationships between tables and other entities).
-- **Grain:** One row per observed table-level lineage edge per event.
-- **Key columns used:** `source_table_full_name` / `target_table_full_name` (source NULL on write-only events, target NULL on read-only), discrete `source_table_catalog/schema/name`, `source_type` / `target_type`, `entity_type`, `direct_access`, `created_by`, `event_time`, `event_date`.
-- **Availability:** GA, rolling **365-day** retention (but retention on `system.access.*` is workspace-configurable). UC + `SELECT` on `system.access`. Regional. Empty lineage means "not captured" (MERGE/JDBC/path/temp-view gaps), NOT "unused."
-
-### system.access.inbound_network
-- **What it is:** Inbound (ingress) network-policy enforcement events.
-- **Grain:** One row per inbound network event (this query keeps DENY / DENY_DRY_RUN only).
-- **Key columns used:** `policy_outcome` (DENY / DENY_DRY_RUN), `rule_label`, `request_path`, `authenticated_as` (principal), `source.ip` nested subfield (source IP — exact subfield name unverified), `event_time` (this table has **no `event_date` column**).
-- **Availability:** Preview. Regional. Requires a configured ingress network policy — empty if none. Retention **30 days** (look-back capped at 30d regardless of requested window).
-
-### system.access.outbound_network
-- **What it is:** Outbound (egress) network-policy enforcement events — the exfiltration-control audit surface.
-- **Grain:** One row per outbound network event (this query keeps denials only).
-- **Key columns used:** `network_source_type`, `destination_type`, `access_type`, `destination`, `dns_event.rcode` (NULL unless `destination_type=DNS`), `storage_event.rejection_reason` (NULL unless `destination_type=STORAGE`), `event_time` (**no `event_date` column**).
-- **Availability:** Preview. Regional. Requires a configured egress policy — empty means "not assessed / no egress policy," NOT "zero exfiltration." Denials only — no allowed-traffic baseline, so no allow/deny ratio. Retention **365 days**.
-
-### system.data_classification.results
-- **What it is:** Auto-detected data classification (PII/sensitivity scan results) for enabled catalogs.
-- **Grain:** One row per detected classification per column (this query aggregates to one row per catalog/schema/table/column/class_tag/data_type).
-- **Key columns used:** `catalog_name`, `schema_name`, `table_name`, `column_name`, `class_tag` (the detected sensitivity class), `confidence` (HIGH / LOW), `data_type`, `frequency` (float 0–1, share of sampled values matching), `first_detected_time` / `latest_detected_time`. The `samples array<string>` column is deliberately **dropped** (it holds raw sample values = live sensitive data).
-- **Availability:** Preview, 13-month retention, regional. Requires **both** the data-classification feature **and** the `system.data_classification` schema enabled — this is a *separate* schema from `system.access`, so enabling one does not enable the other. Covers **enabled catalogs only**; unclassified columns are simply absent. If disabled, treat as "feature not enabled," not empty.
-
-### system.information_schema.column_masks
-- **What it is:** Current-state inventory of column masks applied in the metastore.
-- **Grain:** One row per masked column.
-- **Key columns used:** `table_catalog`, `table_schema`, `table_name`, `column_name`, `mask_name`, `using_columns` (columns the mask function reads).
-- **Availability:** Public Preview, DBR 12.2 LTS+. Metastore-wide but **privilege-aware / object-visibility-scoped** — tables the collector can only BROWSE are excluded, so a missing mask row can mean "not visible to the collector," which would *overstate* unmasked coverage. Label completeness rather than asserting a clean count.
-
-### system.information_schema.row_filters
-- **What it is:** Current-state inventory of row filters applied in the metastore.
-- **Grain:** One row per filtered table.
-- **Key columns used:** `table_catalog`, `table_schema`, `table_name`, `filter_name`, `target_columns` (columns the filter reads).
-- **Availability:** Public Preview, DBR 12.2 LTS+. Metastore-wide, privilege-aware / object-visibility-scoped.
-
-### system.information_schema.column_tags
-- **What it is:** Manual governance tags applied at the column level.
-- **Grain:** One row per (column, tag) pair.
-- **Key columns used:** `catalog_name` / `schema_name` / `table_name` / `column_name` (discrete identifiers — join with `=`, never `LIKE CONCAT(...)` since `_` is a LIKE wildcard), `tag_name`, `tag_value`. Tag names/values are free-text and case-sensitive.
-- **Availability:** UC. Privilege-aware → the tag inventory is privilege-scoped. Distinct from auto-detected classification in `data_classification.results`.
-
-### system.information_schema.table_tags
-- **What it is:** Manual governance tags applied at the table level.
-- **Grain:** One row per (table, tag) pair.
-- **Key columns used:** `TAG_NAME`, `TAG_VALUE` (plus the object identifier columns).
-- **Availability:** UC, privilege-aware. (Sibling `CATALOG_TAGS` / `SCHEMA_TAGS` / `VOLUME_TAGS` exist but are intentionally excluded here as unverified.)
-
-### system.information_schema.table_privileges
-- **What it is:** Table-level grant state.
-- **Grain:** One row per grant (grantee × privilege × table).
-- **Key columns used:** `GRANTEE`, `PRIVILEGE_TYPE`, `TABLE_CATALOG` / `TABLE_SCHEMA` / `TABLE_NAME`. (`IS_GRANTABLE` is always `'NO'` / reserved — not collected.)
-- **Availability:** UC. **Privilege-aware** — a principal sees only its own grants on objects it can see; even a high-privilege audit SP cannot fully reproduce `SHOW GRANTS`. Always label results "partial — privilege-aware."
-
-### system.information_schema.catalog_privileges
-- **What it is:** Catalog-level grant state.
-- **Grain:** One row per grant (grantee × privilege × catalog).
-- **Key columns used:** `GRANTEE`, `PRIVILEGE_TYPE`, `CATALOG_NAME`.
-- **Availability:** UC, privilege-aware (same caveat as `table_privileges`).
-
-### system.information_schema.schema_privileges
-- **What it is:** Schema-level grant state.
-- **Grain:** One row per grant (grantee × privilege × schema).
-- **Key columns used:** `GRANTEE`, `PRIVILEGE_TYPE` (the only columns read; per-view object-name columns are inferred/unverified).
-- **Availability:** UC, privilege-aware.
-
-### system.information_schema.connection_privileges
-- **What it is:** Grant state on UC connections (e.g. Lakehouse Federation / external system connections).
-- **Grain:** One row per grant on a connection.
-- **Key columns used:** `GRANTEE`, `PRIVILEGE_TYPE`.
-- **Availability:** UC, privilege-aware; empty if no connections defined.
-
-### system.information_schema.credential_privileges
-- **What it is:** Grant state on UC credentials.
-- **Grain:** One row per grant on a credential.
-- **Key columns used:** `GRANTEE`, `PRIVILEGE_TYPE`.
-- **Availability:** UC, privilege-aware. (`STORAGE_CREDENTIAL_PRIVILEGES` is deprecated and excluded.)
-
-### system.information_schema.external_location_privileges
-- **What it is:** Grant state on UC external locations.
-- **Grain:** One row per grant on an external location.
-- **Key columns used:** `GRANTEE`, `PRIVILEGE_TYPE`.
-- **Availability:** UC, privilege-aware; empty if no external locations defined.
-
-### system.information_schema.tables
-- **What it is:** Metastore table catalog (object inventory).
-- **Grain:** One row per table/view.
-- **Key columns used:** `table_catalog`, `table_schema`, `table_name`, `table_type` (filtered to `MANAGED` / `EXTERNAL`), `table_owner`, `created`, `last_altered` (can be NULL / late-populated → "age unknown").
-- **Availability:** UC. **Privilege-aware** — tables the collector cannot see are absent (not "dead"). Used as the object universe for dead-table detection.
-
----
-
-**Per-query documentation** — what each query does, why it matters, how to read every output column, an illustrative sample of the result, and the caveats — lives in the guided HTML tour: **[read it rendered →](https://darshanmeel.github.io/crosshire-audit-databricks-admin/#d-governance)**. The `.sql` files in this folder are the source of truth.
-
+<sub>★ = first-audit pick. This is a one-line index — the full write-up (output columns, sample rows, caveats) lives in the [interactive docs](https://learn.crosshire.ch/learn/tech/databricks/audit). The `.sql` files in this folder are the source of truth.</sub>
