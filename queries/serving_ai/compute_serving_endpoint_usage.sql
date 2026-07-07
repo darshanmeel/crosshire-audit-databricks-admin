@@ -1,17 +1,17 @@
 -- query_id: compute_serving_endpoint_usage
--- source: system.serving.endpoint_usage
--- feeds: compute_serving_endpoint_health (gov-5) — per-endpoint request volume, success vs error, token throughput
+-- title: Serving endpoint request volume, errors, tokens, and cost by day
+-- domain: serving_ai   tier: deep
+-- reads: system.serving.served_entities, system.serving.endpoint_usage, system.billing.usage, system.billing.list_prices
+-- requires: SELECT on system.serving, system.billing; system.serving must be enabled per-metastore (empty until Model Serving is in use); system.billing is GA.
+-- params: :period_days (default 30) rolling window in days
 -- confidence: needs_confirmation
--- caveats: system.serving.* is empty unless Model Serving is in use (and the serving schema is enabled) — collection preflight skip-sentinels it when absent, and the finding degrades to not_assessed rather than reporting a fake zero. The served_entities dimension is CHANGE-HISTORY (one row per config change) and is deduped to the latest row per (workspace_id, endpoint_id, served_entity_id) by change_time DESC before the join, so a renamed/reconfigured entity is not counted twice. endpoint_usage has no endpoint_id column, so the join is on (workspace_id, served_entity_id) and endpoint_id is sourced from served_entities (ent.endpoint_id). endpoint_usage is one row per request (no request_count column), so request volumes are COUNT(*)/CASE-based. Verified column names: request_time (timestamp), workspace_id, served_entity_id, status_code (int HTTP status), input_token_count, output_token_count. usage_quantity/DBUs live in system.billing.usage, NOT here — this table is a request/token counter, not a dollar source.
--- net_dbus is exact billed DBUs (usage_unit='DBU'); est_usd_list is a LIST-PRICE ESTIMATE
---   (usage_quantity x list_prices.pricing.default) -- NOT the negotiated invoice rate (not in any
---   system table) and excludes cloud infra/egress $. Directional, needs_confirmation.
--- Cost is attributed by billing usage_metadata.endpoint_id over the same :period_days window, rolled up
---   at (workspace_id, endpoint_id, usage_date) grain, then LEFT JOINed pre-aggregated so finding rows are
---   never multiplied. billing.usage cannot see served_entity_id, so when an endpoint hosts multiple served
---   entities the same net_dbus/est_usd_list repeats across those served-entity rows for the day -- do NOT
---   SUM cost across served-entity rows of the same endpoint/day (dedupe on endpoint_id+usage_date first).
-/* databricks_audit:compute_serving_endpoint_usage */
+-- confidence_note: Column names (request_time, workspace_id, served_entity_id, status_code, input_token_count, output_token_count) and the served_entities-to-endpoint_usage join are verified against a live workspace system-schema dump, but the 2xx-as-success classification is a working assumption, not vendor-documented.
+-- read_this: One row = a day + endpoint + served entity's request volume. The columns that matter are total_requests, error_requests, and net_dbus - use this as the detail behind a dormancy or cost finding, not as a standalone health signal (this file mixes several metrics with no single waste driver).
+-- healthy: n/a - inventory
+-- investigate_if: n/a - inventory
+-- actions: n/a - inventory (reference/join input)
+-- next: compute_serving_dormant_endpoints (if you want to know which of these endpoints have zero traffic), cost_by_compute_resource (if you want the endpoint's cost trend outside the serving grain)
+-- caveats: system.serving.* is empty unless Model Serving is in use (and the serving schema is enabled) - read zero rows as "not measured", never as a true zero. The served_entities dimension is change-history (one row per config change) and is deduped to the latest row per (workspace_id, endpoint_id, served_entity_id) by change_time DESC before the join, so a renamed/reconfigured entity is not counted twice. endpoint_usage has no endpoint_id column, so the join is on (workspace_id, served_entity_id) and endpoint_id is sourced from served_entities. endpoint_usage is one row per request (no request_count column), so request volumes are COUNT(*)/CASE-based. Verified columns: request_time (timestamp), workspace_id, served_entity_id, status_code (int HTTP status), input_token_count, output_token_count. usage_quantity/DBUs live in system.billing.usage, not here - this table is a request/token counter, not a dollar source. net_dbus is exact billed DBUs (usage_unit='DBU'); est_usd_list is a LIST-PRICE ESTIMATE (usage_quantity x list_prices.pricing.default), NOT the negotiated invoice rate (not in any system table), and excludes cloud infra/egress dollars - treat it as directional. Cost is attributed by billing usage_metadata.endpoint_id over the same :period_days window, rolled up at (workspace_id, endpoint_id, usage_date) grain, then LEFT JOINed pre-aggregated so rows are never multiplied. billing.usage cannot see served_entity_id, so when an endpoint hosts multiple served entities the same net_dbus/est_usd_list repeats across those served-entity rows for the day - do not SUM cost across served-entity rows of the same endpoint/day (dedupe on endpoint_id+usage_date first).
 WITH entities AS (
   -- served_entities is change-history; keep only the latest config row per entity.
   SELECT
@@ -41,7 +41,7 @@ price AS (
 ),
 cost_rollup AS (
   -- Pre-aggregated billing cost per serving endpoint per day (billing key = usage_metadata.endpoint_id).
-  -- Grouped by (workspace_id, endpoint_id, usage_date) to match the finding's endpoint/day join grain;
+  -- Grouped by (workspace_id, endpoint_id, usage_date) to match this query's endpoint/day join grain;
   -- billing.usage cannot break cost down to served_entity_id. Unique per key so the LEFT JOIN below is safe.
   SELECT u.workspace_id,
          u.usage_metadata.endpoint_id                     AS endpoint_id,
@@ -109,7 +109,7 @@ SELECT
   finding.total_requests,
   finding.input_tokens,
   finding.output_tokens,
-  -- ADDED cost columns (endpoint/day grain; repeats across served-entity rows of the same endpoint/day).
+  -- cost columns (endpoint/day grain; repeats across served-entity rows of the same endpoint/day).
   COALESCE(cr.net_dbus, 0)     AS net_dbus,
   COALESCE(cr.est_usd_list, 0) AS est_usd_list
 FROM finding
@@ -117,3 +117,4 @@ LEFT JOIN cost_rollup cr
   ON  finding.workspace_id = cr.workspace_id
   AND finding.endpoint_id  = cr.endpoint_id
   AND finding.usage_date   = cr.usage_date
+ORDER BY usage_date DESC, total_requests DESC

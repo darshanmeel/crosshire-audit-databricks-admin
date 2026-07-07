@@ -1,19 +1,17 @@
 -- query_id: serving_endpoint_traffic_by_endpoint
--- source: system.serving.endpoint_usage JOIN system.serving.served_entities
--- feeds: cost_serving_cost_mode_efficiency (gov-7) — per-endpoint request COUNT in the window, to cross against billed serving mode
--- confidence: confirmed (columns verified against the configure-ai-gateway usage-schema page 2026-06-21)
--- caveats: system.serving.* is empty unless Model Serving is enabled/in use — preflight skip-sentinels it and the finding degrades to not_assessed (never a fake zero). CONFIRMED endpoint_usage columns: it is ONE ROW PER REQUEST (there is NO request_count column), so traffic = COUNT(*); status_code (INTEGER), request_time (TIMESTAMP), served_entity_id, input_token_count/output_token_count (LONG). served_entities is the change-history DIMENSION; confirmed columns include endpoint_id, endpoint_name, served_entity_id, change_time — deduped to the latest config row per (workspace_id, endpoint_id, served_entity_id) by change_time DESC before the join so a reconfigured entity is not double-counted. endpoint_id/endpoint_name come from served_entities (endpoint_usage carries served_entity_id, not endpoint_id).
--- net_dbus is exact billed DBUs (usage_unit='DBU'); est_usd_list is a LIST-PRICE ESTIMATE
---   (usage_quantity x list_prices.pricing.default) -- NOT the negotiated invoice rate (not in any
---   system table) and excludes cloud infra/egress $. Directional, needs_confirmation.
--- Cost is attributed by billing endpoint_id over the window (per-endpoint), not per request/event. Cost
---   rollup is pre-aggregated then LEFT JOINed, so finding rows are never multiplied. Note: serving DBUs
---   in system.billing.usage are billed at the ENDPOINT level, not per served_entity, so cost cannot be
---   split across entities within an endpoint -- it aligns with this finding's per-endpoint grain.
--- endpoint_id is a globally-unique GUID, so the cost rollup is keyed on endpoint_id alone (workspace_id
---   dropped from the rollup grain); the rollup is 1:1 per endpoint so it is surfaced via MAX() inside the
---   existing GROUP BY.
-/* databricks_audit:serving_endpoint_traffic_by_endpoint */
+-- title: Serving endpoint traffic totals over the window (request/error/token rollup)
+-- domain: serving_ai   tier: deep
+-- reads: system.serving.endpoint_usage, system.serving.served_entities, system.billing.usage, system.billing.list_prices
+-- requires: SELECT on system.serving, system.billing; system.serving must be enabled per-metastore (empty until Model Serving is in use); system.billing is GA.
+-- params: :period_days (default 30) rolling window in days
+-- confidence: confirmed
+-- confidence_note: Columns were verified against the AI Gateway usage-schema documentation on 2026-06-21 - re-verify if you are running this well after that date, since system-table schemas evolve.
+-- read_this: One row = one endpoint's total traffic over the window. The columns that matter are request_count and last_request_date - use this as the join input for a cost-per-request or dormancy check, not as a standalone health signal.
+-- healthy: n/a - inventory
+-- investigate_if: n/a - inventory
+-- actions: n/a - inventory (reference/join input)
+-- next: compute_serving_dormant_endpoints (if you want the per-served-entity dormancy read), cost_by_compute_resource (if you want the underlying billed cost trend)
+-- caveats: system.serving.* is empty unless Model Serving is enabled/in use - read zero rows as "not measured", never as a true zero. Confirmed endpoint_usage columns: it is one row per request (there is no request_count column in the source table, so traffic here is COUNT(*)); status_code (integer), request_time (timestamp), served_entity_id, input_token_count/output_token_count (long). served_entities is the change-history dimension; confirmed columns include endpoint_id, endpoint_name, served_entity_id, change_time - deduped to the latest config row per (workspace_id, endpoint_id, served_entity_id) by change_time DESC before the join, so a reconfigured entity is not double-counted. endpoint_id/endpoint_name come from served_entities (endpoint_usage itself only carries served_entity_id, not endpoint_id). net_dbus is exact billed DBUs (usage_unit='DBU'); est_usd_list is a LIST-PRICE ESTIMATE (usage_quantity x list_prices.pricing.default), NOT the negotiated invoice rate (not in any system table), and excludes cloud infra/egress dollars. Cost is attributed by billing endpoint_id over the window (per-endpoint, not per-request); the rollup is pre-aggregated then LEFT JOINed, so rows are never multiplied. Serving DBUs in system.billing.usage are billed at the endpoint level, not per served entity, so cost cannot be split across entities within an endpoint - it aligns with this query's per-endpoint grain. endpoint_id is a globally-unique GUID, so the cost rollup is keyed on endpoint_id alone (workspace_id dropped from that rollup's grain); the rollup is 1:1 per endpoint so it is surfaced via MAX() inside the existing GROUP BY. This query already uses :period_days for its window throughout.
 WITH entities AS (
   SELECT workspace_id, endpoint_id, endpoint_name, served_entity_id
   FROM (
@@ -33,8 +31,8 @@ price AS (
   FROM system.billing.list_prices
 ),
 cost_rollup AS (
-  -- Pre-aggregated to EXACTLY the finding's join grain (endpoint_id) so the LEFT JOIN is strictly 1:1
-  -- and never multiplies finding rows. endpoint_id is a globally-unique GUID -> keyed on id alone.
+  -- Pre-aggregated to EXACTLY this query's join grain (endpoint_id) so the LEFT JOIN is strictly 1:1
+  -- and never multiplies result rows. endpoint_id is a globally-unique GUID -> keyed on id alone.
   SELECT
     u.usage_metadata.endpoint_id                     AS endpoint_id,
     SUM(u.usage_quantity)                            AS net_dbus,
@@ -72,3 +70,4 @@ LEFT JOIN cost_rollup cr
 WHERE eu.request_time >= dateadd(day, -:period_days, current_date())
   AND eu.request_time <  current_date()
 GROUP BY ent.endpoint_id, ent.endpoint_name
+ORDER BY request_count DESC, endpoint_id

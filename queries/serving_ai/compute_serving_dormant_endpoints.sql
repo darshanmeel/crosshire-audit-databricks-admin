@@ -1,20 +1,17 @@
 -- query_id: compute_serving_dormant_endpoints
--- source: system.serving.served_entities
--- feeds: compute_serving_dormant_endpoints (gov-5 dormant arm) — endpoints/served-entities with no request traffic in the window
+-- title: Serving endpoints with no traffic in the window (dormant / wasted spend)
+-- domain: serving_ai   tier: deep
+-- reads: system.serving.served_entities, system.serving.endpoint_usage, system.billing.usage, system.billing.list_prices
+-- requires: SELECT on system.serving, system.billing; system.serving must be enabled per-metastore (empty until Model Serving is in use); system.billing is GA.
+-- params: :period_days (default 30) rolling window in days; :warn_low_requests (default 10) total requests over the window at/below which a served entity with some traffic still flags WARN as near-dormant
 -- confidence: needs_confirmation
--- caveats: system.serving.* is empty unless Model Serving is enabled/in use — preflight skip-sentinels it and the finding degrades to not_assessed (never a fake zero "all endpoints dormant"). DORMANT must-fix: served_entities is the DIMENSION and is change-history, so it is deduped to the latest row per (workspace_id, endpoint_id, served_entity_id) by change_time DESC FIRST; endpoint_usage is then LEFT JOINed as a per-entity rollup so an entity with NO usage row keeps last_request_date = NULL and total_requests = 0. A NULL last-usage means "no traffic observed", which is the dormant signal — it is NOT treated as "recently active". last_request_date NULL can also mean the request simply predates the window or that usage retention is shorter than the dimension; the finding labels dormant as "no requests in the last N days", not "never used", and discloses the window. NEEDS WORKSPACE CONFIRMATION: that endpoint_creator/created flags exist on served_entities — newly-created endpoints inside the window should not read as dormant, so the latest change_time is carried out as a recency floor and the finding excludes entities whose only change is newer than the window start. NOTE: endpoint_usage has no request_count column (each row is one request, so requests are counted with COUNT(*)) and no endpoint_id column, so usage is rolled up and joined on (workspace_id, served_entity_id); endpoint_id is carried from the served_entities dimension side.
--- COST CAVEATS (added):
--- net_dbus is exact billed DBUs (usage_unit='DBU'); est_usd_list is a LIST-PRICE ESTIMATE
---   (usage_quantity x list_prices.pricing.default) -- NOT the negotiated invoice rate (not in any
---   system table) and excludes cloud infra/egress $. Directional, needs_confirmation.
--- Cost is attributed by billing endpoint_id over the :period_days window (per-endpoint), not per
---   request. The cost rollup is pre-aggregated per (workspace_id, endpoint_id) then LEFT JOINed, so
---   finding rows are never multiplied.
--- GRAIN CAVEAT: system.billing.usage has NO served_entity_id — the lowest serving grain in billing is
---   endpoint_id. So net_dbus/est_usd_list are ENDPOINT-level and REPEAT identically across every
---   served-entity row of the same endpoint. Do NOT SUM these across rows of one endpoint (double-count).
---   For a dormant endpoint still showing net_dbus > 0, that DBU spend is the wasted provisioned cost.
-/* databricks_audit:compute_serving_dormant_endpoints */
+-- confidence_note: The dedup-to-latest-config-row join and the endpoint-level cost rollup are verified against a live workspace, but whether served_entities exposes an explicit creation flag - needed to exclude endpoints created inside the window from the dormant label - is not confirmed; verify against your own workspace before acting on borderline rows.
+-- read_this: One row = a served entity (a model/version behind an endpoint). The columns that matter are last_request_date and net_dbus: last_request_date NULL means no request landed on this entity in the window, and net_dbus > 0 on that same row means you are paying DBUs for capacity nobody is calling.
+-- healthy: last_request_date is not NULL and total_requests is above :warn_low_requests (field heuristic - tune :warn_low_requests for your account).
+-- investigate_if: last_request_date IS NULL with net_dbus > 0 (CRITICAL - paying for zero traffic), or last_request_date IS NULL with no cost signal, or total_requests at/below :warn_low_requests (WARN) - field heuristic; tune :warn_low_requests for your account.
+-- actions: 1) confirm with the owning team that the endpoint has no real consumers, then delete the served entity / endpoint (free); 2) if it must stay available for occasional use, move it to a scale-to-zero or pay-per-token serving mode so idle time is not billed (config); 3) if it must stay warm for latency SLAs, right-size the provisioned throughput to the smallest tier that meets that SLA (spend, but lower than today).
+-- next: compute_serving_endpoint_usage (if you want the daily request/error/token trend before deciding), cost_by_compute_resource (if you want this endpoint's full cost history)
+-- caveats: system.serving.* is empty unless Model Serving is enabled/in use - read zero rows as "not measured", never as "all endpoints dormant". served_entities is change-history, so it is deduped to the latest row per (workspace_id, endpoint_id, served_entity_id) by change_time DESC first; endpoint_usage is then LEFT JOINed as a per-entity rollup, so an entity with no traffic keeps last_request_date = NULL and total_requests = 0. A NULL last_request_date means "no traffic observed", which is the dormant signal here - it is not the same as "recently active". A NULL can also mean the request predates the window, or that usage retention is shorter than the served_entities dimension - the label is "no requests in the last :period_days days", not "never used", and this query discloses that window via last_request_date and latest_change_date. NEEDS CONFIRMATION: whether served_entities exposes a reliable creation flag - a newly-created endpoint inside the window should not read as dormant just because it has not been called yet; latest_change_time/latest_change_date are surfaced on every row so you can apply that recency floor yourself. endpoint_usage has no request_count column (each row is one request, counted with COUNT(*)) and no endpoint_id column, so usage is rolled up and joined on (workspace_id, served_entity_id); endpoint_id is carried from the served_entities dimension side. net_dbus is exact billed DBUs (usage_unit='DBU'); est_usd_list is a LIST-PRICE ESTIMATE (usage_quantity x list_prices.pricing.default), NOT the negotiated invoice rate (not available in any system table), and excludes cloud infra/egress dollars - treat it as directional. Cost is attributed by billing endpoint_id over the :period_days window (per-endpoint, not per-request); the rollup is pre-aggregated per (workspace_id, endpoint_id) before the LEFT JOIN, so rows are never multiplied. GRAIN CAVEAT: system.billing.usage has no served_entity_id - the lowest serving grain in billing is endpoint_id - so net_dbus/est_usd_list are ENDPOINT-level and repeat identically across every served-entity row of the same endpoint; do not SUM these across rows of one endpoint, you will double-count. For a dormant endpoint still showing net_dbus > 0, that DBU spend is the wasted provisioned cost. The status column below uses total_requests = 0 (i.e. last_request_date IS NULL) plus net_dbus > 0 as the CRITICAL driver; it deliberately has no NOT_ASSESSED branch, because a NULL last_request_date is itself the dormant signal here, not missing data.
 WITH entities AS (
   -- served_entities is change-history; collapse to the latest config row per entity.
   SELECT
@@ -71,9 +68,9 @@ price AS (
   FROM system.billing.list_prices
 ),
 cost_rollup AS (
-  -- Pre-aggregated ENDPOINT-level DBU + list-$ rollup, keyed on the ONLY serving id billing exposes
+  -- Pre-aggregated ENDPOINT-level DBU + list-$ rollup, keyed on the only serving id billing exposes
   -- (usage_metadata.endpoint_id). Grouped per (workspace_id, endpoint_id) then LEFT JOINed below so
-  -- finding rows are never multiplied. Same :period_days window the finding uses.
+  -- result rows are never multiplied. Same :period_days window this query uses elsewhere.
   SELECT
     u.workspace_id,
     u.usage_metadata.endpoint_id                     AS endpoint_id,
@@ -104,7 +101,14 @@ SELECT
   ur.last_request_date                        AS last_request_date,
   -- Cost visibility (ENDPOINT-level; repeats across served-entity rows of the same endpoint):
   COALESCE(cr.net_dbus, 0)                    AS net_dbus,
-  COALESCE(cr.est_usd_list, 0)                AS est_usd_list
+  COALESCE(cr.est_usd_list, 0)                AS est_usd_list,
+  -- status: worst-first band on dormancy (field heuristic; :warn_low_requests).
+  CASE
+    WHEN COALESCE(ur.total_requests, 0) = 0 AND COALESCE(cr.net_dbus, 0) > 0 THEN 'CRITICAL'
+    WHEN COALESCE(ur.total_requests, 0) = 0                                  THEN 'WARN'
+    WHEN COALESCE(ur.total_requests, 0) <= :warn_low_requests                THEN 'WARN'
+    ELSE 'OK'
+  END AS status
 FROM entities ent
 LEFT JOIN usage_rollup ur
   ON  ent.workspace_id     = ur.workspace_id
@@ -112,3 +116,7 @@ LEFT JOIN usage_rollup ur
 LEFT JOIN cost_rollup cr
   ON  ent.workspace_id = cr.workspace_id
   AND ent.endpoint_id  = cr.endpoint_id
+ORDER BY
+  CASE status WHEN 'CRITICAL' THEN 0 WHEN 'WARN' THEN 1 ELSE 2 END,
+  COALESCE(cr.net_dbus, 0) DESC,
+  COALESCE(ur.total_requests, 0) ASC
