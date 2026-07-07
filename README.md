@@ -41,6 +41,12 @@ sort worst-first; **inventory** queries are stable references you join to.
    account/metastore admin first.
 3. Open a query, copy its SQL, set the look-back window on the `:period_days` parameter, and run.
 
+**Or run the whole library at once** with [`tools/run_audit.py`](tools/run_audit.py) (Databricks SQL
+connector) or its notebook twin [`tools/run_audit_notebook.py`](tools/run_audit_notebook.py): filter
+by `--tier` / `--domain` / `--stars`, and it substitutes params, executes, records **NOT_ASSESSED**
+for tables your account doesn't expose, and prints a scorecard. It is read-only unless you pass the
+opt-in `--write-to catalog.schema`.
+
 ## Best-effort by design
 
 Databricks system tables are **not uniformly available**: a query can return **nothing**, or fail with

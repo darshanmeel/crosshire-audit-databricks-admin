@@ -23,7 +23,12 @@ All notable changes to this query library. Format loosely follows
 - `est_wasted_usd_list` on `compute_idle_node_ratio` (directional: waste proportional to idle
   slices); `jobs_sharing_cluster` + `est_usd_list_share` and a NOT_ASSESSED bucket on
   `lakeflow_jobs_on_all_purpose`; `statement_fingerprint` on `query_costly_statements`.
-- GitHub Actions CI running the header linter + manifest-sync check.
+- GitHub Actions CI running the header linter + manifest-sync check, plus an advisory sqlfluff
+  parse job (`.sqlfluff` seeds the placeholder templater with every `:param` default).
+- `tools/run_audit.py` + `tools/run_audit_notebook.py` — a manifest-driven runner (Databricks SQL
+  connector) and its notebook twin: filter by `--tier`/`--domain`/`--stars`, substitute params,
+  execute, record NOT_ASSESSED on missing/unreadable tables, print a scorecard. Writes only with
+  the opt-in `--write-to catalog.schema` (Guardrail 4); read-only otherwise.
 
 ### Changed
 - **One window parameter everywhere:** `:period_days` (default 30) replaces every hard-coded
