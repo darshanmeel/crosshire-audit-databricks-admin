@@ -41,6 +41,14 @@ FORBIDDEN = [
 # Drop the disabled placeholder.
 FORBIDDEN = [f for f in FORBIDDEN if f[1] is not None]
 
+# A2: hard-coded time windows that must have become :period_days.
+WINDOW_BAD = [
+    (re.compile(r"INTERVAL\s+\d+\s+DAYS?", re.I), "hard-coded 'INTERVAL <n> DAYS' (use :period_days)"),
+    (re.compile(r"date_add\(\s*current_date\(\)\s*,\s*-\d+"), "hard-coded date_add() window (use :period_days)"),
+    (re.compile(r"dateadd\(\s*day\s*,\s*-\d+", re.I), "hard-coded dateadd() window (use :period_days)"),
+    (re.compile(r"date_sub\(\s*current_date\(\)\s*,\s*\d+"), "hard-coded date_sub() window (use :period_days)"),
+]
+
 
 def lint_file(path: Path, all_ids: set[str]) -> list[str]:
     errs: list[str] = []
@@ -67,14 +75,17 @@ def lint_file(path: Path, all_ids: set[str]) -> list[str]:
     if hdr["confidence"] not in hs.CONFIDENCE_ENUM:
         errs.append(f"{rel}: confidence '{hdr['confidence']}' not in {sorted(hs.CONFIDENCE_ENUM)}")
 
-    param_names = {p["name"] for p in hdr["params"]}
-    if "period_days" not in param_names:
-        errs.append(f"{rel}: params must declare :period_days")
-
     # SQL body = everything after the leading comment block.
     body = "\n".join(l for l in text.splitlines() if not l.startswith("--"))
-    if ":period_days" not in body and "period_days" not in text:
-        errs.append(f"{rel}: body does not reference :period_days")
+
+    # A2 window hygiene: no hard-coded windows anywhere. The only allowed rolling window is
+    # :period_days. Genuine point-in-time snapshots (no window at all) are allowed to omit it.
+    for rx, label in WINDOW_BAD:
+        if rx.search(body):
+            errs.append(f"{rel}: {label}")
+    param_names = {p["name"] for p in hdr["params"]}
+    if ":period_days" in body and "period_days" not in param_names:
+        errs.append(f"{rel}: body uses :period_days but params does not declare it")
 
     for qid, cond in [(n["query_id"], n["if"]) for n in hdr["next"]]:
         if qid not in all_ids:

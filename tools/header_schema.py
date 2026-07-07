@@ -62,7 +62,10 @@ LEARN = "/learn/tech/databricks/audit"
 _FIELD_RE = re.compile(r"^--\s*(" + "|".join(FIELDS) + r")\s*:\s?(.*)$")
 _DOMAIN_RE = re.compile(r"^\s*(\S+)\s+tier\s*:\s*(\S+)\s*$")
 _PARAM_RE = re.compile(r":(\w+)\s*\(default\s+([^)]+)\)\s*(.*)")
-_NEXT_RE = re.compile(r"^(\w+?)(?:\s*\(if\s+(.*)\))?$")
+# A next-token is a query_id optionally followed by a parenthetical condition.
+# The condition may itself contain commas, so we split the field only on TOP-LEVEL commas.
+_NEXT_SPLIT_RE = re.compile(r",(?![^(]*\))")
+_NEXT_RE = re.compile(r"^([a-z0-9_]+)\s*(?:\(\s*(?:if\s+)?(.*?)\s*\))?$", re.I)
 _ACTION_SPLIT_RE = re.compile(r"\s*\d+\)\s*")
 
 

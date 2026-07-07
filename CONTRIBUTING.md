@@ -24,9 +24,12 @@ Contributions are welcome — a new query, a sharper caveat, a better interpreta
    identity leaves the workspace.
 6. **ASCII only.** Use `->`, `-`, `>=`, straight quotes — no em-dashes, smart quotes, or arrows.
 7. **One window param.** Every time-bounded query uses `:period_days` (default 30). No hard-coded
-   `INTERVAL 30 DAYS` and no `:lookback_days`. Where a system table has a hard retention limit
-   (e.g. `system.compute.node_timeline` = 90 days), cap it *in SQL* — `LEAST(:period_days, 90)` —
-   and say why in the header.
+   `INTERVAL 30 DAYS`, no `date_add(current_date(), -30)`, and no `:lookback_days`. Where a system
+   table has a hard retention limit (e.g. `system.compute.node_timeline` = 90 days), cap it *in
+   SQL* — `LEAST(:period_days, 90)` — and say why in the header. A genuine point-in-time snapshot
+   (a "current config" inventory with no time filter) has no window: it omits `:period_days` and
+   its `params` line reads `none (config snapshot, no time window)`. The linter forbids hard-coded
+   windows but does not force a window onto a windowless query.
 
 ## Header schema (v2)
 
