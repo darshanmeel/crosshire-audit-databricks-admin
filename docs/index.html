@@ -477,9 +477,9 @@ table.ch-table td.col { font-family: var(--font-mono); font-size: 12.5px; color:
   <div class="ch-hero-inner">
     <div class="ch-eyebrow">CrossHire &middot; Databricks system-tables audit</div>
     <h1>The query library, <em>explained</em></h1>
-    <p class="dek">81 copy-paste SQL queries that audit a Databricks account's cost, performance, compute, jobs, serving, storage and governance — built entirely on <code>system.*</code> tables, with no app to install and no dashboard to wire up. This is the guided tour: for every query, what it does, why an admin cares, and how to read the result.</p>
+    <p class="dek">95 copy-paste SQL queries that audit a Databricks account's cost, performance, compute, jobs, serving, storage and governance — built entirely on <code>system.*</code> tables, with no app to install and no dashboard to wire up. This is the guided tour: for every query, what it does, why an admin cares, and how to read the result.</p>
     <div class="ch-hero-meta">
-      <span><b>81</b>&nbsp;queries</span><span class="meta-dot"></span>
+      <span><b>95</b>&nbsp;queries</span><span class="meta-dot"></span>
       <span><b>7</b>&nbsp;domains</span><span class="meta-dot"></span>
       <span><b>&#9733; 10</b>&nbsp;first-audit picks</span><span class="meta-dot"></span>
       <span>Built on <b>system.*</b></span>
@@ -489,7 +489,7 @@ table.ch-table td.col { font-family: var(--font-mono); font-size: 12.5px; color:
 
 <div class="ch-banner">
   <div class="ch-banner-inner">
-    <span class="ch-banner-tag">81 of 95 queries</span>
+    <span class="ch-banner-tag">The full library &middot; all 95 queries</span>
     Every query is unpacked the same way — why it matters, what it does in plain terms, how to read each output column, an illustrative sample, and the caveats. The ten <strong>&#9733; first-audit picks</strong> lead their domains — those are the ones to run first. Every query is <strong>best-effort</strong>: Databricks system tables are not uniformly available, so a query may return nothing or raise <code>TABLE_OR_VIEW_NOT_FOUND</code> / <code>insufficient_privileges</code> on your account — that is expected, not a bug. Sample-output tables are <strong>illustrative synthetic rows</strong>, never real account data.
   </div>
 </div>
@@ -498,7 +498,7 @@ table.ch-table td.col { font-family: var(--font-mono); font-size: 12.5px; color:
   <aside class="ch-toc">
     <details class="ch-toc-collapse" open>
       <summary>Contents <span>&#9662;</span></summary>
-      <div class="ch-toc-title">81 queries &middot; 7 domains</div>
+      <div class="ch-toc-title">95 queries &middot; 7 domains</div>
       <div class="ch-toc-group" style="--dom: var(--dom-cost)">
         <div class="ch-toc-group-label"><a href="#d-cost">Cost &amp; Billing</a> <span class="ch-toc-n">23</span></div>
         <a href="#q-cost_actual_vs_list_by_sku" class="pick"><span class="n">01</span><span>cost_actual_vs_list_by_sku</span><span class="pick-dot" title="first-audit pick">&#9733;</span></a>
@@ -596,10 +596,24 @@ table.ch-table td.col { font-family: var(--font-mono); font-size: 12.5px; color:
         <a href="#q-table_props_time_travel_config"><span class="n">09</span><span>table_props_time_travel_config</span></a>
       </div>
       <div class="ch-toc-group" style="--dom: var(--dom-governance)">
-        <div class="ch-toc-group-label"><a href="#d-governance">Governance, Access &amp; Security</a> <span class="ch-toc-n">3</span></div>
+        <div class="ch-toc-group-label"><a href="#d-governance">Governance, Access &amp; Security</a> <span class="ch-toc-n">17</span></div>
         <a href="#q-access_runas_escalation" class="pick"><span class="n">01</span><span>access_runas_escalation</span><span class="pick-dot" title="first-audit pick">&#9733;</span></a>
         <a href="#q-access_admin_role_change_events"><span class="n">02</span><span>access_admin_role_change_events</span></a>
         <a href="#q-access_classified_unmasked"><span class="n">03</span><span>access_classified_unmasked</span></a>
+        <a href="#q-access_column_lineage_sensitive_reach"><span class="n">04</span><span>access_column_lineage_sensitive_reach</span></a>
+        <a href="#q-access_column_masks_inventory"><span class="n">05</span><span>access_column_masks_inventory</span></a>
+        <a href="#q-access_data_classification_inventory"><span class="n">06</span><span>access_data_classification_inventory</span></a>
+        <a href="#q-access_dead_table_candidates"><span class="n">07</span><span>access_dead_table_candidates</span></a>
+        <a href="#q-access_grants_inventory"><span class="n">08</span><span>access_grants_inventory</span></a>
+        <a href="#q-access_grants_inventory_extended"><span class="n">09</span><span>access_grants_inventory_extended</span></a>
+        <a href="#q-access_login_concentration"><span class="n">10</span><span>access_login_concentration</span></a>
+        <a href="#q-access_network_inbound_denials"><span class="n">11</span><span>access_network_inbound_denials</span></a>
+        <a href="#q-access_network_outbound_denials"><span class="n">12</span><span>access_network_outbound_denials</span></a>
+        <a href="#q-access_pii_propagation_untagged"><span class="n">13</span><span>access_pii_propagation_untagged</span></a>
+        <a href="#q-access_row_filters_inventory"><span class="n">14</span><span>access_row_filters_inventory</span></a>
+        <a href="#q-access_table_lineage_blast_radius"><span class="n">15</span><span>access_table_lineage_blast_radius</span></a>
+        <a href="#q-access_tags_inventory"><span class="n">16</span><span>access_tags_inventory</span></a>
+        <a href="#q-access_vector_search_traffic"><span class="n">17</span><span>access_vector_search_traffic</span></a>
       </div>
     </details>
   </aside>
@@ -10078,7 +10092,7 @@ DESCRIBE EXTENDED main.sales.orders;</code></pre>
     <section class="ch-domain" id="d-governance">
       <div class="ch-domain-head" style="--dom: var(--dom-governance)">
         <h2>Governance, Access &amp; Security</h2>
-        <span class="ch-domain-count">3 queries</span>
+        <span class="ch-domain-count">17 queries</span>
       </div>
 
     <section class="ch-query" id="q-access_runas_escalation" style="--dom: var(--dom-governance)">
@@ -10432,6 +10446,1699 @@ WHERE dc.confidence = 'HIGH'
         <div>
           <div class="ch-aside-tag">What you do next</div>
           Work the `is_unmasked = true` rows: for each HIGH-confidence classified column with no mask, decide whether to apply a column mask (or confirm the collector SP simply couldn't see an existing mask), then re-run to confirm the gap closes.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_column_lineage_sensitive_reach" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">04</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_column_lineage_sensitive_reach</span>
+            
+          </div>
+          <h2 class="ch-headline">Column-Level Lineage Blast Radius</h2>
+          <p class="ch-oneliner">A 90-day rollup of observed column-to-column data flows, one row per source-column to target-column edge (also split by entity_type and direct_access), showing how many times each edge fired, how many distinct principals drove it, and when it last happened.</p>
+          <div class="ch-tables"><span class="chip">system.access.column_lineage</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_column_lineage_sensitive_reach.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_column_lineage_sensitive_reach.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_column_lineage_sensitive_reach */
+SELECT source_table_full_name, source_column_name, target_table_full_name, target_column_name,
+       entity_type, direct_access,
+       COUNT(*) AS event_count,
+       COUNT(DISTINCT created_by) AS distinct_principals,
+       MAX(event_time) AS last_event_time
+FROM system.access.column_lineage
+WHERE source_table_full_name IS NOT NULL
+  AND event_date &gt;= current_date() - INTERVAL 90 DAYS
+  AND event_date &lt; current_date()
+GROUP BY 1, 2, 3, 4, 5, 6</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>When a column is classified PII or is otherwise sensitive, the real exposure is not just the column itself but every downstream column it flows into — each copy is a place the guardrail (mask, tag, row filter) may not have followed. This query is the reach map that turns "this column is sensitive" into "here is every target column it propagated to, how heavily, and by how many people," so you can size the blast radius before a schema change or a breach review and prioritize which unmasked copies to remediate first. Because it is the reach side of the classified-but-unmasked analysis, an underestimate here quietly understates real sensitive-data sprawl.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Maps every observed column-to-column data flow over the trailing 90 days as one row per source-column to target-column pair, so you can trace exactly how far a sensitive column spreads.</li>
+        <li>For each flow, tells you how busy it is (event_count), how many distinct people drove it (distinct_principals), and when it last fired (last_event_time).</li>
+        <li>Slices each flow by what produced it (entity_type) and by whether the access was direct vs. indirect/view-expansion (direct_access).</li>
+        <li>Keeps only flows that have a known source table and deliberately drops sourceless events (e.g. literal inserts), so it is a coverage-bounded reach map, not a complete census.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">source_table_full_name</td><td>Fully-qualified catalog.schema.table of the upstream table the data flowed from. External/path references may appear as a cloud path string rather than a table name.</td></tr>
+          <tr><td class="col">source_column_name</td><td>The upstream column that is the origin of this flow — the one whose sensitivity you are tracing.</td></tr>
+          <tr><td class="col">target_table_full_name</td><td>Fully-qualified catalog.schema.table of the downstream table the data landed in.</td></tr>
+          <tr><td class="col">target_column_name</td><td>The downstream column that received data from the source column — a candidate spot where the source's mask/tag may not have carried over.</td></tr>
+          <tr><td class="col">entity_type</td><td>The kind of entity that produced the lineage edge (e.g. the type of workload/statement UC observed).</td></tr>
+          <tr><td class="col">direct_access</td><td>true = a direct read/write between the columns; false = an indirect flow such as view expansion. Use to separate first-hop copies from derived/indirect propagation.</td></tr>
+          <tr><td class="col">event_count</td><td>COUNT(*) of observed events for this exact edge in the window — a rough intensity/frequency signal, not a row or byte count.</td></tr>
+          <tr><td class="col">distinct_principals</td><td>COUNT(DISTINCT created_by) — the number of distinct identities that drove this edge; how broadly the flow is used, and thus how many people to potentially follow up with.</td></tr>
+          <tr><td class="col">last_event_time</td><td>MAX(event_time) — the most recent timestamp this edge was observed; how fresh the propagation is (stale edges may be legacy flows).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>source_table_full_name</th><th>source_column_name</th><th>target_table_full_name</th><th>target_column_name</th><th>direct_access</th><th>event_count</th><th>distinct_principals</th><th>last_event_time</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">prod.crm.customers</td><td class="mono">email</td><td class="mono">prod.analytics.marketing_leads</td><td class="mono">email</td><td class="mono">true</td><td class="num">482</td><td class="num">6</td><td class="mono">2026-07-05 22:14:03</td></tr>
+          <tr><td class="mono">prod.crm.customers</td><td class="mono">ssn</td><td class="mono">prod.sandbox.dev_copy</td><td class="mono">ssn_raw</td><td class="mono">true</td><td class="num">57</td><td class="num">3</td><td class="mono">2026-07-04 09:41:27</td></tr>
+          <tr><td class="mono">prod.crm.customers</td><td class="mono">email</td><td class="mono">prod.reporting.exec_dashboard_vw</td><td class="mono">contact_email</td><td class="mono">false</td><td class="num">1203</td><td class="num">11</td><td class="mono">2026-07-05 06:02:55</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.access.column_lineage</td><td>Sole source. Provides one row per observed column-level lineage edge (source column → target column) per event, including the source/target table full names and column names, the entity_type that produced the flow, the direct_access flag (true = direct read/write, false = indirect/view-expansion), the acting created_by principal, and event_time/event_date. The query filters to rows with a non-null source_table_full_name within the trailing 90-day event_date window and aggregates these edges.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Subset by design: column_lineage only captures operations UC observes with a source. The query further keeps only rows where source_table_full_name IS NOT NULL, dropping sourceless events (e.g. INSERT ... VALUES literals, and MERGE/JDBC/path/temp-view gaps), so this UNDERCOUNTS reach — treat as coverage-bounded, never proof of absence.</li>
+        <li>GA and regional; still requires UC + system-table sharing enabled and SELECT on system.access. An empty or TABLE_OR_VIEW_NOT_FOUND result means 'not captured / not provisioned,' not 'no propagation.'</li>
+        <li>Fixed trailing 90-day window on event_date (&gt;= current_date() - 90 days AND &lt; current_date()) that excludes today; widen only as far as your workspace-configured system.access.* retention allows.</li>
+        <li>event_count is an observed-event tally (COUNT(*)), not a row, byte, or dollar figure — it is only a relative intensity signal.</li>
+        <li>External/path references appear as cloud path strings, not table names; statement_id is SQL-warehouse-only and finer entity_metadata subfields (job_id, notebook_id, sql_query_id, dlt/genie/alert ids) are intentionally excluded from this rollup.</li>
+        <li>The rollup exposes only distinct_principals (COUNT DISTINCT created_by), not created_by itself, so no raw identity is emitted here — but created_by is a UC identity; mask any identity before sharing if you drill down to it.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Pick your HIGH-confidence classified / sensitive source columns, look up their edges here to enumerate every target column they reach, then confirm each target carries the same mask/tag/row-filter — remediate the unmasked copies (highest event_count x distinct_principals first) and use the map as the impact list before altering or dropping the source table.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_column_masks_inventory" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">05</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_column_masks_inventory</span>
+            
+          </div>
+          <h2 class="ch-headline">Which Columns Are Actually Masked</h2>
+          <p class="ch-oneliner">A current-state inventory listing every column in the metastore that has a column mask applied, naming the mask function and the columns it reads.</p>
+          <div class="ch-tables"><span class="chip">system.information_schema.column_masks</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_column_masks_inventory.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_column_masks_inventory.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_column_masks_inventory */
+SELECT table_catalog, table_schema, table_name, column_name,
+       mask_name, using_columns
+FROM system.information_schema.column_masks</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Column masks are the enforcement layer that keeps SSNs, emails, and card numbers from rendering in the clear to unprivileged readers, so knowing exactly which columns carry a mask is the difference between a provable control and an assumption. This inventory is the ground truth you diff against your data-classification results to find sensitive columns that were never masked, or against change history to catch masks that were dropped in a refactor. Because the view is privilege-scoped, a short list can mean either genuinely thin coverage or simply that the collector could not see certain tables, and mistaking the latter for a clean bill of health is how leaks slip through. Treat this as one half of a masking-coverage audit, not a standalone all-clear.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Lists every masked column in the metastore, one row per column, fully qualified by catalog, schema, and table.</li>
+        <li>Names the mask function bound to each column so you can confirm the right masking logic is applied.</li>
+        <li>Shows the extra input columns each mask reads via using_columns (e.g. a group-membership column the mask branches on), or blank when the mask reads only the masked column itself.</li>
+        <li>Returns raw current state with no aggregation or filtering, so the row count is your masked-column population as visible to the collecting principal.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">table_catalog</td><td>Catalog of the table holding the masked column; part of the three-level name that uniquely identifies the object.</td></tr>
+          <tr><td class="col">table_schema</td><td>Schema (database) of the table holding the masked column.</td></tr>
+          <tr><td class="col">table_name</td><td>Table (or view) whose column is masked.</td></tr>
+          <tr><td class="col">column_name</td><td>The specific column that has a mask applied — the sensitive field being protected.</td></tr>
+          <tr><td class="col">mask_name</td><td>Name of the UDF/mask function bound to this column; identifies the masking logic in effect. Verify it is the intended function, not a stale or no-op mask.</td></tr>
+          <tr><td class="col">using_columns</td><td>Additional columns the mask function reads as inputs (for example a role or region column it branches on). Empty/NULL means the mask reads only the masked column itself.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>table_catalog</th><th>table_schema</th><th>table_name</th><th>column_name</th><th>mask_name</th><th>using_columns</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">prod</td><td class="mono">hr</td><td class="mono">employees</td><td class="mono">ssn</td><td class="mono">main.security.mask_ssn</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td></tr>
+          <tr><td class="mono">prod</td><td class="mono">finance</td><td class="mono">payments</td><td class="mono">card_number</td><td class="mono">main.security.mask_pan</td><td class="mono">region</td></tr>
+          <tr><td class="mono">analytics</td><td class="mono">crm</td><td class="mono">customers</td><td class="mono">email</td><td class="mono">main.security.mask_email_by_group</td><td class="mono">is_pii_admin</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.information_schema.column_masks</td><td>The sole source: a current-state, one-row-per-masked-column catalog of every column mask applied across the metastore, giving the fully-qualified column, the mask function name, and the input columns the mask reads. Privilege-aware / object-visibility-scoped.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Public Preview and requires DBR 12.2 LTS+ — on older runtimes or if unsupported the query degrades (may return TABLE_OR_VIEW_NOT_FOUND); that is 'not assessed', not 'no masks'.</li>
+        <li>Privilege-aware / object-visibility-scoped: tables the collector can only BROWSE are excluded, so a missing mask row can mean 'not visible to the collector' and would OVERSTATE unmasked coverage — label the count 'partial', never 'clean'.</li>
+        <li>Empty != zero != error: no rows can mean masking is genuinely unused OR the running principal simply cannot see the masked tables. Run under a high-privilege audit principal and still treat results as partial.</li>
+        <li>This is already a compact current-state inventory (one row per masked column) — not pre-aggregated and with no date window; it reflects the metastore as of query time, not a historical trend.</li>
+        <li>system.information_schema is metastore-wide, so results span all catalogs the principal can see in the current metastore/region — not workspace-scoped.</li>
+        <li>using_columns lists mask input columns only; a blank value does not mean the mask is broken — many masks read only the column they protect.</li>
+        <li>Pair with access_data_classification_inventory (or access_classified_unmasked) to find sensitive columns that appear classified but do NOT appear here — the actual coverage gap.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Diff this masked-column list against your HIGH-confidence classified columns (via access_classified_unmasked) to surface sensitive fields with no mask, and spot-check that each mask_name is the intended function rather than a stale or no-op one — then remediate the gaps by applying or fixing masks. Because the view is privilege-scoped, confirm the collector could actually see the tables in question before declaring any table 'unmasked'.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_data_classification_inventory" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">06</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_data_classification_inventory</span>
+            
+          </div>
+          <h2 class="ch-headline">Where Sensitive Data Actually Lives</h2>
+          <p class="ch-oneliner">A deduplicated inventory of every column the auto-classifier flagged as sensitive, one row per catalog/schema/table/column/class-tag/confidence/data-type, carrying the peak match frequency and first/last detection times.</p>
+          <div class="ch-tables"><span class="chip">system.data_classification.results</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_data_classification_inventory.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_data_classification_inventory.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_data_classification_inventory */
+SELECT catalog_name, schema_name, table_name, column_name, class_tag, confidence, data_type,
+       MAX(frequency)            AS max_frequency,
+       MAX(latest_detected_time) AS latest_detected_time,
+       MIN(first_detected_time)  AS first_detected_time
+FROM system.data_classification.results
+WHERE class_tag IS NOT NULL
+GROUP BY 1, 2, 3, 4, 5, 6, 7</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>This is your ground-truth map of where the scanner believes PII and other sensitive data physically sits, which is the starting point for every masking, row-filter, and least-privilege decision you make. Without it you are guessing which columns need protection, and an unprotected email/SSN/card column is both a breach-exposure and a compliance-fine liability. Because it covers enabled catalogs only and omits unclassified columns, treat it as a floor on your sensitive-data surface, never a complete census. It pairs directly with the mask inventory to surface the headline gap: classified-but-unmasked columns.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Inventories every column the classifier tagged as sensitive across enabled catalogs, giving you one clean row per <strong>column + detected class</strong> (e.g. <code>EMAIL</code>, <code>US_SSN</code>).</li>
+        <li>Reports the scanner's <strong>confidence</strong> (<code>HIGH</code> vs <code>LOW</code>) and the strongest match rate seen for that column, so you can triage firm hits from weak ones.</li>
+        <li>Timestamps each finding with when it was <strong>first</strong> and <strong>most recently</strong> detected, useful for spotting newly-appeared sensitive data.</li>
+        <li>Excludes rows with no class tag and deliberately never surfaces the raw sampled values, so the output is safe to share.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">catalog_name</td><td>Unity Catalog catalog containing the classified column (enabled catalogs only).</td></tr>
+          <tr><td class="col">schema_name</td><td>Schema within that catalog.</td></tr>
+          <tr><td class="col">table_name</td><td>Table or view holding the column.</td></tr>
+          <tr><td class="col">column_name</td><td>The specific column the scanner classified.</td></tr>
+          <tr><td class="col">class_tag</td><td>The detected sensitivity class, e.g. EMAIL, US_SSN, CREDIT_CARD_NUMBER. Rows with a NULL tag are excluded.</td></tr>
+          <tr><td class="col">confidence</td><td>Scanner confidence for this class on this column: HIGH or LOW (part of the row grain). Prioritise HIGH for remediation.</td></tr>
+          <tr><td class="col">data_type</td><td>Declared column data type (e.g. STRING, INT) at detection time; also part of the row grain.</td></tr>
+          <tr><td class="col">max_frequency</td><td>Highest observed frequency (float 0–1) = the largest share of sampled values that matched this class. Closer to 1 means the whole column looks like this class.</td></tr>
+          <tr><td class="col">latest_detected_time</td><td>Most recent time this class was detected on the column — how fresh the finding is.</td></tr>
+          <tr><td class="col">first_detected_time</td><td>Earliest time this class was detected — roughly when the sensitive data first appeared/was first seen by the scanner.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>catalog_name</th><th>schema_name</th><th>table_name</th><th>column_name</th><th>class_tag</th><th>confidence</th><th>max_frequency</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">prod</td><td class="mono">crm</td><td class="mono">customers</td><td class="mono">email_address</td><td class="mono">EMAIL</td><td class="mono">HIGH</td><td class="num">0.98</td></tr>
+          <tr><td class="mono">prod</td><td class="mono">crm</td><td class="mono">customers</td><td class="mono">ssn</td><td class="mono">US_SSN</td><td class="mono">HIGH</td><td class="num">0.91</td></tr>
+          <tr><td class="mono">analytics</td><td class="mono">staging</td><td class="mono">raw_events</td><td class="mono">note_text</td><td class="mono">EMAIL</td><td class="mono">LOW</td><td class="num">0.07</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.data_classification.results</td><td>Sole source. Holds auto-detected classification (PII/sensitivity) scan hits per column for enabled catalogs. The query reads catalog_name, schema_name, table_name, column_name, class_tag, confidence, data_type, frequency, first_detected_time, latest_detected_time and rolls them up; it deliberately never touches the raw samples array.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Preview feature. Requires BOTH the data-classification feature AND the separate system.data_classification schema enabled — enabling system.access does not enable this. If disabled, degrade to 'schema/feature not enabled', which is NOT the same as an empty (clean) result.</li>
+        <li>Covers ENABLED CATALOGS ONLY; unclassified columns are simply absent. Absence of a row is not proof a column is clean — it is a floor, not a census.</li>
+        <li>confidence is only HIGH or LOW (not a numeric score); max_frequency is a float 0–1 share of matched samples, not a percentage or a count.</li>
+        <li>The raw samples array&lt;string&gt; (up to 5 live sensitive values) is deliberately dropped and must never be collected.</li>
+        <li>Row grain includes confidence and data_type (GROUP BY 1–7), so one column+class can yield more than one row if it was detected at different confidence levels or under different declared data types.</li>
+        <li>13-month retention; regional (per-region results). Empty != zero != error — an unprovisioned schema yields TABLE_OR_VIEW_NOT_FOUND.</li>
+        <li>No date-window filter and no masking applied here (only class-tag presence is required); it is current-state classification, not a time-boxed audit.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Sort by confidence=HIGH and high max_frequency, then cross-check each column against the column-mask and row-filter inventories (or the access_classified_unmasked query) and apply a mask/filter to any HIGH-confidence sensitive column that has none.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_dead_table_candidates" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">07</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_dead_table_candidates</span>
+            
+          </div>
+          <h2 class="ch-headline">Dead-Table Cleanup Candidates</h2>
+          <p class="ch-oneliner">Every MANAGED or EXTERNAL table in your account that never showed up as a read (lineage source) during the look-back window, listed with its owner and staleness age as cleanup candidates to investigate.</p>
+          <div class="ch-tables"><span class="chip">system.access.table_lineage</span><span class="chip">system.information_schema.tables</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_dead_table_candidates.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_dead_table_candidates.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_dead_table_candidates */
+WITH lineage_window AS (
+  SELECT *
+  FROM system.access.table_lineage
+  WHERE event_date &gt;= dateadd(day, -:period_days, current_date())
+    AND event_date &lt; current_date()
+),
+-- Every table that appeared as a lineage SOURCE in the window (any direct_access
+-- value — an indirect/view-mediated read of a base table still proves it was read,
+-- so we must NOT exclude direct_access=false here or we over-flag base tables).
+-- Prefer the discrete *_catalog/_schema/_name columns over CONCAT vs _full_name,
+-- because _full_name can be backtick-quoted for reserved-word identifiers.
+source_tables AS (
+  SELECT DISTINCT
+         source_table_catalog AS catalog,
+         source_table_schema  AS schema,
+         source_table_name    AS name
+  FROM lineage_window
+  WHERE source_table_name IS NOT NULL
+),
+-- The managed/external tables this account holds (privilege-scoped inventory).
+inventory AS (
+  SELECT table_catalog,
+         table_schema,
+         table_name,
+         table_type,
+         table_owner,
+         created,
+         last_altered
+  FROM system.information_schema.tables
+  WHERE table_catalog &lt;&gt; 'system'
+    AND table_schema &lt;&gt; 'information_schema'
+    AND table_type IN ('MANAGED', 'EXTERNAL')
+)
+SELECT inv.table_catalog,
+       inv.table_schema,
+       inv.table_name,
+       inv.table_type,
+       CASE
+         WHEN inv.table_owner IS NULL OR inv.table_owner = '__REDACTED__' THEN inv.table_owner
+         WHEN inv.table_owner LIKE '%@%' THEN concat(substr(inv.table_owner, 1, 2), '****@****')
+         WHEN inv.table_owner RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN inv.table_owner
+         ELSE concat(substr(inv.table_owner, 1, 2), '****')
+       END AS table_owner,
+       inv.created,
+       inv.last_altered,
+       -- Age in whole days since the object was last altered (NULL -&gt; age unknown).
+       datediff(current_date(), DATE(inv.last_altered)) AS days_since_altered
+FROM inventory inv
+LEFT JOIN source_tables src
+  ON  inv.table_catalog = src.catalog
+  AND inv.table_schema  = src.schema
+  AND inv.table_name    = src.name
+WHERE src.name IS NULL          -- never appeared as a lineage source in the window</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Stale MANAGED and EXTERNAL tables quietly accrue storage cost and expand the governance and breach surface long after anyone stops reading them, yet no one wants to be the person who drops a table that turns out to feed a quarterly report. This query narrows the whole account down to a focused shortlist of tables with no observed reads, each paired with an owner to ask and an age to prioritize. Critically, absence from lineage is a candidate signal, not proof of disuse, so it prevents accidental drops by forcing a cross-check rather than handing you a delete list. The payoff is targeted storage reclamation and a smaller attack surface, with the owner already identified for follow-up.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Lists your <strong>MANAGED and EXTERNAL</strong> tables that were never observed being read during the trailing <code>:period_days</code> window (excluding today).</li>
+        <li>Excludes the <code>system</code> catalog and <code>information_schema</code>, so only your own governed data objects appear.</li>
+        <li>Attaches each candidate's masked <strong>owner</strong>, its <code>created</code> / <code>last_altered</code> timestamps, and a <code>days_since_altered</code> staleness age.</li>
+        <li>Produces a cross-check candidate list, not a proven-dead list: view-mediated (indirect) reads still keep a base table off it.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">table_catalog</td><td>Catalog of the candidate table (system catalog excluded by design).</td></tr>
+          <tr><td class="col">table_schema</td><td>Schema of the candidate table (information_schema excluded).</td></tr>
+          <tr><td class="col">table_name</td><td>Name of the MANAGED/EXTERNAL table that never appeared as a lineage source in the window.</td></tr>
+          <tr><td class="col">table_type</td><td>Either MANAGED or EXTERNAL; the only two object types considered here (views/other types are not candidates).</td></tr>
+          <tr><td class="col">table_owner</td><td>Masked owning principal to follow up with; emails show first two chars then '****@****', other names first two chars then '****', UUIDs and '__REDACTED__' shown as-is, NULL if unknown.</td></tr>
+          <tr><td class="col">created</td><td>When the object was created (may be NULL/late-populated on some object types).</td></tr>
+          <tr><td class="col">last_altered</td><td>When the object was last altered per the catalog (NULL means age unknown, not new).</td></tr>
+          <tr><td class="col">days_since_altered</td><td>Whole days from last_altered to today, i.e. how stale the object looks; NULL when last_altered is NULL (age unknown). Higher = staler, but not proof of disuse.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>table_catalog</th><th>table_schema</th><th>table_name</th><th>table_type</th><th>table_owner</th><th>days_since_altered</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">prod_analytics</td><td class="mono">marketing</td><td class="mono">campaign_snapshot_2023</td><td class="mono">MANAGED</td><td class="mono">da****@****</td><td class="num">612</td></tr>
+          <tr><td class="mono">prod_raw</td><td class="mono">ingest</td><td class="mono">legacy_clickstream_ext</td><td class="mono">EXTERNAL</td><td class="mono">a1b2c3d4-1234-5678-9abc-def012345678</td><td class="num">418</td></tr>
+          <tr><td class="mono">sandbox</td><td class="mono">scratch</td><td class="mono">tmp_join_backup</td><td class="mono">MANAGED</td><td class="mono">sv****</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.access.table_lineage</td><td>Supplies the set of tables that DID appear as a read (lineage source) in the trailing :period_days window; any direct_access value counts, so view-mediated reads still protect a base table. Tables absent from this set become candidates.</td></tr>
+          <tr><td class="col">system.information_schema.tables</td><td>The privilege-scoped object universe (MANAGED/EXTERNAL tables with owner, created, last_altered), excluding the system catalog and information_schema; every table here that has no matching lineage-source read is emitted.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>A candidate is NOT proven unused: a SELECT with no downstream write, and any write-only target, emit no lineage source row at all. This is a cross-check list, never a DROP recommendation.</li>
+        <li>Lineage is captured only when Unity Catalog observes the operation; MERGE / JDBC / path / temp-view reads are gaps that can falsely flag a live table.</li>
+        <li>Indirect / view-mediated reads (direct_access=false) are deliberately counted as 'appeared as a source' so a view-mediated read does not falsely mark its base table dead.</li>
+        <li>Retention on system.access.* is workspace-configurable: a short :period_days over-flags quarterly / long-tail tables. Widen the window only as far as retention allows.</li>
+        <li>table_lineage is GA with rolling 365-day retention (but still workspace-configurable); requires UC + SELECT on system.access.</li>
+        <li>information_schema.tables is privilege-aware: tables the collector service principal cannot see are simply absent, so a missing table is not 'dead'. Label results partial.</li>
+        <li>Only MANAGED and EXTERNAL tables are considered; the system catalog and information_schema are excluded by design.</li>
+        <li>created / last_altered can be NULL or late-populated on some object types; treated as 'age unknown', never as a finding.</li>
+        <li>Window is the trailing :period_days parameter and excludes today (event_date &lt; current_date()); it applies to the lineage read-evidence only, while the inventory (information_schema.tables) is current-state with no date filter.</li>
+        <li>table_owner is masked (email -&gt; 'da****@****', other names -&gt; first two chars + '****'); UUIDs and '__REDACTED__' pass through unchanged. Values are DBU-free identifiers, no cost involved.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Treat the list as cleanup candidates only: for each table, cross-check whether it was actually read via `system.access.audit`, `query.history`, and `system.storage.table_metrics_history` (and widen `:period_days` toward your workspace's `system.access.*` retention) before ever proposing a DROP or archive to the owner shown.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_grants_inventory" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">08</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_grants_inventory</span>
+            
+          </div>
+          <h2 class="ch-headline">Who Holds Which Grants</h2>
+          <p class="ch-oneliner">A current-state, privilege-scoped inventory of table- and catalog-level grants, rolled up to one row per object scope, privilege type, and grantee with the number of grants and distinct objects each covers.</p>
+          <div class="ch-tables"><span class="chip">system.information_schema.table_privileges</span><span class="chip">system.information_schema.catalog_privileges</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_grants_inventory.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_grants_inventory.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_grants_inventory */
+SELECT object_scope, PRIVILEGE_TYPE,
+       CASE
+         WHEN GRANTEE IS NULL OR GRANTEE = '__REDACTED__' THEN GRANTEE
+         WHEN GRANTEE LIKE '%@%' THEN concat(substr(GRANTEE, 1, 2), '****@****')
+         WHEN GRANTEE RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN GRANTEE
+         ELSE concat(substr(GRANTEE, 1, 2), '****')
+       END AS GRANTEE,
+       grant_count, distinct_objects
+FROM (
+  SELECT 'TABLE' AS object_scope, PRIVILEGE_TYPE, GRANTEE,
+         COUNT(*) AS grant_count,
+         COUNT(DISTINCT TABLE_CATALOG || '.' || TABLE_SCHEMA || '.' || TABLE_NAME) AS distinct_objects
+  FROM system.information_schema.table_privileges
+  GROUP BY 1, 2, 3
+  UNION ALL
+  SELECT 'CATALOG' AS object_scope, PRIVILEGE_TYPE, GRANTEE,
+         COUNT(*) AS grant_count,
+         COUNT(DISTINCT CATALOG_NAME) AS distinct_objects
+  FROM system.information_schema.catalog_privileges
+  GROUP BY 1, 2, 3
+)</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>This is the foundational least-privilege review artifact: it shows, per principal, how many objects each privilege actually reaches, so you can spot over-broad access — a single grantee holding `SELECT` on hundreds of tables, or `ALL PRIVILEGES` at catalog scope — before it becomes an exfiltration or blast-radius risk. Concentrated or wildcard grants are exactly the audit findings that fail SOC 2 / access-recertification and widen the surface for a compromised credential. Because `information_schema` is privilege-aware, treat this as a floor on exposure, not a complete grant graph — anything it surfaces is real, but it can miss grants the collector cannot see.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Builds a baseline <strong>privilege map</strong> of who holds what across two scopes — <code>TABLE</code> and <code>CATALOG</code> grants — combined into one list.</li>
+        <li>For each grantee and privilege, reports both how many grants they hold (<code>grant_count</code>) and how many distinct objects that spans (<code>distinct_objects</code>), so you see reach at a glance.</li>
+        <li>Masks every grantee identity (emails, names) while passing service-principal UUIDs through, so the output is safe to share.</li>
+        <li>Returns a privilege-scoped current-state snapshot — it reflects only what the collecting principal can see, and is deliberately incomplete versus a full <code>SHOW GRANTS</code>.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">object_scope</td><td>The level the grant applies at — either `TABLE` (table-level grants) or `CATALOG` (catalog-level grants). Tells you the breadth of the object the privilege is attached to.</td></tr>
+          <tr><td class="col">PRIVILEGE_TYPE</td><td>The privilege granted, e.g. `SELECT`, `MODIFY`, `USE CATALOG`, `ALL PRIVILEGES`. Watch for broad or wildcard privileges held widely.</td></tr>
+          <tr><td class="col">GRANTEE</td><td>The principal (user, group, or service principal) holding the grant, masked for safe sharing. Emails show as `da****@****`, other names truncated to `xx****`, UUID service principals and `__REDACTED__` (and NULL) left intact.</td></tr>
+          <tr><td class="col">grant_count</td><td>How many individual grant rows this grantee holds for this privilege at this scope — a raw COUNT(*). A large number signals broad reach for one principal. Normally equals `distinct_objects` since the source grain is one row per object.</td></tr>
+          <tr><td class="col">distinct_objects</td><td>How many distinct objects (fully-qualified tables, or catalogs) that privilege spans for this grantee — the blast radius. Compare against `grant_count` to gauge concentration.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>object_scope</th><th>PRIVILEGE_TYPE</th><th>GRANTEE</th><th>grant_count</th><th>distinct_objects</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">TABLE</td><td class="mono">SELECT</td><td class="mono">da****@****</td><td class="num">397</td><td class="num">397</td></tr>
+          <tr><td class="mono">CATALOG</td><td class="mono">USE CATALOG</td><td class="mono">da****</td><td class="num">6</td><td class="num">6</td></tr>
+          <tr><td class="mono">TABLE</td><td class="mono">ALL PRIVILEGES</td><td class="mono">a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d</td><td class="num">58</td><td class="num">58</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.information_schema.table_privileges</td><td>Table-level grant state — one row per grant (grantee × privilege × table). Supplies the `TABLE` scope rows; grants are counted and distinct fully-qualified tables (`TABLE_CATALOG`.`TABLE_SCHEMA`.`TABLE_NAME`) are tallied per grantee × privilege.</td></tr>
+          <tr><td class="col">system.information_schema.catalog_privileges</td><td>Catalog-level grant state — one row per grant (grantee × privilege × catalog). Supplies the `CATALOG` scope rows; grants are counted and distinct `CATALOG_NAME` values tallied per grantee × privilege.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Privilege-aware = always partial: `information_schema` shows only grants the RUNNING principal can see, on objects it can see. Even a high-privilege audit SP CANNOT reproduce a full SHOW GRANTS graph.</li>
+        <li>Label output 'partial — privilege-aware; incomplete vs SHOW GRANTS'. Never assert this is a complete grant graph.</li>
+        <li>Empty or `TABLE_OR_VIEW_NOT_FOUND` means UC/system-table sharing isn't provisioned or nothing is visible to the collector — NOT 'no grants exist' and NOT a clean all-clear.</li>
+        <li>Requires Unity Catalog and `SELECT` on `system.information_schema.*` for the collecting principal.</li>
+        <li>`IS_GRANTABLE` is always 'NO' (reserved) so it is deliberately not collected — you cannot tell WITH GRANT OPTION grants apart here.</li>
+        <li>Current-state snapshot only — no time window, no history of who granted it or when (pair with `access_admin_role_change_events` for the change log).</li>
+        <li>`GRANTEE` is masked for safe sharing: emails → `da****@****`, other principal names → first two chars + `****`, UUID service principals, `__REDACTED__`, and NULL pass through intact.</li>
+        <li>Covers only TABLE and CATALOG scope; schema, connection, credential and external-location grants are in the sibling `access_grants_inventory_extended`.</li>
+        <li>`distinct_objects` counts distinct fully-qualified objects visible to the collector — under-counts if some objects are hidden from the running principal.</li>
+        <li>Because the source grain is one row per grantee × privilege × object, `grant_count` and `distinct_objects` are normally identical; a gap between them only appears if the source view emits duplicate grant rows.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Use this as your least-privilege baseline: scan for grantees or privilege types with a high grant_count or broad distinct_objects (especially wildcard privileges like ALL PRIVILEGES or MODIFY held broadly), flag over-broad access for review, and cross-check against the full SHOW GRANTS output since this inventory is privilege-scoped and incomplete.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_grants_inventory_extended" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">09</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_grants_inventory_extended</span>
+            
+          </div>
+          <h2 class="ch-headline">Grants on Schemas and Integrations</h2>
+          <p class="ch-oneliner">A privilege map counting who holds which grants on schemas, UC connections, credentials, and external locations, one row per object scope, privilege, and grantee.</p>
+          <div class="ch-tables"><span class="chip">system.information_schema.schema_privileges</span><span class="chip">system.information_schema.connection_privileges</span><span class="chip">system.information_schema.credential_privileges</span><span class="chip">system.information_schema.external_location_privileges</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_grants_inventory_extended.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_grants_inventory_extended.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_grants_inventory_extended */
+-- SAFE as written (uses only GRANTEE/PRIVILEGE_TYPE, shared across all privilege views).
+-- NEEDS CONFIRMATION before reading any per-view object-name column: DESCRIBE each sibling view.
+SELECT 'SCHEMA' AS object_scope, PRIVILEGE_TYPE,
+       CASE
+         WHEN GRANTEE IS NULL OR GRANTEE = '__REDACTED__' THEN GRANTEE
+         WHEN GRANTEE LIKE '%@%' THEN concat(substr(GRANTEE, 1, 2), '****@****')
+         WHEN GRANTEE RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN GRANTEE
+         ELSE concat(substr(GRANTEE, 1, 2), '****')
+       END AS GRANTEE,
+       COUNT(*) AS grant_count
+FROM system.information_schema.schema_privileges GROUP BY 1,2,GRANTEE
+UNION ALL
+SELECT 'CONNECTION', PRIVILEGE_TYPE,
+       CASE
+         WHEN GRANTEE IS NULL OR GRANTEE = '__REDACTED__' THEN GRANTEE
+         WHEN GRANTEE LIKE '%@%' THEN concat(substr(GRANTEE, 1, 2), '****@****')
+         WHEN GRANTEE RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN GRANTEE
+         ELSE concat(substr(GRANTEE, 1, 2), '****')
+       END,
+       COUNT(*)
+FROM system.information_schema.connection_privileges GROUP BY 1,2,GRANTEE
+UNION ALL
+SELECT 'CREDENTIAL', PRIVILEGE_TYPE,
+       CASE
+         WHEN GRANTEE IS NULL OR GRANTEE = '__REDACTED__' THEN GRANTEE
+         WHEN GRANTEE LIKE '%@%' THEN concat(substr(GRANTEE, 1, 2), '****@****')
+         WHEN GRANTEE RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN GRANTEE
+         ELSE concat(substr(GRANTEE, 1, 2), '****')
+       END,
+       COUNT(*)
+FROM system.information_schema.credential_privileges GROUP BY 1,2,GRANTEE
+UNION ALL
+SELECT 'EXTERNAL_LOCATION', PRIVILEGE_TYPE,
+       CASE
+         WHEN GRANTEE IS NULL OR GRANTEE = '__REDACTED__' THEN GRANTEE
+         WHEN GRANTEE LIKE '%@%' THEN concat(substr(GRANTEE, 1, 2), '****@****')
+         WHEN GRANTEE RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN GRANTEE
+         ELSE concat(substr(GRANTEE, 1, 2), '****')
+       END,
+       COUNT(*)
+FROM system.information_schema.external_location_privileges GROUP BY 1,2,GRANTEE</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Schemas and integration objects (connections, credentials, external locations) are the common blind spots in a least-privilege review — a broad grant on a credential or external location can hand a principal reach into external systems or raw storage that a table-level audit never sees. This query extends the baseline grant map beyond tables and catalogs so you can spot over-broad or stale grants on exactly the objects that bridge Unity Catalog to the outside world. Because these views are privilege-aware, the result is always a partial floor of the real grant graph, never a complete `SHOW GRANTS`.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Inventories the current grant state across four object scopes — <strong>schemas</strong>, <strong>connections</strong>, <strong>credentials</strong>, and <strong>external locations</strong> — that sit outside the table/catalog baseline.</li>
+        <li>Rolls the grants up to a count for each combination of object scope, privilege type, and grantee, so you see how many objects each principal holds a given privilege on.</li>
+        <li>Masks every grantee identity (emails and generic names truncated; UUIDs and <code>__REDACTED__</code> passed through) so the output is safe to share.</li>
+        <li>Returns a partial, privilege-scoped view — it reflects only the grants the running principal can see, so counts are a floor, not a full audit.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">object_scope</td><td>The object family the grant sits on: one of SCHEMA, CONNECTION, CREDENTIAL, or EXTERNAL_LOCATION. This is a literal label, not a per-object name.</td></tr>
+          <tr><td class="col">PRIVILEGE_TYPE</td><td>The privilege granted (e.g. USE_SCHEMA, USE_CONNECTION, CREATE_EXTERNAL_TABLE, READ_FILES). Group by it; do not assume a fixed enum.</td></tr>
+          <tr><td class="col">GRANTEE</td><td>The principal holding the grant, identity-masked: emails become 'da****@****', other names become 'da****', and UUIDs / '__REDACTED__' are left intact. NULL passes through as NULL.</td></tr>
+          <tr><td class="col">grant_count</td><td>How many grant rows (grantee × privilege × object within this scope) matched — effectively the number of objects in that scope on which this grantee holds this privilege. Integer count, and a floor because the view is privilege-aware.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>object_scope</th><th>PRIVILEGE_TYPE</th><th>GRANTEE</th><th>grant_count</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">SCHEMA</td><td class="mono">USE_SCHEMA</td><td class="mono">da****@****</td><td class="num">14</td></tr>
+          <tr><td class="mono">CREDENTIAL</td><td class="mono">ACCESS</td><td class="mono">b3f1c2a9-4d5e-4f6a-8b7c-9d0e1f2a3b4c</td><td class="num">2</td></tr>
+          <tr><td class="mono">EXTERNAL_LOCATION</td><td class="mono">READ_FILES</td><td class="mono">da****</td><td class="num">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.information_schema.schema_privileges</td><td>Schema-level grant state; supplies the SCHEMA-scope rows. Only GRANTEE and PRIVILEGE_TYPE are read.</td></tr>
+          <tr><td class="col">system.information_schema.connection_privileges</td><td>Grant state on UC connections (e.g. Lakehouse Federation / external system connections); supplies the CONNECTION-scope rows. Only GRANTEE and PRIVILEGE_TYPE are read.</td></tr>
+          <tr><td class="col">system.information_schema.credential_privileges</td><td>Grant state on UC credentials; supplies the CREDENTIAL-scope rows. Only GRANTEE and PRIVILEGE_TYPE are read.</td></tr>
+          <tr><td class="col">system.information_schema.external_location_privileges</td><td>Grant state on UC external locations; supplies the EXTERNAL_LOCATION-scope rows. Only GRANTEE and PRIVILEGE_TYPE are read.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Privilege-aware = partial, always: each view shows only grants the running principal can see on objects it can see; even a high-privilege audit SP cannot reproduce a full SHOW GRANTS, so treat grant_count as a floor.</li>
+        <li>Requires Unity Catalog + system-table sharing enabled on the metastore and SELECT on system.information_schema; otherwise you get empty or TABLE_OR_VIEW_NOT_FOUND.</li>
+        <li>Empty != clean != error: CONNECTION and EXTERNAL_LOCATION scopes are empty when no connections / external locations are defined — that is 'none configured', not 'no risk'.</li>
+        <li>Current-state snapshot only — no date window, no history; pair with access_admin_role_change_events for how grants got there.</li>
+        <li>Confidence is needs_confirmation: only GRANTEE and PRIVILEGE_TYPE (shared across all privilege views) are used, so the query is safe as written, but the per-view object-name columns are inferred and unverified — DESCRIBE each sibling view before reading any object-name column.</li>
+        <li>STORAGE_CREDENTIAL_PRIVILEGES is deprecated and intentionally excluded; routine / volume / metastore privilege views exist but are not queried here.</li>
+        <li>Identities are masked for safe sharing; you cannot resolve the real principal from the output alone.</li>
+        <li>object_scope is a fixed literal per UNION branch (SCHEMA / CONNECTION / CREDENTIAL / EXTERNAL_LOCATION), not the name of the specific schema or location the grant is on.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Scan the high-count and high-privilege rows on CREDENTIAL and EXTERNAL_LOCATION scopes first — these bridge UC to external storage and systems — and open a least-privilege review for any grantee holding broad or unexpected grants, then confirm against a live SHOW GRANTS since these counts are a privilege-scoped floor.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_login_concentration" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">10</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_login_concentration</span>
+            
+          </div>
+          <h2 class="ch-headline">Login Concentration &amp; Anomaly Rollup</h2>
+          <p class="ch-oneliner">A 30-day rollup of account authentication activity, one row per masked principal x source IP x service x action, with success and non-success event counts and a first/last-seen window.</p>
+          <div class="ch-tables"><span class="chip">system.access.audit</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_login_concentration.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_login_concentration.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_login_concentration */
+SELECT CASE
+         WHEN COALESCE(user_identity.email, user_identity.subject_name) IS NULL OR COALESCE(user_identity.email, user_identity.subject_name) = '__REDACTED__' THEN COALESCE(user_identity.email, user_identity.subject_name)
+         WHEN COALESCE(user_identity.email, user_identity.subject_name) LIKE '%@%' THEN concat(substr(COALESCE(user_identity.email, user_identity.subject_name), 1, 2), '****@****')
+         WHEN COALESCE(user_identity.email, user_identity.subject_name) RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN COALESCE(user_identity.email, user_identity.subject_name)
+         ELSE concat(substr(COALESCE(user_identity.email, user_identity.subject_name), 1, 2), '****')
+       END AS principal,
+       source_ip_address, service_name, action_name,
+       COUNT(*) AS event_count,
+       SUM(CASE WHEN response.status_code = 200 THEN 1 ELSE 0 END) AS success_count,
+       SUM(CASE WHEN response.status_code &lt;&gt; 200 OR response.status_code IS NULL THEN 1 ELSE 0 END) AS non_success_count,
+       COUNT(DISTINCT source_ip_address) AS distinct_source_ips,
+       MIN(event_time) AS first_event_time, MAX(event_time) AS last_event_time
+FROM system.access.audit
+WHERE service_name = 'accounts'
+  AND event_date &gt;= current_date() - INTERVAL 30 DAYS
+  AND event_date &lt; current_date()
+GROUP BY COALESCE(user_identity.email, user_identity.subject_name), 2, 3, 4</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Account logins are the front door to your Databricks estate, and a compromised credential is the cheapest way for an attacker to get in. This rollup lets you spot the tells of credential stuffing or a stolen token: a burst of non-success events against a single account, one principal showing up across an unusual number of source IPs (visible as many rows for the same masked principal), or activity that doesn't match a human's normal pattern. Because it breaks activity out by action_name, it shows the mix of MFA-based, token-based, and other login paths so you can confirm strong-auth is actually being used. Catching this early is the difference between a blocked login attempt and a full account takeover.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Rolls up the last 30 days of <strong>account</strong> authentication events into one line per masked principal, source IP, service, and action.</li>
+        <li>For each line, totals how many events occurred and splits them into <strong>successful</strong> (<code>status_code = 200</code>) versus <strong>non-success or unknown-status</strong> attempts.</li>
+        <li>Because each line is already scoped to a single source IP, an identity fanning out across many addresses shows up as <strong>many separate rows for the same masked principal</strong> — not as a large number in any single column.</li>
+        <li>Stamps each line with the <strong>first and last event time</strong> in the window, giving you the activity span at a glance.</li>
+        <li>Masks every identity (emails to <code>da**<strong>@</strong>**</code>, other names truncated, UUIDs and <code>__REDACTED__</code> left intact) so the output is safe to share.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">principal</td><td>The acting identity, masked for safe sharing: emails become `da****@****`, other names are truncated to `xx****`, and UUID-form or `__REDACTED__` values pass through unchanged. Sourced from user_identity.email, falling back to subject_name; can be NULL (this field is frequently unpopulated).</td></tr>
+          <tr><td class="col">source_ip_address</td><td>The IP the events in this row came from. Each row is one IP, so an identity appearing across many rows (many IPs) — or from an unfamiliar geography — is the anomaly signal.</td></tr>
+          <tr><td class="col">service_name</td><td>Always `accounts` here (the query filters to account authentication), confirming these are login/credential events rather than other control-plane actions.</td></tr>
+          <tr><td class="col">action_name</td><td>The specific authentication operation (e.g. mfaLogin, tokenLogin, and others). These values are representative, not an exhaustive list — read whatever appears; do not assume a fixed set.</td></tr>
+          <tr><td class="col">event_count</td><td>Total audited events for this principal x IP x service x action combination in the window. High values on a single account warrant a look.</td></tr>
+          <tr><td class="col">success_count</td><td>How many of those events returned `status_code = 200` (succeeded).</td></tr>
+          <tr><td class="col">non_success_count</td><td>How many events had a status other than 200 or a NULL status. A high non_success_count with few successes looks like failed/blocked attempts (possible credential stuffing); the NULL-inclusive form is defensive because the status_code type is unverified. success_count + non_success_count always equals event_count.</td></tr>
+          <tr><td class="col">distinct_source_ips</td><td>COUNT(DISTINCT source_ip_address) — but the query already GROUPs BY source_ip_address, so each row covers exactly one IP and this value is effectively always 1. It is NOT a per-principal fan-out count. To measure an identity spreading across many IPs, count how many rows share the same masked principal instead.</td></tr>
+          <tr><td class="col">first_event_time</td><td>Earliest event timestamp in the 30-day window for this row — the start of the observed activity span.</td></tr>
+          <tr><td class="col">last_event_time</td><td>Latest event timestamp in the window for this row — how recently the activity occurred.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>principal</th><th>source_ip_address</th><th>action_name</th><th>event_count</th><th>success_count</th><th>non_success_count</th><th>distinct_source_ips</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">da****@****</td><td class="mono">203.0.113.24</td><td class="mono">mfaLogin</td><td class="num">48</td><td class="num">47</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td class="mono">da****@****</td><td class="mono">198.51.100.7</td><td class="mono">tokenLogin</td><td class="num">1204</td><td class="num">12</td><td class="num">1192</td><td class="num">1</td></tr>
+          <tr><td class="mono">bo****@****</td><td class="mono">192.0.2.55</td><td class="mono">mfaLogin</td><td class="num">9</td><td class="num">9</td><td class="num">0</td><td class="num">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.access.audit</td><td>The only table read. Filtered to account authentication events (service_name = 'accounts'), it supplies the acting principal (user_identity.email or user_identity.subject_name), source_ip_address, service_name, action_name, response.status_code (200 = success), and event_time/event_date used for windowing.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>distinct_source_ips is degenerate: the query GROUPs BY source_ip_address, so every row covers a single IP and this column is effectively always 1. It cannot be used to rank principals by IP fan-out or sorted on directly — aggregate rows per masked principal (COUNT of distinct source_ip_address across rows) for that.</li>
+        <li>Preview table: requires Unity Catalog with system-table sharing enabled and SELECT on system.access. TABLE_OR_VIEW_NOT_FOUND or an empty result means 'not provisioned / no matching events,' not 'no risky logins.'</li>
+        <li>Counts are event counts, not dollars — nothing here is spend.</li>
+        <li>service_name = 'accounts' is confirmed, but the specific action_name values (mfaLogin, tokenLogin, ...) are representative, not a complete enum. The query groups by action_name rather than hardcoding a filter list; do the same when interpreting.</li>
+        <li>Identity comes from user_identity.subject_name (verified live 2026-05-30) — NOT subjectName — and is frequently NULL, so some rows have a NULL principal.</li>
+        <li>response.status_code int-vs-long type is unverified; the '&lt;&gt;200 OR NULL' form is deliberately defensive, which is why non_success_count also absorbs NULL-status events. success_count and non_success_count are complementary and always sum to event_count.</li>
+        <li>Account-level events are global (workspace_id=0); workspace events are regional. Scope accordingly.</li>
+        <li>~15-minute ingest lag — treat the most recent hour as provisional and potentially incomplete.</li>
+        <li>Fixed 30-day window: event_date from current_date() - 30 days up to but excluding today (today's partial day is not included).</li>
+        <li>All identities are masked in the output; do not expect raw emails or usernames.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Because distinct_source_ips is always 1 at this grain, do not sort on it. Instead sort rows by non_success_count to surface accounts racking up failed/blocked attempts, and separately aggregate rows per masked principal to count how many distinct source IPs each identity spans. Pivot on the masked principal: confirm with the account owner, force a credential/token rotation and MFA re-enrollment if unexplained, and block anomalous source IPs. Also scan the action_name mix to confirm MFA-based login is actually in use rather than weaker paths.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_network_inbound_denials" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">11</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_network_inbound_denials</span>
+            
+          </div>
+          <h2 class="ch-headline">Blocked Inbound Network Attempts</h2>
+          <p class="ch-oneliner">A 30-day rollup of inbound (ingress) network-policy enforcement events, grouped by policy outcome, rule, request path, principal, and source IP, with a count and first/last timestamps per group — the query groups by outcome rather than filtering it, so it surfaces whatever outcomes the table records (DENY / DENY_DRY_RUN denials in practice).</p>
+          <div class="ch-tables"><span class="chip">system.access.inbound_network</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_network_inbound_denials.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_network_inbound_denials.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_network_inbound_denials */
+-- NEEDS CONFIRMATION: source.ip nested subfield name is UNVERIFIED. A wrong name errors the
+-- whole statement — make it defensive (drop or replace with the verified subfield).
+SELECT policy_outcome, rule_label, request_path,
+       CASE
+         WHEN authenticated_as IS NULL OR authenticated_as = '__REDACTED__' THEN authenticated_as
+         WHEN authenticated_as LIKE '%@%' THEN concat(substr(authenticated_as, 1, 2), '****@****')
+         WHEN authenticated_as RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN authenticated_as
+         ELSE concat(substr(authenticated_as, 1, 2), '****')
+       END AS authenticated_as,
+       source.ip AS source_ip,
+       COUNT(*) AS denial_count,
+       MIN(event_time) AS first_event_time, MAX(event_time) AS last_event_time
+FROM system.access.inbound_network
+WHERE event_time &gt;= current_timestamp() - INTERVAL 30 DAYS
+GROUP BY 1, 2, 3, authenticated_as, 5</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>These rows are the audit trail of inbound connections your ingress network policy evaluated and (for DENY) blocked — the difference between "our IP allowlist is working" and "we never had one configured." A cluster of denials on a sensitive `request_path` from an unexpected `source_ip` is an early signal of a misconfigured client, a stale allowlist entry locking out legitimate users, or a probe against the account. Because the query does not filter the outcome, always confirm the `policy_outcome` column before treating a row as blocked — and note `DENY_DRY_RUN` rows were only simulated, not actually stopped. Equally important, an empty result is not an all-clear: it usually means no ingress policy is configured at all, so nothing is being enforced.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Rolls up inbound network-policy enforcement events from the last 30 days, one line per distinct outcome + rule + request path + principal + source IP — in practice these are denials, since that is what the source table records.</li>
+        <li>Collapses repeat activity so a source IP or principal that keeps getting blocked by the same rule on the same path shows up as a single line, not thousands.</li>
+        <li>Gives each group a <code>denial_count</code> plus the <code>first_event_time</code> and <code>last_event_time</code>, so you can tell a one-off from a sustained pattern.</li>
+        <li>Masks the principal identity (emails and plain names truncated, UUIDs and <code>__REDACTED__</code> left as-is, NULL kept as NULL) so the output is safe to share.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">policy_outcome</td><td>The enforcement result for the group — `DENY` (blocked for real) or `DENY_DRY_RUN` (would have been blocked, but the policy is in audit/simulation mode and traffic was let through). The query does not filter this column, so read it to know whether a row was actually blocked or only simulated.</td></tr>
+          <tr><td class="col">rule_label</td><td>The label of the ingress-policy rule that matched. Identifies which rule in your network policy fired.</td></tr>
+          <tr><td class="col">request_path</td><td>The inbound request path that was evaluated/denied — the endpoint/resource the connection was trying to reach.</td></tr>
+          <tr><td class="col">authenticated_as</td><td>The principal behind the request, masked for sharing (`da****@****` for emails, `da****` for other names, UUIDs and `__REDACTED__` passed through, NULL left as NULL). Tells you who was blocked.</td></tr>
+          <tr><td class="col">source_ip</td><td>The originating IP of the request (from the unverified `source.ip` subfield, aliased `source_ip`). Use it to distinguish a known-bad or unexpected network from a legitimate client caught by a stale allowlist.</td></tr>
+          <tr><td class="col">denial_count</td><td>`COUNT(*)` of events in this outcome/rule/path/principal/IP group over the window. High counts mark sustained blocking; low counts a one-off.</td></tr>
+          <tr><td class="col">first_event_time</td><td>`MIN(event_time)` — the earliest event in the group, i.e. when this pattern started.</td></tr>
+          <tr><td class="col">last_event_time</td><td>`MAX(event_time)` — the most recent event in the group, i.e. whether it is still happening.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>policy_outcome</th><th>rule_label</th><th>request_path</th><th>authenticated_as</th><th>source_ip</th><th>denial_count</th><th>first_event_time</th><th>last_event_time</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">DENY</td><td class="mono">corp-ip-allowlist</td><td class="mono">/api/2.0/clusters/list</td><td class="mono">da****@****</td><td class="mono">203.0.113.47</td><td class="num">128</td><td class="mono">2026-06-09 08:14:02</td><td class="mono">2026-07-06 22:51:37</td></tr>
+          <tr><td class="mono">DENY</td><td class="mono">corp-ip-allowlist</td><td class="mono">/api/2.0/sql/statements</td><td class="mono">5f3c9a12-4b7e-4c1a-9d2f-8e6b1a0c7d34</td><td class="mono">198.51.100.9</td><td class="num">3</td><td class="mono">2026-06-28 03:02:10</td><td class="mono">2026-06-28 03:07:44</td></tr>
+          <tr><td class="mono">DENY_DRY_RUN</td><td class="mono">tighten-egress-partners</td><td class="mono">/api/2.1/jobs/runs/submit</td><td class="mono">__REDACTED__</td><td class="mono">192.0.2.201</td><td class="num">41</td><td class="mono">2026-06-15 11:20:55</td><td class="mono">2026-07-05 17:09:12</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.access.inbound_network</td><td>The only source. Inbound (ingress) network-policy enforcement events, one row per event. NOTE: this query applies NO filter on policy_outcome — it selects and GROUPs BY policy_outcome and returns every outcome in the table; the table is documented to record DENY / DENY_DRY_RUN enforcement events, which is why the result reads as denials. Reads policy_outcome, rule_label, request_path, authenticated_as (principal, then masked), the source.ip nested subfield (unverified name), and event_time — this table has no event_date column.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>NO OUTCOME FILTER IN THE QUERY: the SQL applies no WHERE clause on policy_outcome — it GROUPs BY it and returns every outcome present in the table. 'Denials only' holds only because the inbound_network table is documented to record DENY / DENY_DRY_RUN enforcement events; the query does not enforce it, so if the table ever contains other outcomes they would appear. Read the policy_outcome column rather than assuming all rows are denials.</li>
+        <li>No allowed-traffic baseline: because network enforcement tables record denials, there is effectively no allow row to compare against, so you cannot compute an allow/deny ratio from this result.</li>
+        <li>Empty != clean: an empty result usually means no ingress network policy is configured (nothing is being enforced), not that nothing was blocked. Treat as 'not assessed,' never all-clear.</li>
+        <li>Preview feature, regional (workspace-scoped) table. `TABLE_OR_VIEW_NOT_FOUND` means the schema isn't provisioned — a valid outcome, not zero.</li>
+        <li>30-day retention, hard-capped: the window is fixed at 30 days (`event_time &gt;= current_timestamp() - INTERVAL 30 DAYS`) regardless of any `:period_days` parameter — you cannot look back further even if you ask.</li>
+        <li>No `event_date` column: filtering is on `event_time` against `current_timestamp()`, so the window is a rolling 30 days by timestamp (not a partition-date window).</li>
+        <li>`source_ip` is UNVERIFIED: the `source.ip` nested subfield name is not confirmed. A wrong identifier errors the entire statement — confirm with `DESCRIBE` and drop/replace the subfield if it fails.</li>
+        <li>Requires UC + system-table sharing and `SELECT` on `system.access`; `DENY_DRY_RUN` rows were NOT actually blocked (policy in simulation mode), so they do not represent traffic that was stopped.</li>
+        <li>Principal is masked (emails/names truncated to first 2 chars, UUIDs and `__REDACTED__` preserved, NULL kept as NULL) — you cannot recover the full identity from this output alone.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Triage the highest `denial_count` groups first: confirm each blocked `source_ip` / `authenticated_as` is genuinely unwanted (probe or misconfig) versus a legitimate client caught by a stale allowlist, then update the ingress rule accordingly. Because the query does not filter `policy_outcome`, scan the outcome column for any non-DENY values before assuming everything shown was blocked. If the result is empty, verify an ingress network policy is actually configured — the guardrail may not exist. Promote any `DENY_DRY_RUN` rules to real `DENY` once the simulated denials look correct.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_network_outbound_denials" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">12</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_network_outbound_denials</span>
+            
+          </div>
+          <h2 class="ch-headline">Blocked Egress Exfiltration Attempts</h2>
+          <p class="ch-oneliner">A 30-day rollup of outbound (egress) network-policy denials, grouped by source and destination type, access type, and destination, with DNS/storage rejection detail and denial counts.</p>
+          <div class="ch-tables"><span class="chip">system.access.outbound_network</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_network_outbound_denials.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_network_outbound_denials.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_network_outbound_denials */
+SELECT network_source_type, destination_type, access_type, destination,
+       dns_event.rcode                AS dns_rcode,
+       storage_event.rejection_reason AS storage_rejection_reason,
+       COUNT(*) AS denial_count,
+       MIN(event_time) AS first_event_time, MAX(event_time) AS last_event_time
+FROM system.access.outbound_network
+WHERE event_time &gt;= current_timestamp() - INTERVAL 30 DAYS
+GROUP BY 1, 2, 3, 4, 5, 6</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>This is your exfiltration alarm: it shows what outbound traffic your egress policy actually blocked, broken down by where it was headed and why it was rejected. A spike in denials to an unfamiliar storage bucket or DNS name can be an early signal of data leaving the guardrails — a leaked credential, a misconfigured job, or an insider moving data out. Because the surface only records denials with no allowed-traffic baseline, you cannot compute an allow/deny ratio here, and an empty result means "no egress policy configured / preview not populated," not "zero exfiltration" — so absence of rows is never proof you are safe.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Rolls up <strong>egress policy denials</strong> over the trailing 30 days into one line per unique combination of source type, destination type, access type, and destination.</li>
+        <li>Counts how many times each blocked egress pattern occurred (<code>denial_count</code>) and stamps when it was first and last seen.</li>
+        <li>Surfaces the <strong>reason</strong> for the block where available — a DNS response code for DNS destinations, a storage rejection reason for storage destinations (each is empty for the other destination types).</li>
+        <li>Shows denials only — there is no allowed-traffic baseline, so it cannot express an allow-vs-deny ratio.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">network_source_type</td><td>The kind of workload/source the blocked egress originated from (e.g. serverless compute type). Use it to attribute denials to a source class.</td></tr>
+          <tr><td class="col">destination_type</td><td>The category of the blocked destination — notably `DNS` or `STORAGE`, which govern whether the DNS or storage detail columns are populated.</td></tr>
+          <tr><td class="col">access_type</td><td>The nature of the attempted access for this denial pattern.</td></tr>
+          <tr><td class="col">destination</td><td>Where the traffic was trying to go (host, storage endpoint, or resolved name). Your primary triage field — unfamiliar destinations warrant investigation.</td></tr>
+          <tr><td class="col">dns_rcode</td><td>The DNS response code for the denial; populated only when `destination_type = DNS`, otherwise `NULL`.</td></tr>
+          <tr><td class="col">storage_rejection_reason</td><td>The reason the storage egress was rejected; populated only when `destination_type = STORAGE`, otherwise `NULL`.</td></tr>
+          <tr><td class="col">denial_count</td><td>How many denial events matched this exact combination in the window. Integer count of blocked attempts — higher means a more persistent or busier blocked pattern.</td></tr>
+          <tr><td class="col">first_event_time</td><td>Earliest denial timestamp for this pattern in the window — when this blocked behavior first appeared.</td></tr>
+          <tr><td class="col">last_event_time</td><td>Most recent denial timestamp — whether this pattern is still active or has stopped.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>network_source_type</th><th>destination_type</th><th>destination</th><th>dns_rcode</th><th>storage_rejection_reason</th><th>denial_count</th><th>last_event_time</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">SERVERLESS</td><td class="mono">DNS</td><td class="mono">exfil-c2.example.net</td><td class="mono">REFUSED</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="num">214</td><td class="mono">2026-07-06 22:14:03</td></tr>
+          <tr><td class="mono">SERVERLESS</td><td class="mono">STORAGE</td><td class="mono">s3://unknown-external-bucket</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="mono">NOT_IN_ALLOWLIST</td><td class="num">37</td><td class="mono">2026-07-05 09:41:52</td></tr>
+          <tr><td class="mono">SERVERLESS</td><td class="mono">EXTERNAL</td><td class="mono">198.51.100.24:443</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="num">5</td><td class="mono">2026-07-02 17:08:11</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.access.outbound_network</td><td>Sole source. Egress network-policy enforcement events — the exfiltration-control audit surface. This query keeps denials only and aggregates them; `dns_event.rcode` and `storage_event.rejection_reason` are read as nested detail, and `event_time` (this table has no `event_date` column) drives the 30-day window.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Preview and feature-gated: requires a configured egress network policy. Empty table means "not assessed — no egress policy / preview not populated," NOT zero exfiltration.</li>
+        <li>Denials only — there is no allowed-traffic baseline, so no allow/deny ratio can be computed.</li>
+        <li>`dns_rcode` is NULL unless `destination_type = DNS`; `storage_rejection_reason` is NULL unless `destination_type = STORAGE`. Empty is expected, not an error.</li>
+        <li>This table has no `event_date` column — windowing is on `event_time` against `current_timestamp()`. Outbound retention is 365 days, but this query is fixed to the trailing 30 days.</li>
+        <li>Regional table — results reflect the region you query, not the whole account.</li>
+        <li>`TABLE_OR_VIEW_NOT_FOUND` (schema not provisioned) and an empty result are both valid "not assessed" outcomes, never a false all-clear.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Triage the highest `denial_count` rows and any unfamiliar `destination`: confirm whether each blocked egress is expected (a legitimate integration the policy is over-blocking) or hostile (potential exfiltration). For hostile patterns, trace the `network_source_type` back to the originating workload/principal and rotate credentials or lock down the job; for legitimate ones, adjust the egress allowlist. If the result is empty, verify an egress network policy is actually configured before concluding there is no exfiltration risk.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_pii_propagation_untagged" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">13</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_pii_propagation_untagged</span>
+            
+          </div>
+          <h2 class="ch-headline">PII Leaking Into Untagged Columns</h2>
+          <p class="ch-oneliner">One row per direct column-lineage flow where a sensitivity-tagged source column fed an untagged target column, naming the responsible principal and how many times it happened.</p>
+          <div class="ch-tables"><span class="chip">system.access.column_lineage</span><span class="chip">system.information_schema.column_tags</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_pii_propagation_untagged.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_pii_propagation_untagged.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_pii_propagation_untagged */
+WITH lineage_window AS (
+  SELECT source_table_catalog, source_table_schema, source_table_name, source_column_name,
+         target_table_catalog, target_table_schema, target_table_name, target_column_name,
+         created_by
+  FROM system.access.column_lineage
+  WHERE direct_access = true                       -- direct flows only; excludes view expansion
+    AND source_column_name IS NOT NULL
+    AND target_column_name IS NOT NULL
+    AND source_table_catalog &lt;&gt; 'system'
+    AND event_date &gt;= dateadd(day, -:period_days, current_date())
+    AND event_date &lt; current_date()
+),
+-- Sensitivity-tagged columns (manual governance tags). We compare on the tag_name
+-- against common PII/sensitivity conventions, case-insensitively. -- NEEDS WORKSPACE
+-- CONFIRMATION: the real tag_name(s) used here; if the convention differs this set
+-- under-detects, which is the safe direction (we never invent a tag match).
+sensitive_tags AS (
+  SELECT catalog_name, schema_name, table_name, column_name,
+         tag_name, tag_value
+  FROM system.information_schema.column_tags
+  WHERE lower(tag_name) IN (
+          'pii', 'sensitivity', 'sensitive', 'data_classification', 'classification',
+          'confidentiality', 'phi', 'pci'
+        )
+     OR lower(tag_value) IN (
+          'pii', 'sensitive', 'confidential', 'restricted', 'phi', 'pci'
+        )
+),
+-- Every column that carries ANY governance tag (used to decide if a TARGET is tagged
+-- at all). Join with '=' on the four discrete identifier columns (must-fix: never LIKE).
+any_tagged_column AS (
+  SELECT DISTINCT catalog_name, schema_name, table_name, column_name
+  FROM system.information_schema.column_tags
+)
+SELECT lw.source_table_catalog,
+       lw.source_table_schema,
+       lw.source_table_name,
+       lw.source_column_name,
+       st.tag_name  AS source_tag_name,
+       st.tag_value AS source_tag_value,
+       lw.target_table_catalog,
+       lw.target_table_schema,
+       lw.target_table_name,
+       lw.target_column_name,
+       CASE
+         WHEN lw.created_by IS NULL OR lw.created_by = '__REDACTED__' THEN lw.created_by
+         WHEN lw.created_by LIKE '%@%' THEN concat(substr(lw.created_by, 1, 2), '****@****')
+         WHEN lw.created_by RLIKE '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN lw.created_by
+         ELSE concat(substr(lw.created_by, 1, 2), '****')
+       END AS created_by,
+       COUNT(*) AS event_count
+FROM lineage_window lw
+-- SOURCE column must be sensitivity-tagged (= join on discrete columns).
+JOIN sensitive_tags st
+  ON  lw.source_table_catalog = st.catalog_name
+  AND lw.source_table_schema  = st.schema_name
+  AND lw.source_table_name    = st.table_name
+  AND lw.source_column_name   = st.column_name
+-- TARGET column must be UNTAGGED: anti-join against any tag (= join, must-fix).
+LEFT JOIN any_tagged_column tt
+  ON  lw.target_table_catalog = tt.catalog_name
+  AND lw.target_table_schema  = tt.schema_name
+  AND lw.target_table_name    = tt.table_name
+  AND lw.target_column_name   = tt.column_name
+WHERE tt.column_name IS NULL          -- target carries NO governance tag -&gt; propagation gap
+GROUP BY lw.source_table_catalog, lw.source_table_schema, lw.source_table_name,
+         lw.source_column_name, st.tag_name, st.tag_value,
+         lw.target_table_catalog, lw.target_table_schema, lw.target_table_name,
+         lw.target_column_name, lw.created_by</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Masking, row filters, and access policies are usually keyed off governance tags, so a sensitive value that flows into a new column which lost its tag silently escapes every one of those controls — the data is still PII, but nothing downstream treats it as such. This query pinpoints exactly those propagation gaps and hands you the principal (`created_by`) who created each flow, so you can re-tag the target and follow up on the pipeline that dropped the tag. Left unaddressed, these are the columns most likely to surface unmasked in a breach or an audit finding. Because tag coverage depends entirely on your own tagging discipline, this is a gap-finder, not a clean bill of health.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Finds <strong>sensitive-to-untagged leaks</strong>: each row is a sensitivity-tagged source column whose data flowed directly into a target column that carries no governance tag at all.</li>
+        <li>Shows the full source and target identity (catalog, schema, table, column) plus the source's tag name and value, so you can see what classification was lost in transit.</li>
+        <li>Names the responsible principal in <code>created_by</code> (email/name masked, service-principal UUIDs passed through) and counts how many lineage events (<code>event_count</code>) drove each source-to-target gap.</li>
+        <li>Covers only <strong>direct</strong> flows (view-mediated propagation is intentionally excluded) over a trailing window of <code>:period_days</code>, ending yesterday.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">source_table_catalog</td><td>Catalog of the tagged source column that the sensitive data originated from.</td></tr>
+          <tr><td class="col">source_table_schema</td><td>Schema of the tagged source column.</td></tr>
+          <tr><td class="col">source_table_name</td><td>Table of the tagged source column.</td></tr>
+          <tr><td class="col">source_column_name</td><td>The sensitivity-tagged source column — the thing that should keep propagating its classification.</td></tr>
+          <tr><td class="col">source_tag_name</td><td>The governance tag key on the source (e.g. `pii`, `data_classification`) that marks it sensitive; free-text and case-sensitive in your metastore.</td></tr>
+          <tr><td class="col">source_tag_value</td><td>The tag value on the source (e.g. `restricted`, `phi`); may be blank if only the tag_name conveyed sensitivity.</td></tr>
+          <tr><td class="col">target_table_catalog</td><td>Catalog of the untagged target column the data flowed into.</td></tr>
+          <tr><td class="col">target_table_schema</td><td>Schema of the untagged target column.</td></tr>
+          <tr><td class="col">target_table_name</td><td>Table of the untagged target column.</td></tr>
+          <tr><td class="col">target_column_name</td><td>The target column that received sensitive data but carries NO governance tag — the propagation gap to fix.</td></tr>
+          <tr><td class="col">created_by</td><td>Masked identity of the principal responsible for the flow (email → `da****@****`, other names → first two chars + `****`, service-principal UUIDs and `__REDACTED__` passed through, NULL if unknown) — who to follow up with.</td></tr>
+          <tr><td class="col">event_count</td><td>Number of lineage events observed for this exact source→target→principal gap in the window; higher means a recurring/automated pipeline, not a one-off.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>source_table_schema</th><th>source_column_name</th><th>source_tag_name</th><th>target_table_name</th><th>target_column_name</th><th>created_by</th><th>event_count</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">customers</td><td class="mono">email</td><td class="mono">pii</td><td class="mono">daily_export</td><td class="mono">email_addr</td><td class="mono">da****@****</td><td class="num">14</td></tr>
+          <tr><td class="mono">hr</td><td class="mono">ssn</td><td class="mono">data_classification</td><td class="mono">comp_flat</td><td class="mono">ssn_raw</td><td class="mono">2f3c9a10-4b7e-4c2a-9f11-8de0a1b2c3d4</td><td class="num">3</td></tr>
+          <tr><td class="mono">billing</td><td class="mono">card_pan</td><td class="mono">pci</td><td class="mono">fraud_features</td><td class="mono">pan_copy</td><td class="mono">jo****</td><td class="num">27</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.access.column_lineage</td><td>Supplies the column-to-column data-flow edges over the look-back window; filtered to direct_access=true so only physical read/write flows (not view expansion) count, and carries created_by, the principal responsible for the flow.</td></tr>
+          <tr><td class="col">system.information_schema.column_tags</td><td>Used twice: once to identify which SOURCE columns carry a PII/sensitivity tag (matched case-insensitively on common tag_name/tag_value conventions), and once as the full set of tagged columns to prove a TARGET column carries NO governance tag at all.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Requires UC + system-table sharing and `SELECT` on `system.access`; column_lineage is GA but a subset by design (no source row for `INSERT ... VALUES`, MERGE/JDBC/path/temp-view gaps) — this is a coverage-bounded candidate list, never proof of absence.</li>
+        <li>Empty result is ambiguous: it can mean 'no PII is tagged anywhere' rather than 'no propagation gaps.' Coverage depends entirely on your account's tagging discipline.</li>
+        <li>`information_schema.column_tags` is privilege-aware, so the tag inventory (both the 'is source sensitive' and 'is target tagged' checks) only reflects what the collecting principal can see.</li>
+        <li>Sensitivity is inferred heuristically from common tag_name/tag_value names (pii, phi, pci, classification, etc.), matched case-insensitively — your real tag convention is UNVERIFIED; if it differs the query under-detects (the safe direction), never invents a match.</li>
+        <li>Direct flows only (`direct_access=true`): view-expansion / indirect edges are intentionally excluded, so PII propagating through views is invisible here by design.</li>
+        <li>Trailing window of `:period_days` ending yesterday (excludes today); widen `:period_days` only as far as your workspace-configured `system.access.*` retention allows.</li>
+        <li>`created_by` is masked for safe sharing; do not treat masked strings as unique identities.</li>
+        <li>A target is treated as 'untagged' only when it has NO row in column_tags at all (any tag, not just a sensitivity tag, keeps it out of the result); the anti-join uses `=` on the four discrete identifier columns — `LIKE CONCAT(...)` would let `_` act as a wildcard and falsely mark targets as tagged, hiding real gaps.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Re-apply the correct governance tag to each `target_column_name` (and add a mask/row filter if your controls key off tags), then follow up with the masked `created_by` principal — prioritizing high `event_count` rows — to fix the pipeline that is dropping the classification.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_row_filters_inventory" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">14</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_row_filters_inventory</span>
+            
+          </div>
+          <h2 class="ch-headline">Row Filter Coverage Inventory</h2>
+          <p class="ch-oneliner">A current-state list of every table in the metastore that has a row-level access filter attached, naming the filter and the columns it evaluates.</p>
+          <div class="ch-tables"><span class="chip">system.information_schema.row_filters</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_row_filters_inventory.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_row_filters_inventory.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_row_filters_inventory */
+SELECT table_catalog, table_schema, table_name,
+       filter_name, target_columns
+FROM system.information_schema.row_filters</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Row filters are the control that enforces row-level access — e.g. a rep only seeing their own region's rows — so this inventory is how you confirm those guardrails actually exist on the tables you think are protected. A sensitive table that is missing from this list has no row filter, meaning every reader who can query it sees all rows. Because the view is privilege-aware, a short list can equally mean "few filters" or "the collector can't see the rest," so treat it as a coverage floor, not a clean bill of health, when auditing least-privilege exposure.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Lists <strong>one row per table that has a row filter applied</strong>, so the row count is your inventory of row-level-protected tables across the metastore.</li>
+        <li>Names the attached filter (<code>filter_name</code>) and the columns it evaluates (<code>target_columns</code>) so you can see which policy governs each table and what it keys on.</li>
+        <li>Identifies each table by its full three-part path (<code>table_catalog</code>, <code>table_schema</code>, <code>table_name</code>) so findings map directly to objects you can inspect or grant on.</li>
+        <li>Shows only what the running principal is allowed to see, so absence of a table is not proof it is unfiltered.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">table_catalog</td><td>Catalog of the filtered table — the first part of its three-level name.</td></tr>
+          <tr><td class="col">table_schema</td><td>Schema (database) containing the filtered table.</td></tr>
+          <tr><td class="col">table_name</td><td>Name of the table that has a row filter attached; each row here is a table confirmed to have row-level filtering.</td></tr>
+          <tr><td class="col">filter_name</td><td>The name of the row-filter function bound to the table — the policy actually enforcing the row-level restriction.</td></tr>
+          <tr><td class="col">target_columns</td><td>The column(s) the filter function reads to decide which rows a caller may see (e.g. a region or tenant key); tells you what the filter keys on.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>table_catalog</th><th>table_schema</th><th>table_name</th><th>filter_name</th><th>target_columns</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">prod_sales</td><td class="mono">crm</td><td class="mono">opportunities</td><td class="mono">main.security.region_filter</td><td class="mono">["region"]</td></tr>
+          <tr><td class="mono">prod_hr</td><td class="mono">people</td><td class="mono">compensation</td><td class="mono">main.security.dept_row_filter</td><td class="mono">["department_id"]</td></tr>
+          <tr><td class="mono">prod_finance</td><td class="mono">ledger</td><td class="mono">transactions</td><td class="mono">main.security.tenant_scope</td><td class="mono">["tenant_id","business_unit"]</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.information_schema.row_filters</td><td>The sole source: a current-state inventory of row filters applied across the metastore, one row per filtered table, supplying the table identity (table_catalog/schema/name), the attached filter's name, and the columns the filter reads.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Public Preview and requires DBR 12.2 LTS+ — on older runtimes or where the feature isn't provisioned you may get nothing or TABLE_OR_VIEW_NOT_FOUND.</li>
+        <li>Privilege-aware / object-visibility-scoped: only tables the running principal can see are returned. A missing table means 'not filtered OR not visible to the collector' — this OVERSTATES how many tables are unprotected. Always label results 'partial'.</li>
+        <li>Empty != zero != error: no rows can mean no row filters exist, or the feature/schema isn't enabled, or nothing is visible — never read it as a confirmed 'all tables filtered' or 'none need filters'.</li>
+        <li>system.information_schema is metastore-wide (not workspace-scoped), so filter identity here is not tied to any single workspace.</li>
+        <li>This is a pure current-state inventory — no date window, no history, no usage. It cannot tell you when a filter was added, whether it fires correctly, or whether it is the right policy.</li>
+        <li>To measure unfiltered exposure, compare this list against your table inventory rather than assuming absence equals safety.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Cross-reference this list against your inventory of sensitive tables (from classification and tag inventories): any sensitive table NOT appearing here has no row filter and should be reviewed for a row-level policy — but first confirm the collector's visibility so you don't chase false gaps.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_table_lineage_blast_radius" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">15</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_table_lineage_blast_radius</span>
+            
+          </div>
+          <h2 class="ch-headline">Table Lineage Blast Radius</h2>
+          <p class="ch-oneliner">A 90-day rollup of table-level data-flow edges, each classified as READ, WRITE, READ_WRITE, or UNKNOWN, with how many times it occurred, how many distinct principals drove it, and when it last happened.</p>
+          <div class="ch-tables"><span class="chip">system.access.table_lineage</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_table_lineage_blast_radius.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_table_lineage_blast_radius.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_table_lineage_blast_radius */
+SELECT source_table_full_name, target_table_full_name, source_type, target_type,
+       entity_type, direct_access,
+       CASE WHEN source_type IS NOT NULL AND target_type IS NULL THEN 'READ'
+            WHEN target_type IS NOT NULL AND source_type IS NULL THEN 'WRITE'
+            WHEN source_type IS NOT NULL AND target_type IS NOT NULL THEN 'READ_WRITE'
+            ELSE 'UNKNOWN' END AS access_class,
+       COUNT(*) AS event_count,
+       COUNT(DISTINCT created_by) AS distinct_principals,
+       MAX(event_time) AS last_event_time
+FROM system.access.table_lineage
+WHERE event_date &gt;= current_date() - INTERVAL 90 DAYS
+  AND event_date &lt; current_date()
+GROUP BY 1, 2, 3, 4, 5, 6, 7</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Before you alter or drop a table, you need to know what reads from it and who depends on it — dropping a table that silently feeds a dozen downstream tables or reports is a self-inflicted outage. This query turns raw lineage into a per-edge blast-radius map so an admin can see the downstream reach and the number of distinct principals touching each relationship. The critical risk is misreading it: because MERGE, JDBC, path-based, and temp-view operations are never captured, an empty result is a coverage gap, not proof the table is unused — treating it as 'safe to drop' is how you break a pipeline nobody knew existed.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Rolls up 90 days of table-level lineage into one row per distinct data-flow edge (a source table, a target table, and their entity/access attributes).</li>
+        <li>Labels each edge READ, WRITE, READ_WRITE, or UNKNOWN based on which side of the flow is present — so you can tell consumers of a table from producers of it.</li>
+        <li>Quantifies each edge with an event count, a distinct-principals count, and the most-recent event time, so hot, widely-used relationships stand out from one-off or stale ones.</li>
+        <li>Separates direct reads/writes from indirect view-expansion access, keeping first-hand usage distinct from inherited access.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">source_table_full_name</td><td>Fully-qualified name of the upstream table being read from; NULL on write-only events (nothing was read).</td></tr>
+          <tr><td class="col">target_table_full_name</td><td>Fully-qualified name of the downstream table being written to; NULL on read-only events (nothing was written).</td></tr>
+          <tr><td class="col">source_type</td><td>Entity type of the source side (e.g. TABLE, PATH); NULL when there is no source, which the CASE reads as a WRITE.</td></tr>
+          <tr><td class="col">target_type</td><td>Entity type of the target side; NULL when there is no target, which the CASE reads as a READ.</td></tr>
+          <tr><td class="col">entity_type</td><td>The kind of operation/entity that produced the lineage edge (the observed job/query/entity category).</td></tr>
+          <tr><td class="col">direct_access</td><td>true = a direct read/write of the table; false = indirect access via view expansion — do not count indirect edges as first-hand usage.</td></tr>
+          <tr><td class="col">access_class</td><td>Derived label from the source_type/target_type NULL pattern: READ (source only), WRITE (target only), READ_WRITE (both present), or UNKNOWN (neither) — the plain-English direction of the flow.</td></tr>
+          <tr><td class="col">event_count</td><td>Number of lineage events (COUNT(*)) collapsed into this edge over the 90-day window — a usage-frequency proxy, not a cost or row count.</td></tr>
+          <tr><td class="col">distinct_principals</td><td>Count of distinct `created_by` identities that drove this edge — how many different people/service principals depend on the relationship.</td></tr>
+          <tr><td class="col">last_event_time</td><td>Most recent event_time (MAX) this edge was observed — use it to tell live relationships from stale ones.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>source_table_full_name</th><th>target_table_full_name</th><th>access_class</th><th>direct_access</th><th>event_count</th><th>distinct_principals</th><th>last_event_time</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">prod.sales.orders</td><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="mono">READ</td><td class="mono">true</td><td class="num">4210</td><td class="num">17</td><td class="mono">2026-07-05 23:41:02</td></tr>
+          <tr><td class="mono"><span style="color:var(--muted-2)">NULL</span></td><td class="mono">prod.finance.daily_revenue</td><td class="mono">WRITE</td><td class="mono">true</td><td class="num">96</td><td class="num">2</td><td class="mono">2026-07-05 05:12:44</td></tr>
+          <tr><td class="mono">prod.sales.orders</td><td class="mono">prod.finance.daily_revenue</td><td class="mono">READ_WRITE</td><td class="mono">false</td><td class="num">31</td><td class="num">1</td><td class="mono">2026-07-04 05:12:40</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.access.table_lineage</td><td>Sole source: table-level data-flow lineage, one row per observed source→target edge per event. Supplies both table names, `source_type`/`target_type` (whose NULL pattern derives the READ/WRITE/READ_WRITE class), `entity_type`, `direct_access`, `created_by` (counted as distinct principals), and `event_time`/`event_date` (used for the 90-day window).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Window is a fixed trailing 90 days on `event_date` and excludes today (`event_date &gt;= current_date() - INTERVAL 90 DAYS AND event_date &lt; current_date()`) — there is no `:period_days` parameter here, and today's partial-day events are not included.</li>
+        <li>Retention: table_lineage is GA with rolling 365-day retention, but actual retention on `system.access.*` is workspace-configurable, so a 90-day window may still under-cover if retention was shortened.</li>
+        <li>Empty lineage = NOT CAPTURED, never 'unused' — MERGE, JDBC, path-based, and temp-view operations are not observed. This is a coverage gap; never read absence as 'safe to drop.'</li>
+        <li>The `access_class` CASE keys on the parallel `source_type` / `target_type` NULLs (not the `*_full_name` NULLs): source present + target NULL = READ, target present + source NULL = WRITE, both present = READ_WRITE, neither = UNKNOWN — reproducing the documented read/write rule.</li>
+        <li>`direct_access = false` means indirect / view-expansion access, not a direct read or write — do not treat indirect edges as first-hand usage.</li>
+        <li>Requires UC + system-table sharing and `SELECT` on `system.access`; `TABLE_OR_VIEW_NOT_FOUND` or an empty result is a valid 'not provisioned / not captured' outcome, not a clean bill.</li>
+        <li>Regional table — results reflect only the region/workspace scope where the lineage was recorded.</li>
+        <li>`distinct_principals` counts distinct `created_by` values per edge; the identities themselves are not emitted as a column here.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Pick the table you plan to change or drop, filter to rows where it appears as `source_table_full_name` (access_class READ / READ_WRITE), and read off `distinct_principals` and the downstream `target_table_full_name` values to size the blast radius before you touch it — then cross-check against `system.access.audit` and query history, because empty lineage means "not captured," not "safe to drop."
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_tags_inventory" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">16</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_tags_inventory</span>
+            
+          </div>
+          <h2 class="ch-headline">Manual Governance Tag Inventory</h2>
+          <p class="ch-oneliner">A rollup of every manual governance tag applied at column and table scope, showing each tag name/value pair and how many objects carry it.</p>
+          <div class="ch-tables"><span class="chip">system.information_schema.column_tags</span><span class="chip">system.information_schema.table_tags</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_tags_inventory.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_tags_inventory.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_tags_inventory */
+SELECT 'COLUMN' AS object_scope, TAG_NAME, TAG_VALUE,
+       COUNT(*) AS tagged_object_count
+FROM system.information_schema.column_tags
+GROUP BY 1, 2, 3
+UNION ALL
+SELECT 'TABLE' AS object_scope, TAG_NAME, TAG_VALUE,
+       COUNT(*) AS tagged_object_count
+FROM system.information_schema.table_tags
+GROUP BY 1, 2, 3</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Manual tags are how you assert governance intent — marking columns and tables as PII, confidential, cost-center-owned, or retention-bound — and they drive tag-based access policies and downstream lineage checks. This query tells you whether that tagging discipline actually exists or is aspirational: sparse or inconsistent tag values mean policies keyed on tags silently protect nothing. It is the manual-tag counterpart to auto-detected classification, so gaps here are places where humans, not the scanner, were supposed to label sensitivity and did not.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Inventories every <strong>manual governance tag</strong> in the metastore, split into two scopes: column-level and table-level.</li>
+        <li>For each distinct tag name and value, tells you <strong>how many objects carry it</strong> — so you see which tags are used heavily versus barely at all.</li>
+        <li>Gives a discipline snapshot you can compare against auto-classification: which sensitivity/ownership labels humans actually applied, and where coverage is thin.</li>
+        <li>Deliberately covers only <code>COLUMN</code> and <code>TABLE</code> scope — catalog, schema, and volume tags are excluded as unverified.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">object_scope</td><td>Which object level the tag sits on: the literal `'COLUMN'` (from column_tags) or `'TABLE'` (from table_tags). Use it to separate fine-grained column labels from coarser table labels.</td></tr>
+          <tr><td class="col">TAG_NAME</td><td>The free-text, case-sensitive tag key (e.g. `pii`, `data_sensitivity`, `cost_center`). Treat two names differing only in case as distinct.</td></tr>
+          <tr><td class="col">TAG_VALUE</td><td>The free-text, case-sensitive value assigned for that tag name (e.g. `high`, `confidential`). May be blank if tags are applied as keys without values.</td></tr>
+          <tr><td class="col">tagged_object_count</td><td>Number of objects (columns or tables, per object_scope) carrying that exact tag name/value pair. An integer count of objects, privilege-scoped to what the running principal can see — a low number can mean thin tagging or limited visibility.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>object_scope</th><th>TAG_NAME</th><th>TAG_VALUE</th><th>tagged_object_count</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">COLUMN</td><td class="mono">pii</td><td class="mono">email</td><td class="num">42</td></tr>
+          <tr><td class="mono">COLUMN</td><td class="mono">data_sensitivity</td><td class="mono">high</td><td class="num">118</td></tr>
+          <tr><td class="mono">TABLE</td><td class="mono">cost_center</td><td class="mono">finance</td><td class="num">7</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.information_schema.column_tags</td><td>Source of manually-applied column-level governance tags; contributes the COLUMN-scope rows, counting objects per tag name/value pair.</td></tr>
+          <tr><td class="col">system.information_schema.table_tags</td><td>Source of manually-applied table-level governance tags; contributes the TABLE-scope rows, counting objects per tag name/value pair.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Privilege-aware / privilege-scoped: the inventory reflects only tags on objects the running principal can see — label results "partial," never a complete metastore-wide census. A missing tag can mean "not visible," not "not tagged."</li>
+        <li>Empty is not the same as clean: no rows can mean nothing is tagged OR nothing is visible. UC must be present with system-table sharing; treat absence as "not assessed."</li>
+        <li>Scope-limited by design: only COLUMN_TAGS and TABLE_TAGS are read (verbatim-confirmed). CATALOG_TAGS / SCHEMA_TAGS / VOLUME_TAGS are inferred-only and intentionally excluded — do not assume the answer covers those scopes.</li>
+        <li>Manual tags here are distinct from auto-detected classification in system.data_classification.results — this measures human-applied labels, not scanner findings; do not conflate the two.</li>
+        <li>Tag names and values are free-text and case-sensitive, so near-duplicate spellings/casings appear as separate rows and can fragment counts.</li>
+        <li>No date window and no cost/DBU figures — this is a current-state metadata inventory; tagged_object_count is a count of objects, not spend or usage.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Rank tag name/value pairs by tagged_object_count to find sparsely-used or fragmented (case/spelling-inconsistent) tags, then reconcile column-scope sensitivity tags against auto-classification results to find sensitive columns humans failed to label — and confirm any tag-based access policies are keyed to values that objects actually carry.
+        </div>
+      </div>
+    </section>
+
+    <section class="ch-query" id="q-access_vector_search_traffic" style="--dom: var(--dom-governance)">
+      <div class="ch-query-head">
+        <div class="ch-num">17</div>
+        <div class="ch-query-headwrap">
+          <div class="ch-query-meta">
+            <span class="ch-dom-chip">Governance, Access &amp; Security</span>
+            <span class="ch-qid">access_vector_search_traffic</span>
+            
+          </div>
+          <h2 class="ch-headline">Vector Search Query Traffic by Endpoint</h2>
+          <p class="ch-oneliner">A daily count of Vector Search query and scan events per endpoint over the trailing window, used to tell which endpoints are actually being used versus provisioned-but-idle.</p>
+          <div class="ch-tables"><span class="chip">system.access.audit</span></div>
+        </div>
+      </div>
+
+      <div class="ch-sql">
+        <div class="ch-sql-bar">
+          <span class="path">queries/governance_access/access_vector_search_traffic.sql</span>
+          <span class="spacer"></span>
+          <a href="https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_vector_search_traffic.sql" target="_blank" rel="noopener">View source &#8599;</a>
+          <button class="ch-copy" type="button">Copy</button>
+        </div>
+        <pre><code>/* databricks_audit:access_vector_search_traffic */
+SELECT event_date,
+       action_name,
+       CASE WHEN request_params['endpoint_name'] IS NULL THEN request_params['endpoint_name'] ELSE concat(substr(request_params['endpoint_name'], 1, 2), '****') END AS endpoint_name,
+       COUNT(*) AS event_count
+FROM system.access.audit
+WHERE service_name = 'vectorSearch'
+  AND action_name IN (
+        'queryVectorIndex', 'queryVectorIndexNextPage',
+        'queryVectorIndexRouteOptimized', 'scanVectorIndex',
+        'scanVectorIndexRouteOptimized')
+  AND event_date &gt;= dateadd(day, -:period_days, current_date())
+  AND event_date &lt; current_date()
+GROUP BY event_date, action_name, request_params['endpoint_name']</code></pre>
+      </div>
+
+      <div class="ch-sub">Why it matters</div>
+      <div class="ch-prose"><p>Vector Search endpoints bill for provisioned compute whether or not anything queries them, so an endpoint that costs money every day but serves zero query/scan traffic is pure waste. This query is the traffic half of idle-endpoint detection: cross-referenced with Vector Search spend, an endpoint that shows spend but has NO row here is a provisioned-but-unqueried retire candidate. Retiring dead endpoints directly removes recurring compute charges, while confirming live traffic protects you from cutting one that is quietly in use.</p></div>
+
+      <div class="ch-sub">What it does</div>
+      <ul class="ch-does">
+        <li>Lists every Vector Search query and scan action recorded in the audit log over the trailing :period_days window (ending yesterday), counted per endpoint per day.</li>
+        <li>Breaks the traffic down by action so you can see whether an endpoint is serving live queries, paginated reads, or index scans.</li>
+        <li>Produces an event count per day so activity trends (and silent gaps) are visible day by day.</li>
+        <li>Masks each endpoint name to its first two characters — this is a usage signal, not a full inventory. An endpoint that bills spend but never appears here is the idle/retire candidate; absence of this data means idle simply cannot be assessed.</li>
+      </ul>
+
+      <div class="ch-sub">How to read the output</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Column</th><th>How to read it</th></tr></thead>
+          <tbody>
+          <tr><td class="col">event_date</td><td>The calendar day (partition column) on which the Vector Search events occurred; the window is the trailing :period_days days and excludes today.</td></tr>
+          <tr><td class="col">action_name</td><td>The specific Vector Search operation — one of queryVectorIndex, queryVectorIndexNextPage, queryVectorIndexRouteOptimized, scanVectorIndex, or scanVectorIndexRouteOptimized. Query = live retrieval, scan = index scan.</td></tr>
+          <tr><td class="col">endpoint_name</td><td>The Vector Search endpoint that received the traffic, truncated to its first two characters plus '****' for safe sharing; NULL passes through if the audit event carried no endpoint_name. Match back to a full name by prefix when correlating with spend.</td></tr>
+          <tr><td class="col">event_count</td><td>Number of audited events for that day/action/endpoint combination. A positive count is proof of use; no row at all for an endpoint means no query/scan traffic in the window.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-sub">Sample output</div>
+      <div class="ch-sample">
+        <div class="ch-table-wrap">
+          <table class="ch-table">
+            <thead><tr><th>event_date</th><th>action_name</th><th>endpoint_name</th><th>event_count</th></tr></thead>
+            <tbody>
+          <tr><td class="mono">2026-07-02</td><td class="mono">queryVectorIndex</td><td class="mono">pr****</td><td class="num">1842</td></tr>
+          <tr><td class="mono">2026-07-02</td><td class="mono">queryVectorIndexNextPage</td><td class="mono">pr****</td><td class="num">310</td></tr>
+          <tr><td class="mono">2026-07-03</td><td class="mono">scanVectorIndex</td><td class="mono">st****</td><td class="num">4</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ch-sample-tag">Illustrative synthetic rows &mdash; not real account data</div>
+      </div>
+
+      <div class="ch-sub">System tables it reads</div>
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead><tr><th>Table</th><th>Role in this query</th></tr></thead>
+          <tbody>
+          <tr><td class="col">system.access.audit</td><td>The Unity Catalog audit log; the query reads only Vector Search events (service_name='vectorSearch') for the confirmed query/scan action set, pulls the endpoint from request_params['endpoint_name'], and counts events per day per action per endpoint.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ch-aside">
+        <div class="ch-aside-tag">Caveats &amp; gotchas</div>
+        <ul>
+        <li>Availability: system.access.audit is Preview and requires UC + system-table sharing enabled on the metastore plus SELECT on system.access; a TABLE_OR_VIEW_NOT_FOUND or empty result is not proof of 'no traffic.'</li>
+        <li>Empty != zero != error: an endpoint missing from the output means no query/scan events were captured, which is the whole point (idle candidate) — but only when paired with spend. If this source is unavailable, idle cannot be assessed and the finding stays visibility-only; never assume idle from absence alone.</li>
+        <li>event_count is a count of audit events, NOT dollars and NOT DBUs — it says nothing about cost by itself; retire decisions require joining to Vector Search spend.</li>
+        <li>The idle/retire conclusion comes from combining this with cost_vector_search_spend in-engine (an endpoint that bills but has no row here). Do not read this query on its own as a retire recommendation.</li>
+        <li>service_name='vectorSearch' and the five query/scan action names are confirmed in Databricks docs; the endpoint is read from request_params['endpoint_name'], which can be NULL and then passes through as NULL (unmasked).</li>
+        <li>endpoint_name is truncated to its first two characters — prefix collisions are possible, so correlate to spend by prefix carefully rather than assuming a unique match.</li>
+        <li>~15-minute audit ingest lag; the window excludes today (event_date &lt; current_date) so the most recent partial day is not counted.</li>
+        <li>Window is the trailing :period_days ending yesterday; widen it only as far as your workspace-configured system.access retention allows — a short window can make a genuinely-used-but-infrequent endpoint look idle.</li>
+        </ul>
+      </div>
+
+      <div class="ch-action">
+        <div class="ch-action-ico">&#8594;</div>
+        <div>
+          <div class="ch-aside-tag">What you do next</div>
+          Join this endpoint-traffic list against your Vector Search spend: any endpoint that incurs spend but has zero rows here over a representative window is a retire candidate — confirm ownership, then decommission or downsize it to stop the recurring compute charge. Where traffic exists, keep the endpoint and note its usage pattern.
         </div>
       </div>
     </section>
