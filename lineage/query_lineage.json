@@ -2,7 +2,7 @@
   "kind": "query_lineage",
   "note": "Derived purely from queries/manifest.json (the queries' reads: headers). No external data.",
   "summary": {
-    "queries": 99,
+    "queries": 100,
     "distinct_sources": 47
   },
   "queries": [
@@ -387,6 +387,16 @@
       "tier": "deep",
       "reads": [
         "system.access.outbound_network"
+      ]
+    },
+    {
+      "query_id": "access_pii_outside_tables",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.information_schema.schema_tags",
+        "system.information_schema.volume_tags",
+        "system.information_schema.volumes"
       ]
     },
     {
@@ -1004,6 +1014,7 @@
       "access_delta_sharing_exposure"
     ],
     "system.information_schema.schema_tags": [
+      "access_pii_outside_tables",
       "access_tags_inventory"
     ],
     "system.information_schema.share_recipient_privileges": [
@@ -1029,10 +1040,12 @@
       "access_views_inventory"
     ],
     "system.information_schema.volume_tags": [
+      "access_pii_outside_tables",
       "access_tags_inventory",
       "access_volumes_inventory"
     ],
     "system.information_schema.volumes": [
+      "access_pii_outside_tables",
       "access_volumes_inventory"
     ],
     "system.lakeflow.job_run_timeline": [
@@ -1215,6 +1228,20 @@
       "tables": [
         "system.billing.usage",
         "system.lakeflow.pipelines"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.information_schema.schema_tags",
+        "system.information_schema.volume_tags"
+      ],
+      "co_read_in_queries": 2
+    },
+    {
+      "tables": [
+        "system.information_schema.volume_tags",
+        "system.information_schema.volumes"
       ],
       "co_read_in_queries": 2
     },
@@ -1459,7 +1486,7 @@
     {
       "tables": [
         "system.information_schema.schema_tags",
-        "system.information_schema.volume_tags"
+        "system.information_schema.volumes"
       ],
       "co_read_in_queries": 1
     },
@@ -1488,13 +1515,6 @@
       "tables": [
         "system.information_schema.table_tags",
         "system.information_schema.volume_tags"
-      ],
-      "co_read_in_queries": 1
-    },
-    {
-      "tables": [
-        "system.information_schema.volume_tags",
-        "system.information_schema.volumes"
       ],
       "co_read_in_queries": 1
     },

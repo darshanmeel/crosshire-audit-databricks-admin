@@ -2,7 +2,7 @@
 
 Derived **purely from the queries** and the `system.*` tables their `reads:` headers declare — no external data. Each query is a dbt-style *model*; each `system.*` table is a *source* ([`sources.yml`](sources.yml)). Machine-readable: [`query_lineage.json`](query_lineage.json).
 
-**99 queries → 47 distinct system-table sources.**
+**100 queries → 47 distinct system-table sources.**
 
 ## Most-read sources
 
@@ -16,13 +16,13 @@ Derived **purely from the queries** and the `system.*` tables their `reads:` hea
 | `system.access.audit` | 4 |
 | `system.lakeflow.jobs` | 4 |
 | `system.compute.warehouse_events` | 3 |
+| `system.information_schema.volume_tags` | 3 |
 | `system.lakeflow.job_task_run_timeline` | 3 |
 | `system.lakeflow.pipeline_update_timeline` | 3 |
 | `system.lakeflow.pipelines` | 3 |
 | `system.serving.endpoint_usage` | 3 |
 | `system.serving.served_entities` | 3 |
 | `system.access.column_lineage` | 2 |
-| `system.access.table_lineage` | 2 |
 
 ## Lineage graphs (sources → queries), by domain
 
@@ -143,6 +143,12 @@ graph LR
   system_access_inbound_network --> governance_access__access_network_inbound_denials("access_network_inbound_denials")
   system_access_outbound_network["access.outbound_network"]:::src
   system_access_outbound_network --> governance_access__access_network_outbound_denials("access_network_outbound_denials")
+  system_information_schema_schema_tags["information_schema.schema_tags"]:::src
+  system_information_schema_schema_tags --> governance_access__access_pii_outside_tables("access_pii_outside_tables")
+  system_information_schema_volume_tags["information_schema.volume_tags"]:::src
+  system_information_schema_volume_tags --> governance_access__access_pii_outside_tables("access_pii_outside_tables")
+  system_information_schema_volumes["information_schema.volumes"]:::src
+  system_information_schema_volumes --> governance_access__access_pii_outside_tables("access_pii_outside_tables")
   system_access_column_lineage --> governance_access__access_pii_propagation_untagged("access_pii_propagation_untagged")
   system_information_schema_column_tags["information_schema.column_tags"]:::src
   system_information_schema_column_tags --> governance_access__access_pii_propagation_untagged("access_pii_propagation_untagged")
@@ -151,17 +157,14 @@ graph LR
   system_access_audit --> governance_access__access_runas_escalation("access_runas_escalation")
   system_access_table_lineage --> governance_access__access_table_lineage_blast_radius("access_table_lineage_blast_radius")
   system_information_schema_column_tags --> governance_access__access_tags_inventory("access_tags_inventory")
-  system_information_schema_schema_tags["information_schema.schema_tags"]:::src
   system_information_schema_schema_tags --> governance_access__access_tags_inventory("access_tags_inventory")
   system_information_schema_table_tags["information_schema.table_tags"]:::src
   system_information_schema_table_tags --> governance_access__access_tags_inventory("access_tags_inventory")
-  system_information_schema_volume_tags["information_schema.volume_tags"]:::src
   system_information_schema_volume_tags --> governance_access__access_tags_inventory("access_tags_inventory")
   system_access_audit --> governance_access__access_vector_search_traffic("access_vector_search_traffic")
   system_information_schema_views["information_schema.views"]:::src
   system_information_schema_views --> governance_access__access_views_inventory("access_views_inventory")
   system_information_schema_volume_tags --> governance_access__access_volumes_inventory("access_volumes_inventory")
-  system_information_schema_volumes["information_schema.volumes"]:::src
   system_information_schema_volumes --> governance_access__access_volumes_inventory("access_volumes_inventory")
   classDef src fill:#e8f0fe,stroke:#4285f4;
 ```
@@ -309,6 +312,8 @@ graph LR
   system_billing_usage["billing.usage"] --- |2| system_lakeflow_jobs["lakeflow.jobs"]
   system_billing_usage["billing.usage"] --- |2| system_lakeflow_pipeline_update_timeline["lakeflow.pipeline_update_timeline"]
   system_billing_usage["billing.usage"] --- |2| system_lakeflow_pipelines["lakeflow.pipelines"]
+  system_information_schema_schema_tags["information_schema.schema_tags"] --- |2| system_information_schema_volume_tags["information_schema.volume_tags"]
+  system_information_schema_volume_tags["information_schema.volume_tags"] --- |2| system_information_schema_volumes["information_schema.volumes"]
   system_lakeflow_pipeline_update_timeline["lakeflow.pipeline_update_timeline"] --- |2| system_lakeflow_pipelines["lakeflow.pipelines"]
   system_access_column_lineage["access.column_lineage"] --- |1| system_information_schema_column_tags["information_schema.column_tags"]
   system_access_table_lineage["access.table_lineage"] --- |1| system_information_schema_tables["information_schema.tables"]
@@ -343,12 +348,11 @@ graph LR
   system_information_schema_schema_share_usage["information_schema.schema_share_usage"] --- |1| system_information_schema_shares["information_schema.shares"]
   system_information_schema_schema_share_usage["information_schema.schema_share_usage"] --- |1| system_information_schema_table_share_usage["information_schema.table_share_usage"]
   system_information_schema_schema_tags["information_schema.schema_tags"] --- |1| system_information_schema_table_tags["information_schema.table_tags"]
-  system_information_schema_schema_tags["information_schema.schema_tags"] --- |1| system_information_schema_volume_tags["information_schema.volume_tags"]
+  system_information_schema_schema_tags["information_schema.schema_tags"] --- |1| system_information_schema_volumes["information_schema.volumes"]
   system_information_schema_share_recipient_privileges["information_schema.share_recipient_privileges"] --- |1| system_information_schema_shares["information_schema.shares"]
   system_information_schema_share_recipient_privileges["information_schema.share_recipient_privileges"] --- |1| system_information_schema_table_share_usage["information_schema.table_share_usage"]
   system_information_schema_shares["information_schema.shares"] --- |1| system_information_schema_table_share_usage["information_schema.table_share_usage"]
   system_information_schema_table_tags["information_schema.table_tags"] --- |1| system_information_schema_volume_tags["information_schema.volume_tags"]
-  system_information_schema_volume_tags["information_schema.volume_tags"] --- |1| system_information_schema_volumes["information_schema.volumes"]
   system_lakeflow_job_run_timeline["lakeflow.job_run_timeline"] --- |1| system_lakeflow_job_task_run_timeline["lakeflow.job_task_run_timeline"]
   system_lakeflow_job_run_timeline["lakeflow.job_run_timeline"] --- |1| system_lakeflow_jobs["lakeflow.jobs"]
   system_lakeflow_job_task_run_timeline["lakeflow.job_task_run_timeline"] --- |1| system_lakeflow_job_tasks["lakeflow.job_tasks"]
@@ -385,7 +389,7 @@ graph LR
 | `system.information_schema.row_filters` | `access_row_filters_inventory` |
 | `system.information_schema.schema_privileges` | `access_grants_inventory_extended` |
 | `system.information_schema.schema_share_usage` | `access_delta_sharing_exposure` |
-| `system.information_schema.schema_tags` | `access_tags_inventory` |
+| `system.information_schema.schema_tags` | `access_pii_outside_tables`, `access_tags_inventory` |
 | `system.information_schema.share_recipient_privileges` | `access_delta_sharing_exposure` |
 | `system.information_schema.shares` | `access_delta_sharing_exposure` |
 | `system.information_schema.table_privileges` | `access_grants_inventory` |
@@ -393,8 +397,8 @@ graph LR
 | `system.information_schema.table_tags` | `access_tags_inventory` |
 | `system.information_schema.tables` | `access_dead_table_candidates`, `table_inventory_type` |
 | `system.information_schema.views` | `access_views_inventory` |
-| `system.information_schema.volume_tags` | `access_tags_inventory`, `access_volumes_inventory` |
-| `system.information_schema.volumes` | `access_volumes_inventory` |
+| `system.information_schema.volume_tags` | `access_pii_outside_tables`, `access_tags_inventory`, `access_volumes_inventory` |
+| `system.information_schema.volumes` | `access_pii_outside_tables`, `access_volumes_inventory` |
 | `system.lakeflow.job_run_timeline` | `lakeflow_failed_jobs_wasted_dbus`, `lakeflow_failed_runs`, `lakeflow_job_queue_time`, `lakeflow_never_started_runs`, `lakeflow_phase_cold_start`, `lakeflow_retries_repairs`, `lakeflow_stale_zombie_jobs`, `lakeflow_succeeded_with_failed_tasks`, `lakeflow_termination_taxonomy`, `lakeflow_termination_type_probe`, `lakeflow_workload_mix_hours` |
 | `system.lakeflow.job_task_run_timeline` | `lakeflow_jobs_on_all_purpose`, `lakeflow_succeeded_with_failed_tasks`, `lakeflow_tasks_near_timeout` |
 | `system.lakeflow.job_tasks` | `lakeflow_job_tasks_no_timeout`, `lakeflow_tasks_near_timeout` |

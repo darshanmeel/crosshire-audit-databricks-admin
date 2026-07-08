@@ -156,9 +156,14 @@ in [`lineage/query_lineage.md`](lineage/query_lineage.md).
 | Table | Populated by | Empty when… |
 |---|---|---|
 | `tables` | One row per UC table/view. | You lack privilege on the objects (privilege-aware); `hive_metastore` excluded. |
+| `views` | One row per **view / materialized view**. | No views created in catalogs you can see; not visible to your grants. |
+| `volumes` / `volume_tags` | One row per UC **volume** (files outside tables) / volume-scope tag. | **No volumes created** (or none tagged); not visible to your grants. |
 | `column_masks` / `row_filters` | One row per **manually applied** column mask / row filter (`ALTER … SET MASK/ROW FILTER`). | No manual masks/filters — **ABAC tag-based policies do NOT appear here** (list them via the UC REST API); or masks exist only on tables you can't see. |
-| `column_tags` / `table_tags` | One row per tag assigned to a column / table. | Tagging not adopted; tags only on tables you can't access. |
+| `column_tags` / `table_tags` / `schema_tags` | One row per tag assigned to a column / table / **schema**. | Tagging not adopted at that scope; tags only on objects you can't access. |
+| `shares` / `share_recipient_privileges` / `schema_share_usage` / `table_share_usage` | One row per **outbound Delta Share** / recipient grant / shared schema / shared table. | **Delta Sharing not configured** (no shares created / no recipients added); not visible to your grants. |
 | `catalog_/schema_/table_privileges` | One row per `GRANT` at that level. | No explicit grants at that level on objects you can see (inherited/owner grants may sit at a different level). |
+
+> **To enable these (governance queries `access_views_inventory`, `access_volumes_inventory`, `access_tags_inventory`, `access_pii_outside_tables`, `access_delta_sharing_exposure`):** there is **no schema to turn on** — `information_schema` is auto-provisioned in every UC catalog. The rows only appear once the **feature is actually used** (a view/volume created, a tag applied, a Delta Share configured) **and** the querying principal holds `SELECT` on the object. So an empty result here means "not adopted / not visible," never "schema disabled." This is why these queries carry `empty_if: privilege_scoped, no_activity` (not `schema_not_enabled`).
 
 ### `system.data_classification` *(Preview; opt-in per catalog)*
 

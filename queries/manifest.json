@@ -2086,6 +2086,57 @@
       "learn_url": "/learn/tech/databricks/audit/governance_access#q-access_network_outbound_denials"
     },
     {
+      "query_id": "access_pii_outside_tables",
+      "title": "PII outside governed tables - sensitive-tagged and untagged volumes and schemas",
+      "domain": "governance_access",
+      "tier": "standard",
+      "stars": false,
+      "runnable": true,
+      "empty_if": [
+        "privilege_scoped",
+        "no_activity"
+      ],
+      "reads": [
+        "system.information_schema.volumes",
+        "system.information_schema.volume_tags",
+        "system.information_schema.schema_tags"
+      ],
+      "requires": "SELECT on system.information_schema; Unity Catalog required",
+      "params": [
+        {
+          "name": "top_n",
+          "default": 500,
+          "meaning": "row cap - current-state, no window."
+        }
+      ],
+      "confidence": "needs_confirmation",
+      "confidence_note": "volumes, volume_tags, and schema_tags columns are transcribed verbatim; the sensitivity match is a HARD-CODED regex heuristic over tag names/values, not an authoritative classifier.",
+      "read_this": "One row = a VOLUME or SCHEMA that either carries a sensitivity/PII tag (known sensitive data living OUTSIDE the table surface, where column masks / row filters / auto-classification do NOT apply) or is an UNTAGGED volume (an unclassified file store). The status band says which. This is the file/schema counterpart to access_classified_unmasked, which only sees table columns.",
+      "healthy": "a tagged, non-sensitivity-tagged volume (field heuristic) - the file store is inventoried and not flagged sensitive.",
+      "investigate_if": "a sensitivity-tagged or untagged EXTERNAL volume (CRITICAL - sensitive/unclassified files in external storage that masks cannot protect); a sensitivity-tagged managed volume or schema, or an untagged managed volume (WARN) - field heuristic; tune the sensitivity regex in the SQL to your tag vocabulary.",
+      "actions": [
+        "for sensitive volumes, lock down access via grants + storage credentials (files cannot be masked) and confirm the data belongs in files not governed tables (free/config);",
+        "tag or classify untagged volumes so they stop being blind spots (config);",
+        "migrate PII that should be maskable into governed UC tables (spend/process)."
+      ],
+      "next": [
+        {
+          "query_id": "access_volumes_inventory",
+          "if": "the full volume inventory this is derived from"
+        },
+        {
+          "query_id": "access_classified_unmasked",
+          "if": "the table-column PII this does NOT cover"
+        },
+        {
+          "query_id": "access_tags_inventory",
+          "if": "the account's tag vocabulary"
+        }
+      ],
+      "sql_url": "https://github.com/darshanmeel/crosshire-audit-databricks-admin/blob/master/queries/governance_access/access_pii_outside_tables.sql",
+      "learn_url": "/learn/tech/databricks/audit/governance_access#q-access_pii_outside_tables"
+    },
+    {
       "query_id": "access_pii_propagation_untagged",
       "title": "PII propagation into untagged columns",
       "domain": "governance_access",
