@@ -53,19 +53,19 @@ can answer **"is this empty result a real gap, and which one?"**
 **Vocabulary:** `schema_not_enabled`, `usage_tracking_off`, `preview_unavailable`, `po_not_enabled`,
 `compute_scope_gap`, `no_serverless`, `abac_only`, `submit_run_skipped`, `verbose_audit_required`,
 `account_admin_only`, `privilege_scoped`, `retention_window`, `no_activity`, `lineage_inference_only`,
-`ingestion_lag`. **78 of the 96 queries** carry at least one; the always-on billing / reference queries carry none.
+`ingestion_lag`. **82 of the 100 queries** carry at least one; the always-on billing / reference queries carry none.
 
 ---
 
 ## Query lineage — which queries depend on each table
 
 The library's own dependency graph is generated **dbt-style** from the queries' `reads:` headers — purely
-the `system.*` tables and the 96 queries, **no external data** — by `tools/build_lineage.py` into
+the `system.*` tables and the 100 queries, **no external data** — by `tools/build_lineage.py` into
 [`lineage/`](lineage/): dbt [`sources.yml`](lineage/sources.yml), the full sources→queries DAG plus a
 per-source reverse index in [`query_lineage.md`](lineage/query_lineage.md), and machine-readable
 [`query_lineage.json`](lineage/query_lineage.json). It regenerates with the manifest and is checked in CI.
 
-**96 queries read 39 distinct system tables.** Read this beside each table's "why it would be empty" below:
+**100 queries read 47 distinct system tables.** Read this beside each table's "why it would be empty" below:
 it tells you *how many findings go dark* if a given table is empty or not enabled. The heaviest dependencies:
 
 | System table | Queries | If empty / not enabled… |

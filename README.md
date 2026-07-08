@@ -23,7 +23,7 @@ illustrative sample of the result, and the caveats.
   Unity Catalog grants unlock which queries, and how to read a missing-table / schema-access result as
   **`NOT_ASSESSED`** ("couldn't look") rather than mistaking it for a zero ("nothing there").
 
-## 96 queries across 7 domains
+## 100 queries across 7 domains
 
 | Domain | Queries | What it answers |
 |---|--:|---|
@@ -31,9 +31,9 @@ illustrative sample of the result, and the caveats.
 | [Query Performance](queries/performance/) | 12 | Costly statements (raw + per-fingerprint), bytes scanned / pruning / spill / shuffle, cache cold-start, queuing, failed queries, workload mix |
 | [Compute](queries/compute/) | 10 | Cluster & SQL-warehouse config, node utilization, idle ratio, autoscale churn, instance pools/events |
 | [Jobs & Pipelines (Lakeflow)](queries/jobs_pipelines/) | 21 | Job/pipeline runs, failures, timeouts, retries, queue/cold-start, orphans, wasted DBUs, all-purpose placement |
-| [Model Serving & AI](queries/serving_ai/) | 4 | Serving endpoint traffic, dormant endpoints, AI-gateway token usage |
+| [Model Serving & AI](queries/serving_ai/) | 4 | Serving endpoint traffic, billing-anchored endpoint cost & usage-tracking status, AI-gateway token usage |
 | [Storage & Optimization](queries/storage/) | 9 | Predictive Optimization (clustering / compaction / VACUUM), table inventory, time-travel, Iceberg, ANALYZE |
-| [Governance, Access & Security](queries/governance_access/) | 17 | Grants, column masks / row filters, tags, data classification, lineage blast-radius, network denials, run-as escalation, admin changes |
+| [Governance, Access & Security](queries/governance_access/) | 21 | Grants, column masks / row filters, tags, data classification, lineage blast-radius, network denials, run-as escalation, admin changes; Delta Sharing exposure, volumes, views, PII outside governed tables |
 
 > ⚠️ **Storage exception:** one of the Storage queries, `storage_breakdown_analyze`, is an `ANALYZE TABLE`
 > template (**not** a `SELECT`) — `runnable: false`, so the read-only `run_audit.py` skips it. Sweep
@@ -86,7 +86,7 @@ you can **run, trust, and maintain** — without being a system-tables expert.
 - **Run it, don't read it.** [`tools/run_audit.py`](tools/run_audit.py) (or the
   [notebook twin](tools/run_audit_notebook.py)) reads `manifest.json`, selects queries by `--tier` /
   `--domain` / `--stars`, substitutes your `:params`, executes each, and prints a scorecard — no opening
-  96 files. The header's `read_this` / `healthy` / `investigate_if` / `actions` / `next` fields turn a
+  100 files. The header's `read_this` / `healthy` / `investigate_if` / `actions` / `next` fields turn a
   table of numbers into a **finding with a fix and a next step**, so someone who doesn't know the schema
   can still act — and tune the thresholds to their account via `:params` instead of editing SQL.
 - **Trust the result.** A query that *can't* be checked (table not enabled, no grant) is recorded
@@ -112,7 +112,7 @@ it would be empty — including which serving / **vector-search** endpoint types
 
 ## Conventions
 
-- **Identities are partial-masked.** Every query that emits a user/principal identity (19 of them) masks it
+- **Identities are partial-masked.** Every query that emits a user/principal identity (21 of them) masks it
   in-SQL — an email becomes `da****@****`, a service-principal GUID is kept as-is (already opaque), anything
   else becomes first-two-chars + `****`. No query emits a raw username or email. Output is still
   **sensitive** (workspace IDs, job IDs, table names, spend) — treat result CSVs as confidential and never

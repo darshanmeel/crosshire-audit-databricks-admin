@@ -1,6 +1,6 @@
 # Model Serving & AI
 
-What's running on Model Serving, how much traffic and token throughput each endpoint handles, which endpoints are dormant (paying but idle), and whether AI Gateway is seeing abuse.
+What's running on Model Serving, how much traffic and token throughput each endpoint handles, which endpoints are billing but idle or untracked (billing-anchored cost + usage-tracking status), and whether AI Gateway is seeing abuse.
 
 📖 **Full interactive docs → [every query, explained](https://learn.crosshire.ch/learn/tech/databricks/audit#d-serving)** — why it matters, what it does, how to read every output column, a sample of the result, and the caveats.
 

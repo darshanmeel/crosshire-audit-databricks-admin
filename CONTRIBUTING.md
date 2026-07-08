@@ -1,6 +1,6 @@
 # Contributing
 
-This repo is a **plain-SQL** library: 95 `SELECT` queries over Databricks `system.*` tables (plus one
+This repo is a **plain-SQL** library: 99 `SELECT` queries over Databricks `system.*` tables (plus one
 documented `ANALYZE TABLE` template, `storage_breakdown_analyze`, flagged `runnable: false`), plus a
 small `tools/` folder that turns the query headers into `queries/manifest.json`.
 Contributions are welcome — a new query, a sharper caveat, a better interpretation band.
