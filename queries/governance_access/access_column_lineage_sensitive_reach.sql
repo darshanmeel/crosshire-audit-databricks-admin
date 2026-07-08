@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: deep
 -- reads: system.access.column_lineage
 -- requires: SELECT on system.access; GA
+-- empty_if: lineage_inference_only, schema_not_enabled
 -- params: :period_days (default 30) rolling window in days; :warn_reach_principals (default 10) distinct principals driving one source-target column edge that flags WARN; :crit_reach_principals (default 50) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: All columns used (source/target table and column names, entity_type, direct_access, created_by, event_time) are confirmed against system.access.column_lineage.

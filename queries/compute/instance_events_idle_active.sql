@@ -3,6 +3,7 @@
 -- domain: compute   tier: lite
 -- reads: system.compute.instance_events
 -- requires: SELECT on system.compute; Public Preview (system.compute.instance_events may be empty or disabled per workspace)
+-- empty_if: preview_unavailable, compute_scope_gap
 -- params: :period_days (default 30) rolling window in days
 -- confidence: needs_confirmation
 -- confidence_note: system.compute.instance_events is Public Preview and may be empty or disabled in your workspace; if so, treat "no rows" as "not populated", not "no idle instances". Columns are confirmed, but a true idle-vs-active MINUTES calculation needs a per-instance windowed lead/lag over event_time (INSTANCE_READY vs INSTANCE_PLACED) that is not implemented here - this query only summarizes event COUNTS, a coarser signal.

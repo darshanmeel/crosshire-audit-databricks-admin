@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: lite
 -- reads: system.lakeflow.job_run_timeline, system.lakeflow.job_task_run_timeline
 -- requires: SELECT on system.lakeflow; GA
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days; :warn_succeeded_with_failed (default 3) such runs for a job that flags WARN; :crit_succeeded_with_failed (default 10) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: the join key (job_task_run_timeline.job_run_id = job_run_timeline.run_id, plus workspace_id) and the end-row filter on both sides were verified against a live workspace.

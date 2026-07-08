@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.job_task_run_timeline, system.lakeflow.job_tasks
 -- requires: SELECT on system.lakeflow; GA (execution_duration_seconds and timeout_seconds were both added late Nov 2025)
+-- empty_if: schema_not_enabled, submit_run_skipped
 -- params: :period_days (default 30) rolling window in days; :near_timeout_ratio (default 0.8) fraction of the configured timeout that counts as "near timeout"; :warn_near_timeout_runs (default 3) near/over-timeout runs for a task that flags WARN; :crit_near_timeout_runs (default 10) that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: both execution_duration_seconds (job_task_run_timeline) and timeout_seconds (job_tasks) are not populated before late Nov 2025; runs_no_task_timeout / runs_exec_null expose that so a short-history account degrades to "not assessed" instead of reading a missing value as zero.

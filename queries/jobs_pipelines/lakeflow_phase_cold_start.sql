@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: lite
 -- reads: system.lakeflow.job_run_timeline
 -- requires: SELECT on system.lakeflow; GA (the five *_duration_seconds columns were added early Dec 2025)
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days; :warn_setup_p95_s (default 60) 95th-percentile setup seconds that flags WARN; :crit_setup_p95_s (default 300) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: The five phase columns and the queue-vs-job_task_run_timeline scoping were verified against system.lakeflow.job_run_timeline in a live workspace.

@@ -3,6 +3,7 @@
 -- domain: cost   tier: standard
 -- reads: system.billing.usage
 -- requires: SELECT on system.billing; GA (system.billing.usage is generally available)
+-- empty_if: ingestion_lag
 -- params: :period_days (default 30) rolling window in days; :warn_job_dbus_per_day (default 50) DBUs/day on a single job that flags WARN; :crit_job_dbus_per_day (default 200) DBUs/day that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: usage_metadata.job_id and product_features.is_serverless are documented system.billing.usage columns.

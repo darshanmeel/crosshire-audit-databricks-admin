@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: deep
 -- reads: system.lakeflow.job_run_timeline, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.lakeflow, system.billing; GA (job_run_timeline and billing.usage/list_prices are generally available)
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days; :warn_failed_runs (default 3) failed runs for a job in the window that flags WARN; :crit_failed_runs (default 10) failed runs that flags CRITICAL; :warn_wasted_dbus (default 10) wasted-DBU proxy that flags WARN; :crit_wasted_dbus (default 50) wasted-DBU proxy that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: usage_metadata carries job_id but not run_id, so wasted DBUs are apportioned across the job by failed-run share rather than measured per failed run; job_id is also unique only within a workspace, so every join here keys on (workspace_id, job_id).

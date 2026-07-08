@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: lite
 -- reads: system.lakeflow.pipeline_update_timeline
 -- requires: SELECT on system.lakeflow; Public Preview (system.lakeflow.pipeline_update_timeline)
+-- empty_if: schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) rolling window in days; :warn_failed_updates (default 3) failed update rows in a group that flags WARN; :crit_failed_updates (default 10) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: result_state values (COMPLETED/FAILED/CANCELED - one L), update_type values (FULL_REFRESH/REFRESH/VALIDATE), and trigger_type='RETRY_ON_FAILURE' were verified against system.lakeflow.pipeline_update_timeline in a live workspace.

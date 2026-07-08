@@ -3,6 +3,7 @@
 -- domain: performance   tier: standard
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA
+-- empty_if: schema_not_enabled, compute_scope_gap, privilege_scoped
 -- params: :period_days (default 30) rolling window in days; :warn_total_hours (default 1) cumulative execution hours for a single shape that flags WARN; :crit_total_hours (default 5) same for CRITICAL; :top_n (default 500) row cap
 -- confidence: confirmed
 -- confidence_note: system.query.history columns verified in a live workspace; the sibling of query_costly_statements.

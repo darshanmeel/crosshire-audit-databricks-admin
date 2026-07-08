@@ -3,6 +3,7 @@
 -- domain: performance   tier: standard
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- empty_if: schema_not_enabled, preview_unavailable, compute_scope_gap
 -- params: :period_days (default 30) rolling window in days; :warn_shuffle_gb (default 50) daily shuffle_read_bytes per group that flags WARN; :crit_shuffle_gb (default 200) ... that flags CRITICAL; :warn_avg_file_mb (default 32) average written-file size in MB below which a group flags WARN (small-file amplification); :crit_avg_file_mb (default 8) ... below which it flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: Columns verified against system.query.history in a live workspace.

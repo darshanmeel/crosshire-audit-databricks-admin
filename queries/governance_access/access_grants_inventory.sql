@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.information_schema.table_privileges, system.information_schema.catalog_privileges
 -- requires: SELECT on system.information_schema; Unity Catalog required
+-- empty_if: privilege_scoped
 -- params: none - current-state grant rollup, no window.
 -- confidence: confirmed
 -- confidence_note: table_privileges and catalog_privileges are transcribed verbatim - the only two privilege views confirmed column-by-column for this query.

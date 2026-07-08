@@ -3,6 +3,7 @@
 -- domain: storage   tier: standard
 -- reads: system.storage.predictive_optimization_operations_history
 -- requires: SELECT on system.storage; Public Preview (system.storage.predictive_optimization_operations_history), regional, 180-day retention
+-- empty_if: schema_not_enabled, po_not_enabled, preview_unavailable, ingestion_lag
 -- params: :period_days (default 30) rolling window in days; :warn_maint_dbu (default 20) estimated maintenance DBUs per table+operation+status group over the window that flags WARN; :crit_maint_dbu (default 100) that flags CRITICAL (a FAILED operation_status always flags CRITICAL regardless of these)
 -- confidence: confirmed
 -- confidence_note: usage_quantity as ESTIMATED_DBU, the operation_status enum values (including the 'FAILED: INTERNAL_ERROR' string with its embedded colon), and the up-to-24h billing-population lag are verified against Databricks docs.

@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.pipeline_update_timeline, system.lakeflow.pipelines, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.lakeflow, system.billing; Public Preview (system.lakeflow.pipelines and pipeline_update_timeline); GA (system.billing.usage/list_prices)
+-- empty_if: schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) rolling window in days; :warn_idle_dbus (default 100) net DBUs in the window on a non-continuous pipeline that flags WARN; :crit_idle_dbus (default 500) that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: the settings.continuous / settings.development dot-access assumes settings is a STRUCT on system.lakeflow.pipelines; whether it is a STRUCT (dot-access) or a MAP (settings['key']) on your account is unverified.

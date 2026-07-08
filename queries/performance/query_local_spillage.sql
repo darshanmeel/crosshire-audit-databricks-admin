@@ -3,6 +3,7 @@
 -- domain: performance   tier: standard
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- empty_if: schema_not_enabled, preview_unavailable, compute_scope_gap
 -- params: :period_days (default 30) rolling window in days; :warn_spill_gb (default 1) daily local-spill GB per warehouse that flags WARN; :crit_spill_gb (default 10) daily local-spill GB that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: Columns verified against system.query.history in a live workspace.

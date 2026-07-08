@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: lite
 -- reads: system.lakeflow.job_run_timeline
 -- requires: SELECT on system.lakeflow; GA (system.lakeflow.job_run_timeline is generally available)
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days; :warn_failed_run_rows (default 5) failed run rows in a group that flags WARN; :crit_failed_run_rows (default 20) failed run rows that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: The result_state filter and the run_rows-vs-distinct_runs distinction were verified against system.lakeflow.job_run_timeline in a live workspace.

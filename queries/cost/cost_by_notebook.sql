@@ -3,6 +3,7 @@
 -- domain: cost   tier: standard
 -- reads: system.billing.usage
 -- requires: SELECT on system.billing; GA (system.billing.usage is generally available)
+-- empty_if: no_activity
 -- params: :period_days (default 30) rolling window in days; :warn_notebook_dbus_per_day (default 10) DBUs/day on a single notebook that flags WARN; :crit_notebook_dbus_per_day (default 50) DBUs/day that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: usage_metadata.notebook_id is documented but populates only for notebook-attached all-purpose/interactive usage - confirm it is non-empty in your account before relying on a per-notebook view.

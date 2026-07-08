@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: deep
 -- reads: system.billing.usage, system.billing.list_prices, system.lakeflow.pipelines, system.lakeflow.pipeline_update_timeline
 -- requires: SELECT on system.billing, system.lakeflow; GA (system.billing.usage/list_prices); Public Preview (system.lakeflow.pipelines and pipeline_update_timeline - a missing/disabled table degrades names/updates to NULL, never the DBU attribution)
+-- empty_if: schema_not_enabled, preview_unavailable, no_activity
 -- params: :period_days (default 30) rolling window in days; :warn_pipeline_dbus (default 500) net pipeline DBUs in the window that flags WARN; :crit_pipeline_dbus (default 2000) that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: the list_rate CAST path (pricing.effective_list.default) is unverified, so net_list_cost is a directional list-price estimate, never a billed dollar figure; confirm the struct path against your workspace's system.billing.list_prices schema.

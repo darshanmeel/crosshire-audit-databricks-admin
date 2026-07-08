@@ -3,6 +3,7 @@
 -- domain: serving_ai   tier: standard
 -- reads: system.ai_gateway.usage
 -- requires: SELECT on system.ai_gateway; must be enabled per-metastore (empty until AI Gateway is enabled on an endpoint)
+-- empty_if: usage_tracking_off, account_admin_only, schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) rolling window in days
 -- confidence: needs_confirmation
 -- confidence_note: Column names (event_time, workspace_id, endpoint_name, requester, status_code, latency_ms, input_tokens, output_tokens) and the 2xx/429/error status-code grouping are verified against a live workspace system-schema dump but not against published Databricks documentation, so treat the request classification as a working assumption until you confirm it against your own workspace.

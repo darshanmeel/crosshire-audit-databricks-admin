@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.access.audit
 -- requires: SELECT on system.access; Public Preview
+-- empty_if: schema_not_enabled, preview_unavailable, privilege_scoped
 -- params: :period_days (default 30) rolling window in days; :warn_admin_events (default 20) admin/role-change events by one actor+action in the window that flags WARN; :crit_admin_events (default 100) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: user_identity.subject_name (not subjectName) was confirmed against a live workspace on 2026-05-30.

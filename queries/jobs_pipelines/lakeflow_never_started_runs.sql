@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: lite
 -- reads: system.lakeflow.job_run_timeline
 -- requires: SELECT on system.lakeflow; GA
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days; :warn_never_started (default 3) never-started runs for a (job, termination_code) pair that flags WARN; :crit_never_started (default 10) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: The period_start_time = period_end_time signature for a never-executed run, and termination_code as the reason, were verified against system.lakeflow.job_run_timeline in a live workspace.

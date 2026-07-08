@@ -3,6 +3,7 @@
 -- domain: storage   tier: deep
 -- reads: system.storage.predictive_optimization_operations_history
 -- requires: SELECT on system.storage; Public Preview (system.storage.predictive_optimization_operations_history), regional
+-- empty_if: po_not_enabled, schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) rolling window in days; :warn_scan_gb (default 100) GB scanned by a backfill event that added no new data-skipping columns, over the window, that flags WARN; :crit_scan_gb (default 500) GB that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: DATA_SKIPPING_COLUMN_SELECTION's operation_metrics subfields queried here (added/removed/new_data_skipping_columns, amount_of_scanned_bytes, number_of_scanned_files) are verified against Databricks system-table docs; a 6th real subfield, old_data_skipping_columns, exists but is intentionally not selected here.

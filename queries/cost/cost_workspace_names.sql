@@ -3,6 +3,7 @@
 -- domain: cost   tier: lite
 -- reads: system.access.workspaces_latest
 -- requires: SELECT on system.access; GA (system.access.workspaces_latest is generally available)
+-- empty_if: schema_not_enabled, preview_unavailable
 -- params: none - this is a full snapshot lookup with no date filter
 -- confidence: confirmed
 -- confidence_note: workspace_id, workspace_name, and status are documented system.access.workspaces_latest columns.

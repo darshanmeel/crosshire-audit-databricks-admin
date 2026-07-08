@@ -3,6 +3,7 @@
 -- domain: storage   tier: standard
 -- reads: system.storage.predictive_optimization_operations_history
 -- requires: SELECT on system.storage; Public Preview (system.storage.predictive_optimization_operations_history), regional
+-- empty_if: po_not_enabled, schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) rolling window in days; :warn_noop_dbu (default 5) estimated VACUUM DBUs spent on a table that reclaimed zero bytes over the window that flags WARN; :crit_noop_dbu (default 20) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: The two VACUUM operation_metrics subfields (number_of_deleted_files, amount_of_data_deleted_bytes) and their map<string,string> typing are verified against Databricks system-table docs.

@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: lite
 -- reads: system.lakeflow.job_run_timeline
 -- requires: SELECT on system.lakeflow; GA
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days
 -- confidence: confirmed
 -- confidence_note: the documented termination_code value set (root-cause classification plus quota/limit-hit codes such as WORKSPACE_RUN_LIMIT_EXCEEDED, MAX_JOB_QUEUE_SIZE_EXCEEDED, CLUSTER_ERROR, STORAGE_ACCESS_ERROR) was verified against a live workspace.

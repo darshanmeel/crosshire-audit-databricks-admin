@@ -3,6 +3,7 @@
 -- domain: performance   tier: standard
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- empty_if: schema_not_enabled, preview_unavailable, compute_scope_gap
 -- params: :period_days (default 30) rolling window in days; :warn_io_cache_pct (default 50) average read_io_cache_percent below which a day+warehouse flags WARN, and the per-query low-cache threshold; :crit_io_cache_pct (default 20) average read_io_cache_percent below which it flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: Columns verified against system.query.history in a live workspace.

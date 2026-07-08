@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.access.audit
 -- requires: SELECT on system.access; Public Preview
+-- empty_if: schema_not_enabled, preview_unavailable, verbose_audit_required, privilege_scoped
 -- params: :period_days (default 30) rolling window in days.
 -- confidence: confirmed
 -- confidence_note: service_name='vectorSearch' and the query/scan action_name set (queryVectorIndex, queryVectorIndexNextPage, queryVectorIndexRouteOptimized, scanVectorIndex, scanVectorIndexRouteOptimized) are confirmed against Databricks' documentation on unused Vector Search endpoints.

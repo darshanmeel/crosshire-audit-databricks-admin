@@ -3,6 +3,7 @@
 -- domain: serving_ai   tier: standard
 -- reads: system.billing.usage, system.billing.list_prices, system.serving.served_entities, system.serving.endpoint_usage, system.access.workspaces_latest
 -- requires: SELECT on system.billing, system.serving, system.access; the serving and access system schemas enabled; billing is GA, serving + workspaces_latest are Public Preview
+-- empty_if: usage_tracking_off, schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) analysis window in days for requests and cost; :retention_days (default 90) the full endpoint_usage retention window, used to tell "usage tracking off" from "idle in window"; :warn_low_requests (default 10) endpoint requests over the window at or below which a billed endpoint flags WARN; :top_n (default 200) row cap
 -- confidence: needs_confirmation
 -- confidence_note: every column is verified against the workspace system-schema dump; the tracking_status classification is a heuristic inferred from whether a billed endpoint has any serving telemetry, not a Databricks-reported flag.

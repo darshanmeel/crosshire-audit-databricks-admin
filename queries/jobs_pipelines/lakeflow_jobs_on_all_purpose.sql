@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.job_task_run_timeline, system.compute.clusters, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.lakeflow, system.compute, system.billing; GA
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days; :crit_share_usd (default 100) naive per-job list-$ share on an all-purpose cluster that flags CRITICAL; :top_n (default 500) row cap
 -- confidence: needs_confirmation
 -- confidence_note: The cross-domain join to system.compute.clusters and whether compute_ids is populated on older rows are the two things to confirm on your own workspace.

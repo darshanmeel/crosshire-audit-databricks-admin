@@ -3,6 +3,7 @@
 -- domain: cost   tier: standard
 -- reads: system.billing.usage
 -- requires: SELECT on system.billing; GA (system.billing.usage is generally available)
+-- empty_if: ingestion_lag
 -- params: :period_days (default 30) rolling window in days
 -- confidence: needs_confirmation
 -- confidence_note: The filter value billing_origin_product = 'DEFAULT_STORAGE' is unverified (billing_origin_product has no published closed enum); storage_api_type and catalog_id are confirmed columns and are used as the primary, safer filter here.

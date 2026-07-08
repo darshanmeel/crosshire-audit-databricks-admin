@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.information_schema.column_tags, system.information_schema.table_tags
 -- requires: SELECT on system.information_schema; Unity Catalog required
+-- empty_if: privilege_scoped
 -- params: none - current-state tag rollup, no window.
 -- confidence: confirmed
 -- confidence_note: column_tags and table_tags are the two tag views transcribed verbatim.

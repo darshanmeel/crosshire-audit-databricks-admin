@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.job_tasks, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.lakeflow, system.billing; GA (job_tasks.timeout_seconds was added late Nov 2025)
+-- empty_if: schema_not_enabled, submit_run_skipped
 -- params: :period_days (default 30) billing look-back window for the cost rollup only (does not change this query's grain/filters/counts); :warn_no_timeout_tasks (default 5) no-timeout tasks per workspace that flags WARN; :crit_no_timeout_tasks (default 20) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: timeout_seconds is not populated before late Nov 2025; tasks_timeout_null exposes that so a short-history account degrades instead of reading NULL as "no timeout". net_dbus/est_usd_list here are an upper-bound exposure figure, not the exact cost of the untimed tasks - see caveats.

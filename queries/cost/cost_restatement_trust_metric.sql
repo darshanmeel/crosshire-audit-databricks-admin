@@ -3,6 +3,7 @@
 -- domain: cost   tier: lite
 -- reads: system.billing.usage
 -- requires: SELECT on system.billing; GA (system.billing.usage is generally available)
+-- empty_if: ingestion_lag
 -- params: :period_days (default 30) rolling window in days
 -- confidence: confirmed
 -- confidence_note: The record_type enum (ORIGINAL/RETRACTION/RESTATEMENT) and ingestion_date are documented system.billing.usage columns.

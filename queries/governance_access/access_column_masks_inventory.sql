@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.information_schema.column_masks
 -- requires: SELECT on system.information_schema; Public Preview, DBR 12.2 LTS+, Unity Catalog required
+-- empty_if: abac_only, privilege_scoped
 -- params: none - static current-state inventory, no window.
 -- confidence: confirmed
 -- confidence_note: Columns verified against a live workspace on 2026-05-30: table_catalog, table_schema, table_name, column_name, mask_name, using_columns.

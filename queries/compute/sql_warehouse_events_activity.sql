@@ -3,6 +3,7 @@
 -- domain: compute   tier: lite
 -- reads: system.compute.warehouse_events
 -- requires: SELECT on system.compute; GA
+-- empty_if: no_activity
 -- params: :period_days (default 30) rolling window in days; :warn_stale_days (default 7) days since a warehouse's last RUNNING/STARTING event that flags WARN; :crit_stale_days (default 14) days that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: Event-type enum verified against system.compute.warehouse_events in a live workspace; SCALING_UP/SCALING_DOWN values are undocumented so this query does not rely on them.

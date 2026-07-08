@@ -3,6 +3,7 @@
 -- domain: performance   tier: standard
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- empty_if: schema_not_enabled, preview_unavailable, compute_scope_gap, privilege_scoped
 -- params: :period_days (default 30) rolling window in days
 -- confidence: needs_confirmation
 -- confidence_note: The nested query_source struct's dotted-path access (query_source.job_info.job_id, query_source.dashboard_id, etc.) and the single-winner CASE precedence used to pick one source_kind per query are not verified verbatim against a live workspace. The subfield names themselves are confirmed, but Databricks' own documentation says multiple subfields can be populated on the same query simultaneously and are not execution-ordered, so this CASE is a heuristic, not authoritative attribution. Confirm the struct path resolves in your workspace, and consider emitting all non-null source flags instead of a single winner if you need exact attribution.

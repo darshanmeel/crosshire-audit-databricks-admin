@@ -3,6 +3,7 @@
 -- domain: storage   tier: deep
 -- reads: system.storage.predictive_optimization_operations_history
 -- requires: SELECT on system.storage; Public Preview (system.storage.predictive_optimization_operations_history), regional
+-- empty_if: po_not_enabled, schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) rolling window in days; :warn_churn_events (default 2) column-selection-changed events per table over the window that flags WARN; :crit_churn_events (default 5) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: The four operation_metrics subfields (has_column_selection_changed, old_clustering_columns, new_clustering_columns, additional_reason) and their string typing are verified against Databricks system-table docs.

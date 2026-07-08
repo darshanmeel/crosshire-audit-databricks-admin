@@ -3,6 +3,7 @@
 -- domain: performance   tier: standard
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- empty_if: schema_not_enabled, compute_scope_gap, privilege_scoped
 -- params: :period_days (default 30) rolling window in days
 -- confidence: confirmed
 -- confidence_note: Columns verified against system.query.history in a live workspace.

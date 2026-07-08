@@ -63,6 +63,7 @@ Field syntax the parser depends on:
 - **params**: `;`-separated. Each is `:name (default <value>) <meaning>`. `:period_days` is mandatory.
 - **next**: `,`-separated. Each is `query_id (if <condition>)` or bare `query_id`. A comma **inside** `(if ...)` is fine — the split is top-level only, and a malformed entry fails the linter (it is never silently dropped). Every target must be a real query_id in this repo.
 - **runnable** (optional, default `true`): add `runnable: false` to keep a **copy-paste-only** query — one that is not a plain `SELECT`, e.g. the `ANALYZE TABLE` storage template — out of the manifest-driven `run_audit.py`. Only `storage_breakdown_analyze` uses it today; sweep such tables with the destructive, opt-in `tools/run_analyze.py`.
+- **empty_if** (optional): a comma-separated list of **coverage-gap tokens** (controlled vocabulary in `tools/header_schema.py` `EMPTY_IF_VOCAB`) naming why the query could legitimately return zero rows — e.g. `usage_tracking_off, schema_not_enabled`. The linter rejects unknown tokens; the manifest carries them; `run_audit.py` annotates any `0 rows`/`NOT_ASSESSED` result with them (see [`COVERAGE.md`](COVERAGE.md)). Add the tokens that genuinely apply; a query on always-on tables with no real gap has none.
 - **actions**: `1) ... 2) ... 3) ...`. Free fix first, spend-money fix last.
 - **healthy / investigate_if / actions** on a **pure inventory** (a reference/lookup query with no
   health notion) are set to `n/a - inventory` rather than omitted, so the linter stays uniform.

@@ -3,6 +3,7 @@
 -- domain: compute   tier: lite
 -- reads: system.compute.clusters
 -- requires: SELECT on system.compute; GA
+-- empty_if: compute_scope_gap
 -- params: none (config snapshot, no time window)
 -- confidence: confirmed
 -- confidence_note: Columns verified against system.compute.clusters in a live workspace; cloud-specific attribute structs (aws_attributes/azure_attributes/gcp_attributes) are documented by example only.

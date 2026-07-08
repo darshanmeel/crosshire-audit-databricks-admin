@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.information_schema.schema_privileges, system.information_schema.connection_privileges, system.information_schema.credential_privileges, system.information_schema.external_location_privileges
 -- requires: SELECT on system.information_schema; Unity Catalog required
+-- empty_if: privilege_scoped
 -- params: none - current-state grant rollup, no window.
 -- confidence: needs_confirmation
 -- confidence_note: Only table_privileges and catalog_privileges (used in access_grants_inventory) are transcribed column-by-column; the object-name columns on these four sibling views (e.g. schema_privileges.catalog_name+schema_name, and the connection/credential/external-location name columns) are inferred, not verified. This query only reads GRANTEE and PRIVILEGE_TYPE, which are shared across every privilege view, so it is safe as written - do not add any object-name column from these views until you DESCRIBE it in your workspace.

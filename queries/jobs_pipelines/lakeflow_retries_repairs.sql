@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.job_run_timeline, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.lakeflow, system.billing; GA
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days; :warn_total_retries (default 5) total retries for a job in the window that flags WARN; :crit_total_retries (default 20) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: The retry count formula (non-NULL-result_state rows per run_id, minus 1) was verified against the documented visibility caveat for system.lakeflow.job_run_timeline.

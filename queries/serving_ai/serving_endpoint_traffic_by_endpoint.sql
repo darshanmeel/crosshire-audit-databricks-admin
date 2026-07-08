@@ -3,6 +3,7 @@
 -- domain: serving_ai   tier: deep
 -- reads: system.serving.endpoint_usage, system.serving.served_entities, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.serving, system.billing; system.serving must be enabled per-metastore (empty until Model Serving is in use); system.billing is GA.
+-- empty_if: usage_tracking_off, schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) rolling window in days
 -- confidence: confirmed
 -- confidence_note: Columns were verified against the AI Gateway usage-schema documentation on 2026-06-21 - re-verify if you are running this well after that date, since system-table schemas evolve.

@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.access.table_lineage
 -- requires: SELECT on system.access; GA
+-- empty_if: schema_not_enabled, lineage_inference_only, privilege_scoped
 -- params: :period_days (default 30) rolling window in days; :warn_blast_principals (default 10) distinct principals driving one source-target edge that flags WARN; :crit_blast_principals (default 50) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: source_table_full_name is NULL for write-only events and target_table_full_name is NULL for read-only events; the access_class CASE reproduces Databricks' documented read/write rule from those two columns.

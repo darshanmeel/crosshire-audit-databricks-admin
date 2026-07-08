@@ -3,6 +3,7 @@
 -- domain: compute   tier: standard
 -- reads: system.compute.instance_pools, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.compute, system.billing; Public Preview (system.compute.instance_pools may be empty or disabled per workspace)
+-- empty_if: preview_unavailable
 -- params: :period_days (default 30) rolling window in days for the cost rollup (this is a config snapshot with no time window of its own); :warn_min_idle_instances (default 5) standing idle-instance floor that flags WARN; :crit_min_idle_instances (default 20) standing idle-instance floor that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: system.compute.instance_pools is Public Preview and may be empty or disabled in your workspace; the columns themselves are confirmed.

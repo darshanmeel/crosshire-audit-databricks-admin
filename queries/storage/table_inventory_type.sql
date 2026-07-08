@@ -3,6 +3,7 @@
 -- domain: storage   tier: deep
 -- reads: system.information_schema.tables
 -- requires: SELECT on system.information_schema; Unity Catalog required
+-- empty_if: privilege_scoped
 -- params: none (catalog-wide inventory snapshot, no time window)
 -- confidence: needs_confirmation
 -- confidence_note: Only table_type (MANAGED/EXTERNAL/VIEW) is verbatim-confirmed against Databricks docs; table_catalog, table_schema, and data_source_format are plausible information_schema column names but unverified until you run this in your own workspace and confirm they resolve.

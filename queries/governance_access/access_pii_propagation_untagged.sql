@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.access.column_lineage, system.information_schema.column_tags
 -- requires: SELECT on system.access and system.information_schema; system.access.column_lineage is GA; information_schema requires Unity Catalog
+-- empty_if: lineage_inference_only, schema_not_enabled, privilege_scoped, retention_window
 -- params: :period_days (default 30) rolling window in days; :warn_pii_gap_events (default 5) times a source-to-target untagged-propagation edge fired that flags WARN; :crit_pii_gap_events (default 50) that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: This account's actual sensitivity tag_name/tag_value convention is not confirmed - the query matches common names (pii, sensitivity, sensitive, data_classification, classification, confidentiality, phi, pci) case-insensitively as a heuristic, written to under-detect rather than invent a match, which is the safe direction.

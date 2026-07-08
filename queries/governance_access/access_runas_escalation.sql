@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: deep
 -- reads: system.access.audit
 -- requires: SELECT on system.access; Public Preview
+-- empty_if: schema_not_enabled, preview_unavailable, verbose_audit_required, privilege_scoped
 -- params: :period_days (default 30) rolling window in days; :warn_runas_events (default 5) run_by != run_as events for one identity pair in the window that flags WARN; :crit_runas_events (default 25) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: identity_metadata.run_by and run_as are read directly off system.access.audit; no inferred column names here.

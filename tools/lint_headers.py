@@ -94,6 +94,9 @@ def lint_file(path: Path, all_ids: set[str]) -> list[str]:
     rn = hdr["_raw"].get("runnable")
     if rn is not None and not rn.strip().lower().startswith(("true", "false")):
         errs.append(f"{rel}: optional 'runnable' must start with 'true' or 'false', got {rn!r}")
+    for tok in hdr["empty_if"]:
+        if tok not in hs.EMPTY_IF_VOCAB:
+            errs.append(f"{rel}: empty_if token '{tok}' not in vocabulary {sorted(hs.EMPTY_IF_VOCAB)}")
 
     # SQL body = everything after the leading comment block.
     body = "\n".join(l for l in text.splitlines() if not l.startswith("--"))

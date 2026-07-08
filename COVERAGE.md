@@ -36,6 +36,27 @@ Before the per-table detail, almost every "empty table" is one of these:
 
 ---
 
+## Machine-checkable coverage — the `empty_if` field
+
+The per-table "why it would be empty" reasons below are also encoded **structurally** on each query: an
+optional `empty_if:` header field (a controlled vocabulary) lists the coverage reasons that query could
+return zero rows. It's generated into `manifest.json`, so *tooling* — not just a human reading a caveat —
+can answer **"is this empty result a real gap, and which one?"**
+
+- **The runner uses it.** `tools/run_audit.py` annotates any `0 rows` / `NOT_ASSESSED` result with its
+  `empty_if` reasons — e.g. `serving_endpoint_usage … 0 rows - maybe: usage_tracking_off, schema_not_enabled`
+  — so an empty finding tells you *whether tracking or enablement could be the cause* instead of reading as
+  "nothing there".
+- **Findings can reference it** — e.g. list every finding that depends on `usage_tracking_off`, or gate a
+  dashboard tile on `schema_not_enabled`.
+
+**Vocabulary:** `schema_not_enabled`, `usage_tracking_off`, `preview_unavailable`, `po_not_enabled`,
+`compute_scope_gap`, `no_serverless`, `abac_only`, `submit_run_skipped`, `verbose_audit_required`,
+`account_admin_only`, `privilege_scoped`, `retention_window`, `no_activity`, `lineage_inference_only`,
+`ingestion_lag`. **78 of the 96 queries** carry at least one; the always-on billing / reference queries carry none.
+
+---
+
 ## Query lineage — which queries depend on each table
 
 The library's own dependency graph is generated **dbt-style** from the queries' `reads:` headers — purely

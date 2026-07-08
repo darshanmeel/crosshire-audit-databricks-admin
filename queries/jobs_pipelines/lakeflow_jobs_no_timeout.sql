@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.jobs, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.lakeflow, system.billing; GA (timeout_seconds was added early Dec 2025)
+-- empty_if: schema_not_enabled, submit_run_skipped
 -- params: :period_days (default 30) cost-lookback window for the flagged-subset DBU/dollar rollup; :warn_no_timeout_jobs (default 5) no-timeout jobs per workspace that flags WARN; :crit_no_timeout_jobs (default 20) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: timeout_seconds is not populated before early Dec 2025; jobs_timeout_null is reported separately so this query degrades to "not assessed" instead of over-claiming "no timeout" on old records - confirm the NULL semantics on your account.

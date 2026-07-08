@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.data_classification.results, system.information_schema.column_masks
 -- requires: SELECT on system.data_classification and system.information_schema; system.data_classification is Public Preview and requires Unity Catalog; column_masks is Public Preview (DBR 12.2 LTS+)
+-- empty_if: schema_not_enabled, preview_unavailable, no_serverless, abac_only, privilege_scoped
 -- params: none - fixed join on catalog/schema/table/column, no rolling window or tunable threshold; status is a direct yes/no on whether a mask exists for the classified column.
 -- confidence: confirmed
 -- confidence_note: Columns are doc-confirmed. The residual uncertainty is join completeness (column_masks is privilege-aware), not whether the columns exist.

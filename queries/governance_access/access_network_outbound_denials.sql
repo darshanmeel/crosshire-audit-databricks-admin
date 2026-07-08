@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: deep
 -- reads: system.access.outbound_network
 -- requires: SELECT on system.access; Public Preview
+-- empty_if: schema_not_enabled, preview_unavailable, compute_scope_gap
 -- params: :period_days (default 30) rolling window in days (outbound retention allows up to 365d); :warn_denial_count (default 10) denials to one destination that flags WARN; :crit_denial_count (default 50) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: All columns (network_source_type, destination_type, access_type, destination, dns_event.rcode, storage_event.rejection_reason, event_time) are confirmed.

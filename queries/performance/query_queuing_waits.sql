@@ -3,6 +3,7 @@
 -- domain: performance   tier: standard
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- empty_if: schema_not_enabled, compute_scope_gap
 -- params: :period_days (default 30) rolling window in days; :warn_queue_secs (default 60) combined queued-for-capacity + waiting-for-compute seconds per day+warehouse that flags WARN; :crit_queue_secs (default 600) ... that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: Columns verified against system.query.history in a live workspace.

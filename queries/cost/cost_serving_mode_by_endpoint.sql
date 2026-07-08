@@ -3,6 +3,7 @@
 -- domain: cost   tier: deep
 -- reads: system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.billing; GA (system.billing.usage and system.billing.list_prices are generally available)
+-- empty_if: no_activity
 -- params: :period_days (default 30) rolling window in days; :warn_endpoint_usd_per_day (default 50) estimated list-price $/day on a single endpoint + usage_type that flags WARN; :crit_endpoint_usd_per_day (default 250) $/day that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: The billing columns (billing_origin_product, product_features.serving_type, usage_type, usage_metadata.endpoint_name/endpoint_id, the LAUNCH SKU pattern) are all doc-confirmed; the list_rate path (pricing.effective_list.default) is not, so net_list_cost is a directional estimate, not a confirmed dollar figure.

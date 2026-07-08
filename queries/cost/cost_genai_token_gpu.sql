@@ -3,6 +3,7 @@
 -- domain: cost   tier: standard
 -- reads: system.billing.usage
 -- requires: SELECT on system.billing; GA (system.billing.usage is generally available)
+-- empty_if: no_activity
 -- params: :period_days (default 30) rolling window in days
 -- confidence: confirmed
 -- confidence_note: The usage_type enum (COMPUTE_TIME, STORAGE_SPACE, NETWORK_BYTE, NETWORK_HOUR, API_OPERATION, TOKEN, GPU_TIME, ANSWER) is documented.

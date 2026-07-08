@@ -3,6 +3,7 @@
 -- domain: performance   tier: standard
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA
+-- empty_if: schema_not_enabled, compute_scope_gap, preview_unavailable
 -- params: :period_days (default 30) rolling window in days; :warn_wh_share (default 0.1) fraction of a warehouse's total execution time one statement must eat to flag WARN; :crit_wh_share (default 0.25) same for CRITICAL; :top_n (default 1000) row cap
 -- confidence: confirmed
 -- confidence_note: system.query.history columns verified in a live workspace.

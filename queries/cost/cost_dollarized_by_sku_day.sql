@@ -3,6 +3,7 @@
 -- domain: cost   tier: deep
 -- reads: system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.billing; GA (system.billing.usage and system.billing.list_prices are generally available)
+-- empty_if: ingestion_lag
 -- params: :period_days (default 30) rolling window in days
 -- confidence: needs_confirmation
 -- confidence_note: The nested path list_prices.pricing.effective_list.default is not confirmed as a numerically castable scalar (the schema only types pricing.effective_list as an object); until confirmed, treat net_list_cost as directional and prefer dollarizing from pricing_list_prices_raw instead.

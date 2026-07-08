@@ -224,10 +224,18 @@ def main() -> int:
                     cols = [c[0] for c in cur.description] if cur.description else []
                     rows = cur.fetchall()
                 dt = time.time() - t0
-                scorecard.append((qid, e["tier"], "OK", len(rows), status_summary(cols, rows), f"{dt:.1f}s"))
+                extra = status_summary(cols, rows)
+                if not rows:  # empty result -> point at the coverage reasons it COULD be empty (empty_if)
+                    cov = ", ".join(e.get("empty_if", []))
+                    extra = f"0 rows - maybe: {cov}" if cov else "0 rows"
+                scorecard.append((qid, e["tier"], "OK", len(rows), extra, f"{dt:.1f}s"))
             except Exception as ex:  # noqa: BLE001 - runtime resilience is the point
                 outcome = classify_error(str(ex))
                 reason = str(ex).splitlines()[0]  # L5: truncated once, at print, below
+                if outcome == "NOT_ASSESSED":  # attribute the miss to the query's declared coverage gaps
+                    cov = ", ".join(e.get("empty_if", []))
+                    if cov:
+                        reason = f"{reason} | maybe: {cov}"
                 scorecard.append((qid, e["tier"], outcome, 0, reason, f"{time.time()-t0:.1f}s"))
 
     # Scorecard. `status / reason` is truncated in exactly ONE place (the {:60.60} field).

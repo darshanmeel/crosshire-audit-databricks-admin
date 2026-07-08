@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: deep
 -- reads: system.access.inbound_network
 -- requires: SELECT on system.access; Public Preview
+-- empty_if: schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) rolling window in days (inbound retention caps at 30d regardless); :warn_denial_count (default 10) denials for one rule+path+principal+IP that flags WARN; :crit_denial_count (default 50) that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: The nested subfield source.ip is unverified - Databricks' docs describe the source struct as having subfields "including ip, private-link" but "including" is non-exhaustive, so the exact identifier (ip vs ip_address; private-link may need backtick-quoting) has not been confirmed column-by-column. All other columns (policy_outcome, rule_label, request_path, authenticated_as, event_time) are confirmed. A wrong subfield name errors the entire statement, so verify source.ip in your workspace (or drop it) before relying on this query.

@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.data_classification.results
 -- requires: SELECT on system.data_classification; Public Preview, Unity Catalog required, needs the data-classification feature AND the system.data_classification schema both enabled
+-- empty_if: schema_not_enabled, preview_unavailable, no_serverless
 -- params: none - deduplicated current-state inventory, no window.
 -- confidence: confirmed
 -- confidence_note: Columns confirmed against Databricks documentation for system.data_classification.results.

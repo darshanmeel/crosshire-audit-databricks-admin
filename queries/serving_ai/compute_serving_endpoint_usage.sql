@@ -3,6 +3,7 @@
 -- domain: serving_ai   tier: deep
 -- reads: system.serving.served_entities, system.serving.endpoint_usage, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.serving, system.billing; system.serving must be enabled per-metastore (empty until Model Serving is in use); system.billing is GA.
+-- empty_if: usage_tracking_off, schema_not_enabled, preview_unavailable
 -- params: :period_days (default 30) rolling window in days
 -- confidence: needs_confirmation
 -- confidence_note: Column names (request_time, workspace_id, served_entity_id, status_code, input_token_count, output_token_count) and the served_entities-to-endpoint_usage join are verified against a live workspace system-schema dump, but the 2xx-as-success classification is a working assumption, not vendor-documented.

@@ -32,7 +32,28 @@ FIELDS = [
 # Optional header fields (absent => a default). `runnable: false` marks a COPY-PASTE-ONLY query
 # (e.g. an ANALYZE TABLE template against a placeholder table) that must NOT flow into the
 # manifest-driven runner. Everything without the flag is runnable (a plain SELECT).
-OPTIONAL_FIELDS = ["runnable"]
+OPTIONAL_FIELDS = ["runnable", "empty_if"]
+
+# Controlled vocabulary for the optional `empty_if:` field: the machine-checkable COVERAGE reasons a
+# query can return zero rows, so a finding / dashboard can attribute an empty result to a real gap
+# (e.g. "usage tracking is off") instead of reading it as "nothing there". Documented in COVERAGE.md.
+EMPTY_IF_VOCAB = {
+    "schema_not_enabled",      # the system schema is opt-in and may not be enabled on the metastore
+    "usage_tracking_off",      # serving / AI-gateway usage tracking not turned on for the endpoint
+    "preview_unavailable",     # Public Preview / Beta table may not exist in this region yet
+    "po_not_enabled",          # Predictive Optimization not enabled / no UC managed tables
+    "compute_scope_gap",       # covers only some compute (classic-only, or SQL-warehouse/serverless-only)
+    "no_serverless",           # the feature needs serverless compute (scans / query capture)
+    "abac_only",               # only manual masks/filters shown; ABAC policy-derived ones are not captured
+    "submit_run_skipped",      # one-time SUBMIT_RUN / WORKFLOW_RUN skip the jobs dimension tables
+    "verbose_audit_required",  # fine-grained audit events need verbose audit logging
+    "account_admin_only",      # read requires account admin (e.g. system.ai_gateway.usage)
+    "privilege_scoped",        # reads are privilege-scoped; a non-admin sees fewer / zero rows
+    "retention_window",        # activity older than the table's retention is purged
+    "no_activity",             # genuinely no matching activity in the window
+    "lineage_inference_only",  # lineage misses unsupported paths (spark-submit, RDD, JDBC, UDF, path-only)
+    "ingestion_lag",           # recent activity not yet materialized
+}
 
 CONFIDENCE_ENUM = {"confirmed", "needs_confirmation"}
 TIER_ENUM = {"lite", "standard", "deep"}
@@ -176,6 +197,8 @@ def parse_header(text: str, *, path: str = "<memory>") -> dict:
 
     # Optional: `runnable: false` (default true) excludes a copy-paste-only query from the runner.
     runnable = not raw.get("runnable", "true").strip().lower().startswith("false")
+    # Optional: `empty_if: <token>, ...` — machine-checkable coverage reasons the query can be empty.
+    empty_if = [t.strip().lower() for t in raw.get("empty_if", "").split(",") if t.strip()]
 
     return {
         "query_id": raw["query_id"].strip(),
@@ -184,6 +207,7 @@ def parse_header(text: str, *, path: str = "<memory>") -> dict:
         "tier": tier,
         "stars": raw["query_id"].strip() in STARS,
         "runnable": runnable,
+        "empty_if": empty_if,
         "reads": parse_reads(raw["reads"]),
         "requires": raw["requires"].strip(),
         "params": parse_params(raw["params"]),

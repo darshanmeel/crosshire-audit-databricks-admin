@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: lite
 -- reads: system.lakeflow.job_run_timeline
 -- requires: SELECT on system.lakeflow; GA (the column exists; its value enum is unverified - see caveats)
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days
 -- confidence: needs_confirmation
 -- confidence_note: termination_type is confirmed to exist as a column, but its distinct value list is unverified and it is not populated before early Dec 2025; this query is a runtime discovery probe rather than one that assumes any specific value.

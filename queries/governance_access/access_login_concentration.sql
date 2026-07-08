@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.access.audit
 -- requires: SELECT on system.access; Public Preview
+-- empty_if: schema_not_enabled, preview_unavailable, privilege_scoped
 -- params: :period_days (default 30) rolling window in days; :warn_failed_logins (default 5) non-success auth events for one principal+source_ip+service+action combo that flags WARN; :crit_failed_logins (default 20) that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: service_name='accounts' is confirmed; specific action_name values (mfaLogin, tokenLogin, and others) are representative, not a complete enumeration - group by action_name rather than hardcoding a filter list. user_identity.subject_name (not subjectName) was confirmed live 2026-05-30 and is frequently NULL. Whether response.status_code is int or long is unverified, so the <>200 OR NULL comparison is written defensively either way.

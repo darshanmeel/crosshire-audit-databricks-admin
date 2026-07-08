@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.jobs
 -- requires: SELECT on system.lakeflow; GA (system.lakeflow.jobs is generally available; health_rules was added late Nov 2025)
+-- empty_if: schema_not_enabled, submit_run_skipped
 -- params: :warn_coverage_pct (default 50) percent of active jobs with a health rule below which a workspace flags WARN; :crit_coverage_pct (default 20) percent below which it flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: health_rules is documented as an array/struct column; whether CARDINALITY(health_rules) > 0 is the right "has a rule" test on this account is unverified, and the column is not populated before late Nov 2025.

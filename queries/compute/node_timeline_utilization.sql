@@ -3,6 +3,7 @@
 -- domain: compute   tier: lite
 -- reads: system.compute.node_timeline
 -- requires: SELECT on system.compute; GA
+-- empty_if: compute_scope_gap
 -- params: :period_days (default 30) rolling window in days, capped at 90 in-SQL by node_timeline retention; :min_slices (default 60) minimum node-minutes before a cluster is judged (fewer -> NOT_ASSESSED); :oversized_cpu_pct (default 20) avg CPU percent below which a cluster looks oversized; :oversized_mem_pct (default 30) avg memory percent below which a cluster looks oversized; :top_n (default 200) row cap
 -- confidence: confirmed
 -- confidence_note: node_timeline utilization columns verified in a live workspace.

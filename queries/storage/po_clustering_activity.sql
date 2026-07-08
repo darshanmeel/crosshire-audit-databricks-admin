@@ -3,6 +3,7 @@
 -- domain: storage   tier: standard
 -- reads: system.storage.predictive_optimization_operations_history
 -- requires: SELECT on system.storage; Public Preview (system.storage.predictive_optimization_operations_history), regional
+-- empty_if: po_not_enabled, schema_not_enabled, preview_unavailable, ingestion_lag
 -- params: :period_days (default 30) rolling window in days; :warn_clustering_dbu (default 50) estimated clustering DBUs per table over the window that flags WARN; :crit_clustering_dbu (default 200) estimated clustering DBUs per table over the window that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: Column names and the four CLUSTERING operation_metrics subfields queried here are verified against Databricks system-table docs.

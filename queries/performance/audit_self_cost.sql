@@ -3,6 +3,7 @@
 -- domain: performance   tier: lite
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- empty_if: schema_not_enabled, preview_unavailable, compute_scope_gap
 -- params: :period_days (default 30) rolling window in days
 -- confidence: confirmed
 -- confidence_note: Measured magnitude - query count and runtime are directly observable columns in system.query.history; Databricks exposes no per-query DBU column, so the dollar cost of running this audit stays "not assessed" by design, not by omission.

@@ -3,6 +3,7 @@
 -- domain: cost   tier: standard
 -- reads: system.billing.usage
 -- requires: SELECT on system.billing; GA (system.billing.usage is generally available)
+-- empty_if: no_activity
 -- params: :period_days (default 30) rolling window in days
 -- confidence: confirmed
 -- confidence_note: usage_metadata.endpoint_id/endpoint_name are documented for MODEL_SERVING; same paths as cost_serving_mode_by_endpoint.

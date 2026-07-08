@@ -3,6 +3,7 @@
 -- domain: performance   tier: standard
 -- reads: system.query.history
 -- requires: SELECT on system.query; GA (system.query.history is generally available)
+-- empty_if: schema_not_enabled, preview_unavailable, compute_scope_gap
 -- params: :period_days (default 30) rolling window in days; :warn_failed_count (default 5) failed/canceled query count per day+warehouse+statement_type that flags WARN; :crit_failed_count (default 20) ... that flags CRITICAL
 -- confidence: confirmed
 -- confidence_note: The execution_status enum (FINISHED/FAILED/CANCELED) and error_message behavior under customer-managed keys were verified against system.query.history in a live workspace.

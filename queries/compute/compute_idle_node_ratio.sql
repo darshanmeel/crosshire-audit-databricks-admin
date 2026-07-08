@@ -3,6 +3,7 @@
 -- domain: compute   tier: standard
 -- reads: system.compute.node_timeline, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.compute, system.billing; GA
+-- empty_if: compute_scope_gap
 -- params: :period_days (default 30) rolling window in days, capped at 90 in-SQL by node_timeline retention; :idle_cpu_pct (default 5) CPU busy percent below which a minute-slice counts as idle; :min_slices (default 60) minimum node-minutes before a cluster is judged (fewer -> NOT_ASSESSED); :warn_idle_ratio (default 0.5) idle-slice fraction that flags WARN; :crit_idle_ratio (default 0.8) idle-slice fraction that flags CRITICAL; :top_n (default 200) row cap
 -- confidence: confirmed
 -- confidence_note: node_timeline columns verified in a live workspace; the est_wasted_usd_list overlay is a directional list-price estimate, not a verified invoice figure.

@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.jobs
 -- requires: SELECT on system.lakeflow; GA (system.lakeflow.jobs is generally available; creator_user_name/run_as_user_name were added late Nov 2025)
+-- empty_if: schema_not_enabled, submit_run_skipped
 -- params: :warn_orphan_jobs (default 5) combined mismatch+orphan job count in a workspace that flags WARN; :crit_orphan_jobs (default 20) that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: creator_user_name and run_as_user_name are not populated before late Nov 2025, and FedRAMP/redacted workspaces emit '__REDACTED__' for masked identities; both cases are normalized to NULL before counting so they never register as a real owner or a real mismatch.

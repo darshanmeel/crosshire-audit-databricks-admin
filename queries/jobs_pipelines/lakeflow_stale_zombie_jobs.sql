@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.jobs, system.lakeflow.job_run_timeline, system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.lakeflow, system.billing; GA
+-- empty_if: schema_not_enabled, submit_run_skipped, retention_window
 -- params: :stale_days (default 30) days since last run that flags WARN; :crit_stale_days (default 90) days since last run that flags CRITICAL; :period_days (default 30) cost-lookback window for net_dbus/est_usd_list (a separate window from the staleness thresholds)
 -- confidence: confirmed
 -- confidence_note: the SCD2-latest-row + delete_time filter and the last-run lookback (independent of the cost window) were verified against system.lakeflow.jobs and job_run_timeline in a live workspace.

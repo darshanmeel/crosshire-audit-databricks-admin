@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: lite
 -- reads: system.lakeflow.pipelines
 -- requires: SELECT on system.lakeflow; Public Preview (system.lakeflow.pipelines)
+-- empty_if: schema_not_enabled, preview_unavailable
 -- params: none - this is a point-in-time inventory with no tunable thresholds.
 -- confidence: needs_confirmation
 -- confidence_note: whether settings is a STRUCT (dot-access, used here) or a MAP (settings['key']) on your account is unverified; confirm before trusting the setting_* columns.

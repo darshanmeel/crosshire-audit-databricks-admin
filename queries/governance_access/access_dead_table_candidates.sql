@@ -3,6 +3,7 @@
 -- domain: governance_access   tier: standard
 -- reads: system.access.table_lineage, system.information_schema.tables
 -- requires: SELECT on system.access and system.information_schema; system.access.table_lineage is GA; information_schema requires Unity Catalog
+-- empty_if: lineage_inference_only, retention_window, privilege_scoped
 -- params: :period_days (default 30) rolling window in days; :warn_dead_days (default 90) days since last altered for a table with no lineage-source hits that flags WARN; :crit_dead_days (default 365) that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: Lineage undercounts reads that have no captured source (e.g. INSERT ... VALUES literals), so a table absent from lineage is a cleanup candidate to cross-check, not proof it is unused.

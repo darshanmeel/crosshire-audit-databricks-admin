@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: standard
 -- reads: system.lakeflow.job_run_timeline
 -- requires: SELECT on system.lakeflow; GA (queue_duration_seconds was added late Nov 2025)
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days; :warn_queue_p95_s (default 60) 95th-percentile queue seconds that flags WARN; :crit_queue_p95_s (default 300) that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: queue_duration_seconds is not populated before late Nov 2025, so on a short-history account it is NULL for every run; runs_queue_null exposes that so this query degrades instead of reading NULL as zero queue time.

@@ -3,6 +3,7 @@
 -- domain: cost   tier: deep
 -- reads: system.billing.usage, system.billing.list_prices
 -- requires: SELECT on system.billing; GA (system.billing.usage and system.billing.list_prices are generally available)
+-- empty_if: no_activity, ingestion_lag
 -- params: :period_days (default 30) rolling window in days; :warn_endpoint_usd_per_day (default 25) estimated list-price $/day on a single Vector Search endpoint that flags WARN; :crit_endpoint_usd_per_day (default 100) $/day that flags CRITICAL
 -- confidence: needs_confirmation
 -- confidence_note: billing_origin_product='VECTOR_SEARCH', usage_metadata.endpoint_name, and the usage_type enum are confirmed in docs; the list_rate path (pricing.effective_list.default) is not, so net_list_cost is a directional estimate.

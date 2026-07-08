@@ -3,6 +3,7 @@
 -- domain: jobs_pipelines   tier: lite
 -- reads: system.lakeflow.job_run_timeline
 -- requires: SELECT on system.lakeflow; GA (execution_duration_seconds was added early Dec 2025)
+-- empty_if: schema_not_enabled
 -- params: :period_days (default 30) rolling window in days
 -- confidence: confirmed
 -- confidence_note: the run_type values (JOB_RUN/SUBMIT_RUN/WORKFLOW_RUN) and the WORKFLOW_RUN compute-attribution note were verified against system.lakeflow.job_run_timeline in a live workspace.
