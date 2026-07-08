@@ -2,8 +2,8 @@
   "kind": "query_lineage",
   "note": "Derived purely from queries/manifest.json (the queries' reads: headers). No external data.",
   "summary": {
-    "queries": 96,
-    "distinct_sources": 39
+    "queries": 99,
+    "distinct_sources": 47
   },
   "queries": [
     {
@@ -335,6 +335,17 @@
       ]
     },
     {
+      "query_id": "access_delta_sharing_exposure",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.information_schema.schema_share_usage",
+        "system.information_schema.share_recipient_privileges",
+        "system.information_schema.shares",
+        "system.information_schema.table_share_usage"
+      ]
+    },
+    {
       "query_id": "access_grants_inventory",
       "domain": "governance_access",
       "tier": "standard",
@@ -417,7 +428,9 @@
       "tier": "standard",
       "reads": [
         "system.information_schema.column_tags",
-        "system.information_schema.table_tags"
+        "system.information_schema.schema_tags",
+        "system.information_schema.table_tags",
+        "system.information_schema.volume_tags"
       ]
     },
     {
@@ -426,6 +439,23 @@
       "tier": "standard",
       "reads": [
         "system.access.audit"
+      ]
+    },
+    {
+      "query_id": "access_views_inventory",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.information_schema.views"
+      ]
+    },
+    {
+      "query_id": "access_volumes_inventory",
+      "domain": "governance_access",
+      "tier": "standard",
+      "reads": [
+        "system.information_schema.volume_tags",
+        "system.information_schema.volumes"
       ]
     },
     {
@@ -970,8 +1000,23 @@
     "system.information_schema.schema_privileges": [
       "access_grants_inventory_extended"
     ],
+    "system.information_schema.schema_share_usage": [
+      "access_delta_sharing_exposure"
+    ],
+    "system.information_schema.schema_tags": [
+      "access_tags_inventory"
+    ],
+    "system.information_schema.share_recipient_privileges": [
+      "access_delta_sharing_exposure"
+    ],
+    "system.information_schema.shares": [
+      "access_delta_sharing_exposure"
+    ],
     "system.information_schema.table_privileges": [
       "access_grants_inventory"
+    ],
+    "system.information_schema.table_share_usage": [
+      "access_delta_sharing_exposure"
     ],
     "system.information_schema.table_tags": [
       "access_tags_inventory"
@@ -979,6 +1024,16 @@
     "system.information_schema.tables": [
       "access_dead_table_candidates",
       "table_inventory_type"
+    ],
+    "system.information_schema.views": [
+      "access_views_inventory"
+    ],
+    "system.information_schema.volume_tags": [
+      "access_tags_inventory",
+      "access_volumes_inventory"
+    ],
+    "system.information_schema.volumes": [
+      "access_volumes_inventory"
     ],
     "system.lakeflow.job_run_timeline": [
       "lakeflow_failed_jobs_wasted_dbus",
@@ -1313,7 +1368,21 @@
     {
       "tables": [
         "system.information_schema.column_tags",
+        "system.information_schema.schema_tags"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.column_tags",
         "system.information_schema.table_tags"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.column_tags",
+        "system.information_schema.volume_tags"
       ],
       "co_read_in_queries": 1
     },
@@ -1356,6 +1425,76 @@
       "tables": [
         "system.information_schema.external_location_privileges",
         "system.information_schema.schema_privileges"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.schema_share_usage",
+        "system.information_schema.share_recipient_privileges"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.schema_share_usage",
+        "system.information_schema.shares"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.schema_share_usage",
+        "system.information_schema.table_share_usage"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.schema_tags",
+        "system.information_schema.table_tags"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.schema_tags",
+        "system.information_schema.volume_tags"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.share_recipient_privileges",
+        "system.information_schema.shares"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.share_recipient_privileges",
+        "system.information_schema.table_share_usage"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.shares",
+        "system.information_schema.table_share_usage"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.table_tags",
+        "system.information_schema.volume_tags"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.volume_tags",
+        "system.information_schema.volumes"
       ],
       "co_read_in_queries": 1
     },

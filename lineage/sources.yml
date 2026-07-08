@@ -53,9 +53,17 @@ sources:
       - name: external_location_privileges   # read by 1 query
       - name: row_filters   # read by 1 query
       - name: schema_privileges   # read by 1 query
+      - name: schema_share_usage   # read by 1 query
+      - name: schema_tags   # read by 1 query
+      - name: share_recipient_privileges   # read by 1 query
+      - name: shares   # read by 1 query
       - name: table_privileges   # read by 1 query
+      - name: table_share_usage   # read by 1 query
       - name: table_tags   # read by 1 query
       - name: tables   # read by 2 queries
+      - name: views   # read by 1 query
+      - name: volume_tags   # read by 2 queries
+      - name: volumes   # read by 1 query
   - name: system_lakeflow
     database: system
     schema: lakeflow
