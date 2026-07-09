@@ -60,7 +60,7 @@ sources:
       - name: table_privileges   # read by 1 query
       - name: table_share_usage   # read by 1 query
       - name: table_tags   # read by 1 query
-      - name: tables   # read by 2 queries
+      - name: tables   # read by 3 queries
       - name: views   # read by 1 query
       - name: volume_tags   # read by 3 queries
       - name: volumes   # read by 2 queries
