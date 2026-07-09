@@ -41,6 +41,20 @@ All notable changes to this query library. Format loosely follows
 - `compute_serving_dormant_endpoints` — superseded by the billing-anchored
   `compute_serving_endpoint_cost_status`.
 
+### Fixed
+- **Three compile-breaking governance inventory queries** (columns verified against the official
+  `information_schema` reference, docs.databricks.com 2026-07-09):
+  - `access_column_masks_inventory` selected `table_catalog, table_schema, using_columns` from
+    `system.information_schema.column_masks`; the real columns are `CATALOG_NAME, SCHEMA_NAME,
+    MASK_COL_USAGE` — now aliased back to the prior output names.
+  - `access_row_filters_inventory` selected `table_catalog, table_schema, target_columns`; real
+    columns are `CATALOG_NAME, SCHEMA_NAME, FILTER_COL_USAGE`.
+  - `access_views_inventory` selected `IS_MATERIALIZED`, which `information_schema.views` does not
+    have; `is_materialized` is now derived from `information_schema.tables.TABLE_TYPE =
+    'MATERIALIZED_VIEW'` via a `LEFT JOIN` (adds `information_schema.tables` to `reads:`).
+  All three also carried `confidence: confirmed` + a "verified against a live workspace" note that
+  named the non-existent columns; downgraded to `needs_confirmation` pending a live `DESCRIBE`.
+
 ## v2 overhaul
 
 ### Added

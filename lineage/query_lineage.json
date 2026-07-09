@@ -456,6 +456,7 @@
       "domain": "governance_access",
       "tier": "standard",
       "reads": [
+        "system.information_schema.tables",
         "system.information_schema.views"
       ]
     },
@@ -1034,6 +1035,7 @@
     ],
     "system.information_schema.tables": [
       "access_dead_table_candidates",
+      "access_views_inventory",
       "table_inventory_type"
     ],
     "system.information_schema.views": [
@@ -1515,6 +1517,13 @@
       "tables": [
         "system.information_schema.table_tags",
         "system.information_schema.volume_tags"
+      ],
+      "co_read_in_queries": 1
+    },
+    {
+      "tables": [
+        "system.information_schema.tables",
+        "system.information_schema.views"
       ],
       "co_read_in_queries": 1
     },

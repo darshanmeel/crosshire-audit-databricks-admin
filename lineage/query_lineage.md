@@ -16,13 +16,13 @@ Derived **purely from the queries** and the `system.*` tables their `reads:` hea
 | `system.access.audit` | 4 |
 | `system.lakeflow.jobs` | 4 |
 | `system.compute.warehouse_events` | 3 |
+| `system.information_schema.tables` | 3 |
 | `system.information_schema.volume_tags` | 3 |
 | `system.lakeflow.job_task_run_timeline` | 3 |
 | `system.lakeflow.pipeline_update_timeline` | 3 |
 | `system.lakeflow.pipelines` | 3 |
 | `system.serving.endpoint_usage` | 3 |
 | `system.serving.served_entities` | 3 |
-| `system.access.column_lineage` | 2 |
 
 ## Lineage graphs (sources → queries), by domain
 
@@ -162,6 +162,7 @@ graph LR
   system_information_schema_table_tags --> governance_access__access_tags_inventory("access_tags_inventory")
   system_information_schema_volume_tags --> governance_access__access_tags_inventory("access_tags_inventory")
   system_access_audit --> governance_access__access_vector_search_traffic("access_vector_search_traffic")
+  system_information_schema_tables --> governance_access__access_views_inventory("access_views_inventory")
   system_information_schema_views["information_schema.views"]:::src
   system_information_schema_views --> governance_access__access_views_inventory("access_views_inventory")
   system_information_schema_volume_tags --> governance_access__access_volumes_inventory("access_volumes_inventory")
@@ -353,6 +354,7 @@ graph LR
   system_information_schema_share_recipient_privileges["information_schema.share_recipient_privileges"] --- |1| system_information_schema_table_share_usage["information_schema.table_share_usage"]
   system_information_schema_shares["information_schema.shares"] --- |1| system_information_schema_table_share_usage["information_schema.table_share_usage"]
   system_information_schema_table_tags["information_schema.table_tags"] --- |1| system_information_schema_volume_tags["information_schema.volume_tags"]
+  system_information_schema_tables["information_schema.tables"] --- |1| system_information_schema_views["information_schema.views"]
   system_lakeflow_job_run_timeline["lakeflow.job_run_timeline"] --- |1| system_lakeflow_job_task_run_timeline["lakeflow.job_task_run_timeline"]
   system_lakeflow_job_run_timeline["lakeflow.job_run_timeline"] --- |1| system_lakeflow_jobs["lakeflow.jobs"]
   system_lakeflow_job_task_run_timeline["lakeflow.job_task_run_timeline"] --- |1| system_lakeflow_job_tasks["lakeflow.job_tasks"]
@@ -395,7 +397,7 @@ graph LR
 | `system.information_schema.table_privileges` | `access_grants_inventory` |
 | `system.information_schema.table_share_usage` | `access_delta_sharing_exposure` |
 | `system.information_schema.table_tags` | `access_tags_inventory` |
-| `system.information_schema.tables` | `access_dead_table_candidates`, `table_inventory_type` |
+| `system.information_schema.tables` | `access_dead_table_candidates`, `access_views_inventory`, `table_inventory_type` |
 | `system.information_schema.views` | `access_views_inventory` |
 | `system.information_schema.volume_tags` | `access_pii_outside_tables`, `access_tags_inventory`, `access_volumes_inventory` |
 | `system.information_schema.volumes` | `access_pii_outside_tables`, `access_volumes_inventory` |
