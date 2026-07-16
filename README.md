@@ -10,6 +10,10 @@ SELECT), covered under [How to run](#how-to-run).
 Every query explained — why it matters, what it does in plain terms, how to read each output column, an
 illustrative sample of the result, and the caveats.
 
+🧰 **Sibling library → [crosshire-audit-snowflake-admin](https://github.com/darshanmeel/crosshire-audit-snowflake-admin)** —
+the same idea for Snowflake: who can read an object (the transitive grant graph) via a live `SHOW GRANTS`
+procedure, plus the `ACCOUNT_USAGE` CTE.
+
 ### Guides
 
 - **▶ [First audit](https://learn.crosshire.ch/learn/tech/databricks/audit/first-audit) — start here.** A
