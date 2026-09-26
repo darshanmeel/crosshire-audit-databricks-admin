@@ -9,3 +9,11 @@ out/
 __pycache__/
 .DS_Store
 .ipynb_checkpoints/
+# apps/: build output, local Spark state, and the probe's captured request (may hold ids)
+apps/dist/
+*.egg-info/
+.pytest_cache/
+spark-warehouse/
+metastore_db/
+derby.log
+request.txt

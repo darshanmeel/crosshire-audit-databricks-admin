@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crosshire-apps"
+version = "0.1.0"
+description = "Daily Databricks jobs that turn cluster logs and query profiles into small audit tables"
+requires-python = ">=3.10"
+# pyspark and delta-spark come with the Databricks runtime; install them locally for tests only.
+
+[project.scripts]
+classic-logs-job = "crosshire_apps.classic.job:main"
+
+[tool.setuptools.packages.find]
+include = ["crosshire_apps*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
