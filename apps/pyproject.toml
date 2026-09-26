@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 
 [project.scripts]
 classic-logs-job = "crosshire_apps.classic.job:main"
+query-profiles-job = "crosshire_apps.profiles.job:main"
 
 [tool.setuptools.packages.find]
 include = ["crosshire_apps*"]
