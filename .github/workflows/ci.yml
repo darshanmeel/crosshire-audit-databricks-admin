@@ -39,3 +39,23 @@ jobs:
       # parses as Databricks SQL once the :params are substituted (see .sqlfluff).
       - name: Parse-check all queries
         run: sqlfluff lint queries --dialect databricks --rules PRS
+
+  apps:
+    name: apps/ tests (classic logs reader, profile probe)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install test dependencies (pinned)
+        run: pip install -r requirements-dev.txt
+      - name: Run tests
+        run: python -m pytest -q

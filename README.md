@@ -27,6 +27,11 @@ procedure, plus the `ACCOUNT_USAGE` CTE.
   Unity Catalog grants unlock which queries, and how to read a missing-table / schema-access result as
   **`NOT_ASSESSED`** ("couldn't look") rather than mistaking it for a zero ("nothing there").
 
+🧪 **Apps → [`apps/`](apps/)** — two daily Databricks jobs (unlike the SQL library, these *write*
+small Delta tables): a classic-cluster log reader that rebuilds query history + query profiles +
+failures from cluster log delivery, and the first step (a token probe) for saving SQL-warehouse /
+serverless query profiles.
+
 ## 100 queries across 7 domains
 
 | Domain | Queries | What it answers |
