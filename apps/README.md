@@ -106,6 +106,12 @@ makes, with a token instead of browser cookies.
    --slow-seconds 300 --top-n 50 --cap 500
    ```
 
+**Or as a notebook:** open [`notebooks/query_profiles.py`](notebooks/query_profiles.py) from a Git
+folder of this repo, paste the cleaned request into the **request** widget and set **output**.
+It uses the notebook session's own credentials (no personal token). With **probe_only** = true
+it fetches one chosen statement and prints the result and key tree; set it to false to run the
+whole day. Schedule the notebook as a daily job to keep it going.
+
 What it does each day:
 
 - **Chooses statements** from yesterday in `system.query.history`, per workspace and compute:
