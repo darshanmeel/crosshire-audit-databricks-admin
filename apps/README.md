@@ -7,7 +7,7 @@ library in `../queries/`, these jobs **write** tables, so they live in their own
 | Part | Status |
 |---|---|
 | **Classic clusters** (`crosshire_apps/classic`): cluster log delivery → `classic_statement_history`, `classic_query_profile_nodes`, `classic_failures` | Built and tested on synthetic logs and on a local OSS Spark event log. **Not yet run on real Databricks logs.** |
-| **SQL warehouses and serverless** (`crosshire_apps/profiles`): query profile → `query_profile_nodes`, `query_profile_summary`, `query_profile_fetch_log` | Step 1 only: the probe that finds out whether a profile can be fetched with a token. |
+| **SQL warehouses and serverless** (`crosshire_apps/profiles`): query history → fetch each chosen statement's profile → `query_profile_nodes`, `query_profile_summary`, `query_profile_fetch_log` | Built and tested with hand-made profiles and a fake endpoint. **Works only if the probe shows the UI's profile request accepts a token**, and the parser's key names must be checked against a real profile. |
 
 ## Classic clusters
 
@@ -88,12 +88,46 @@ event, or any JobStart property outside a short allow-list (`events.JOB_PROPERTI
 names are stored. `tests/test_classic_job.py::test_privacy` scans every table, partials
 included, for the markers planted in the synthetic logs.
 
-## SQL warehouses and serverless: step 1
+## SQL warehouses and serverless
 
-See [`crosshire_apps/profiles/PROBE_GUIDE.md`](crosshire_apps/profiles/PROBE_GUIDE.md): capture
-the request the UI makes, strip cookies and tokens, then run
-`python -m crosshire_apps.profiles.probe_profile --curl request.txt --statement-id <id>` for a
-warehouse statement, a serverless notebook statement and a serverless job statement.
+No public API returns a query profile, so the job replays the request the UI's profile page
+makes, with a token instead of browser cookies.
+
+1. **Capture the request once** and check that a token is accepted: follow
+   [`PROBE_GUIDE.md`](crosshire_apps/profiles/PROBE_GUIDE.md) and run the probe for a warehouse
+   statement, a serverless notebook statement and a serverless job statement.
+2. **Run the daily job** with that cleaned request file:
+
+   ```bash
+   # python_wheel_task, entry point query-profiles-job; DATABRICKS_TOKEN from a secret
+   # ({{secrets/<scope>/<key>}} in the job's environment variables)
+   --request-file /Workspace/.../request.txt   # the captured request, cookies removed
+   --output main.crosshire_audit
+   --slow-seconds 300 --top-n 50 --cap 500
+   ```
+
+What it does each day:
+
+- **Chooses statements** from yesterday in `system.query.history`, per workspace and compute:
+  failed, spilled, at least `--slow-seconds`, and the top `--top-n` by task time. Failed ones
+  first, then the most expensive, at most `--cap`. Statements that already have a profile
+  are skipped. Profiles disappear after 30 days, so run it daily.
+- **Fetches** each profile, 4 at a time, backing off on 429 and 5xx. After 5 refusals in a
+  row it stops asking: the token route isn't working.
+- **Parses in memory** and MERGEs:
+  - `query_profile_nodes`: one row per operator, with rows, time, spill, peak memory, shuffle,
+    and files and bytes read and pruned as columns, and every other metric in a map;
+  - `query_profile_summary`: the 3 slowest operators and their share of operator time, spill
+    and shuffle by operator, row blow-up of each join, files read vs pruned per table, and
+    `plan_hash`;
+  - `query_profile_fetch_log`: ok / not found / refused / parse error per statement.
+- The raw JSON holds the SQL text and filter literals; it is never stored, and the token
+  is never logged.
+
+The profile format is undocumented. The parser looks up a few likely key names
+(`graphs[].nodes`, `edges` with `fromId`/`toId`, `keyMetrics`, `metrics[].label/value`,
+`metadata`), ignores unknown keys, and treats a reply without an operator graph as "no
+profile". Check it against the key tree of a real profile before trusting the numbers.
 
 ## Tests
 
